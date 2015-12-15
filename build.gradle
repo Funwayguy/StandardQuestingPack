@@ -17,9 +17,9 @@ buildscript {
 
 apply plugin: 'forge'
 
-version = "BQ_VER_KEY"
-group= "betterquesting" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "BetterQuesting"
+version = "BQS_VER_KEY"
+group= "bq_standard" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "StandardQuestingPack"
 
 minecraft {
     version = "1.7.10-10.13.4.1448-1.7.10"
