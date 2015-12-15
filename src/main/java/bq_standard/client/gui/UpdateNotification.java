@@ -24,7 +24,7 @@ public class UpdateNotification
 		
 		hasChecked = true;
 		
-		if(BQ_Standard.VERSION == "BQ_VER_" + "KEY")
+		if(BQ_Standard.VERSION == "BQS_VER_" + "KEY")
 		{
 			event.player.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + "THIS COPY OF " + BQ_Standard.NAME.toUpperCase() + " IS NOT FOR PUBLIC USE!"));
 			return;
@@ -32,7 +32,7 @@ public class UpdateNotification
 		
 		try
 		{
-			String[] data = getNotification("http://bit.ly/1fsQL7B", true);
+			String[] data = getNotification("http://bit.ly/224cJ4H", true);
 			
 			if(BQS_Settings.hideUpdates)
 			{
