@@ -1,0 +1,16 @@
+[
+{
+  "modid": "bq_standard",
+  "name": "Standard Questing Pack",
+  "description": "Contains all the standard tasks, rewards, importers and themes for Better Questing",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Funwayguy"],
+  "credits": "Thank you Patreons for all your support <3",
+  "logoFile": "title.png",
+  "screenshots": [],
+  "dependencies": []
+}
+]
