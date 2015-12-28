@@ -15,6 +15,7 @@ import betterquesting.importers.ImporterBase;
 import betterquesting.quests.QuestDatabase;
 import betterquesting.quests.QuestInstance;
 import betterquesting.quests.QuestLine;
+import betterquesting.quests.QuestLine.QuestLineEntry;
 import betterquesting.quests.rewards.RewardBase;
 import betterquesting.quests.tasks.TaskBase;
 import betterquesting.utils.BigItemStack;
@@ -253,16 +254,16 @@ public class HQMQuestImporter extends ImporterBase
 				}
 			}
 			
-			if(questLine.questList.contains(quest))
+			if(questLine.getQuests().contains(quest))
 			{
 				BQ_Standard.logger.log(Level.WARN, "Tried to add duplicate quest " + quest + " to quest line " + questLine.name);
 			} else
 			{
-				questLine.questList.add(quest);
+				QuestLineEntry qle = new QuestLineEntry(quest, JsonHelper.GetNumber(jQuest, "x", 0).intValue(), JsonHelper.GetNumber(jQuest, "y", 0).intValue());
+				questLine.questList.add(qle);
 			}
 		}
 		
-		questLine.BuildTree();
 		QuestDatabase.questLines.add(questLine);
 		QuestDatabase.UpdateClients();
 	}
