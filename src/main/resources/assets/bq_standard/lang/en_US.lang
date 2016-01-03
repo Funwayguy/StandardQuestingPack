@@ -16,7 +16,7 @@ bq_standard.btn.select_mob=Select Mob
 bq_standard.gui.amount=Amount
 bq_standard.gui.kill=Kill %s
 bq_standard.gui.location=Location: %s
-bq_standard.gui.range=Range: %s
+bq_standard.gui.distance=Distance: %s
 bq_standard.gui.dimension=Dimension: %s
 bq_standard.gui.found=Found!
 bq_standard.gui.undiscovered=Undiscovered
@@ -26,6 +26,10 @@ bq_standard.importer.hqm_bag.name=HQM Bag Importer
 bq_standard.importer.hqm_bag.desc=Imports HQM rewards bags exported in json format.
 bq_standard.importer.hqm_quest.name=HQM Quest Importer
 bq_standard.importer.hqm_quest.desc=Imports HQM quest lines exported in json format. Due to the strange nature in which HQM quests are indexed post export, errors may occur between quests with duplicate names or conditional unlocks.
+bq_standard.importer.nat_file.name=Native File Importer
+bq_standard.importer.nat_file.desc=Imports native quest database files and appends them onto the exisiting ones.
+bq_standard.importer.nat_url.name=Native Url Importer
+bq_standard.importer.nat_url.desc=Imports native quest databases from the internet and appends them onto the exisiting ones.
 
 item.bq_standard.loot_chest.name=Loot Chest
 

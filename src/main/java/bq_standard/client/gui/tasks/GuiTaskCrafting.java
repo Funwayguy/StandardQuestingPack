@@ -1,29 +1,28 @@
 package bq_standard.client.gui.tasks;
 
-import java.awt.Color;
-import org.lwjgl.opengl.GL11;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.util.EnumChatFormatting;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.utils.BigItemStack;
-import betterquesting.utils.RenderUtils;
+import bq_standard.client.gui.GuiScrollingItems;
 import bq_standard.tasks.TaskCrafting;
-import com.mojang.realmsclient.gui.ChatFormatting;
 
 public class GuiTaskCrafting extends GuiEmbedded
 {
+	GuiScrollingItems scrollList;
 	TaskCrafting task;
 	
 	public GuiTaskCrafting(TaskCrafting task, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
 		super(screen, posX, posY, sizeX, sizeY);
 		this.task = task;
-	}
-
-	@Override
-	public void drawGui(int mx, int my, float partialTick)
-	{
-		BigItemStack ttStack = null;
+		scrollList = new GuiScrollingItems(screen, sizeX, sizeY, posY, posX);
+		
+		if(task == null)
+		{
+			return;
+		}
 		
 		int[] progress = task.userProgress.get(screen.mc.thePlayer.getUniqueID());
 		progress = progress == null? new int[task.requiredItems.size()] : progress;
@@ -31,40 +30,30 @@ public class GuiTaskCrafting extends GuiEmbedded
 		for(int i = 0; i < task.requiredItems.size(); i++)
 		{
 			BigItemStack stack = task.requiredItems.get(i);
-			screen.mc.renderEngine.bindTexture(ThemeRegistry.curTheme().guiTexture());
-			GL11.glColor4f(1F, 1F, 1F, 1F);
-			GL11.glDisable(GL11.GL_DEPTH_TEST);
-			screen.drawTexturedModalRect(posX + (i * 18), posY, 0, 48, 18, 18);
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
-			int count = stack.stackSize - progress[i];
 			
-			RenderUtils.RenderItemStack(screen.mc, stack.getBaseStack(), posX + (i * 18) + 1, posY + 1, stack != null && stack.stackSize > 1? "" + count : "");
-			
-			if(count <= 0 || task.isComplete(screen.mc.thePlayer.getUniqueID()))
+			if(stack == null)
 			{
-				GL11.glDisable(GL11.GL_DEPTH_TEST);
-				screen.mc.fontRenderer.drawString("\u2714", posX + (i * 18) + 6, posY + 6, Color.BLACK.getRGB(), false);
-				screen.mc.fontRenderer.drawString("\u2714", posX + (i * 18) + 5, posY + 5, Color.GREEN.getRGB(), false);
-				GL11.glEnable(GL11.GL_DEPTH_TEST);
+				continue;
 			}
 			
-			if(screen.isWithin(mx, my, posX + (i * 18), posY, 16, 16, false))
+			String txt = stack.getBaseStack().getDisplayName() + "\n";
+			txt = txt + progress[i] + "/" + stack.stackSize;
+			
+			if(progress[i] >= stack.stackSize || task.isComplete(screen.mc.thePlayer.getUniqueID()))
 			{
-				ttStack = stack;
+				txt += "\n" + EnumChatFormatting.GREEN + I18n.format("betterquesting.tooltip.complete");
+			} else
+			{
+				txt += "\n" + EnumChatFormatting.RED + I18n.format("betterquesting.tooltip.incomplete");
 			}
+			
+			scrollList.addEntry(stack, txt);
 		}
-		
-		if(task.isComplete(screen.mc.thePlayer.getUniqueID()))
-		{
-			screen.mc.fontRenderer.drawString(ChatFormatting.BOLD + "COMPLETE", posX, posY + 24, Color.GREEN.getRGB(), false);
-		} else
-		{
-			screen.mc.fontRenderer.drawString(ChatFormatting.BOLD + "INCOMPLETE", posX, posY + 24, Color.RED.getRGB(), false);
-		}
-		
-		if(ttStack != null)
-		{
-			screen.DrawTooltip(ttStack.getBaseStack().getTooltip(screen.mc.thePlayer, screen.mc.gameSettings.advancedItemTooltips), mx, my);
-		}
+	}
+
+	@Override
+	public void drawGui(int mx, int my, float partialTick)
+	{
+		scrollList.drawScreen(mx, my, partialTick);
 	}
 }
