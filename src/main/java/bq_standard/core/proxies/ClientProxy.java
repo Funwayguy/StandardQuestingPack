@@ -1,9 +1,12 @@
 package bq_standard.core.proxies;
 
 import java.awt.Color;
+import cpw.mods.fml.relauncher.Side;
 import net.minecraft.util.ResourceLocation;
 import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.client.themes.ThemeStandard;
+import bq_standard.core.BQ_Standard;
+import bq_standard.network.PacketStandard;
 
 public class ClientProxy extends CommonProxy
 {
@@ -17,6 +20,8 @@ public class ClientProxy extends CommonProxy
 	public void registerHandlers()
 	{
 		super.registerHandlers();
+		
+    	BQ_Standard.instance.network.registerMessage(PacketStandard.HandlerClient.class, PacketStandard.class, 0, Side.CLIENT);
 	}
 	
 	@Override

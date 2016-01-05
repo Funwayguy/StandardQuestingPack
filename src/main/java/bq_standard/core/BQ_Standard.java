@@ -13,7 +13,6 @@ import bq_standard.importers.hqm.HQMQuestImporter;
 import bq_standard.importers.hqm.NativeFileImporter;
 import bq_standard.items.ItemLootChest;
 import bq_standard.network.GuiHandler;
-import bq_standard.network.PacketStandard;
 import bq_standard.rewards.RewardChoice;
 import bq_standard.rewards.RewardItem;
 import bq_standard.rewards.RewardScoreboard;
@@ -33,7 +32,6 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.relauncher.Side;
 
 @Mod(modid = BQ_Standard.MODID, version = BQ_Standard.VERSION, name = BQ_Standard.NAME, guiFactory = "bq_standard.handlers.ConfigGuiFactory")
 public class BQ_Standard
@@ -62,9 +60,6 @@ public class BQ_Standard
     	
     	ConfigHandler.config = new Configuration(event.getSuggestedConfigurationFile(), true);
     	ConfigHandler.initConfigs();
-    	
-    	network.registerMessage(PacketStandard.HandlerClient.class, PacketStandard.class, 0, Side.CLIENT);
-    	network.registerMessage(PacketStandard.HandlerServer.class, PacketStandard.class, 1, Side.SERVER);
     	
     	proxy.registerHandlers();
     	
