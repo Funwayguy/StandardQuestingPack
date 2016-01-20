@@ -6,7 +6,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
-import net.minecraft.entity.monster.EntityZombie;
+import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.MathHelper;
 import org.lwjgl.opengl.GL11;
@@ -14,27 +14,23 @@ import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.editors.json.GuiJsonEntitySelection;
 import betterquesting.client.gui.editors.json.GuiJsonObject;
 import betterquesting.client.gui.misc.GuiButtonQuesting;
-import betterquesting.client.gui.misc.GuiNumberField;
-import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.utils.JsonHelper;
 import betterquesting.utils.NBTConverter;
 import betterquesting.utils.RenderUtils;
 import com.google.gson.JsonObject;
 
-public class GuiHuntEditor extends GuiQuesting
+public class GuiMeetingEditor extends GuiQuesting
 {
-	GuiNumberField numField;
-	int amount = 1;
-	String idName = "Zombie";
+	String idName = "Villager";
 	JsonObject data;
 	JsonObject lastEdit = null;
 	Entity entity;
 	
-	public GuiHuntEditor(GuiScreen parent, JsonObject data)
+	public GuiMeetingEditor(GuiScreen parent, JsonObject data)
 	{
-		super(parent, "bq_standard.title.edit_hunt");
+		super(parent, "bq_standard.title.edit_meeting");
 		this.data = data;
-		idName = JsonHelper.GetString(data, "target", "Zombie");
+		idName = JsonHelper.GetString(data, "target", "Villager");
 	}
 	
 	@Override
@@ -45,26 +41,24 @@ public class GuiHuntEditor extends GuiQuesting
 		
 		if(lastEdit != null)
 		{
-			data.addProperty("target", JsonHelper.GetString(lastEdit, "id", "Zombie"));
+			data.addProperty("target", JsonHelper.GetString(lastEdit, "id", "Villager"));
 			data.add("targetNBT", lastEdit);
 			
 			lastEdit = null;
 		}
 		
-		entity = EntityList.createEntityByName(JsonHelper.GetString(data, "target", "Zombie"), mc.theWorld);
+		entity = EntityList.createEntityByName(JsonHelper.GetString(data, "target", "Villager"), mc.theWorld);
 		
 		if(entity == null)
 		{
-			entity = new EntityZombie(mc.theWorld);
-			data.addProperty("target", "Zombie");
+			entity = new EntityVillager(mc.theWorld);
+			data.addProperty("target", "Villager");
 			data.add("targetNBT", new JsonObject());
 		} else
 		{
 			entity.readFromNBT(NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(data, "targetNBT"), new NBTTagCompound()));
 		}
 		
-		numField = new GuiNumberField(mc.fontRenderer, guiLeft + sizeX/2 + 1, guiTop + sizeY/2 + 1, 98, 18);
-		numField.setText("" + JsonHelper.GetNumber(data, "required", 1).intValue());
 		this.buttonList.add(new GuiButtonQuesting(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 20, 200, 20, I18n.format("bq_standard.btn.select_mob")));
 		this.buttonList.add(new GuiButtonQuesting(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 40, 200, 20, I18n.format("betterquesting.btn.advanced")));
 	}
@@ -102,10 +96,6 @@ public class GuiHuntEditor extends GuiQuesting
 			
 			GL11.glPopMatrix();
 		}
-		
-		String txt = I18n.format("bq_standard.gui.amount") + ": ";
-		mc.fontRenderer.drawString(txt, guiLeft + sizeX/2 - mc.fontRenderer.getStringWidth(txt), guiTop + sizeY/2 + 6, ThemeRegistry.curTheme().textColor().getRGB());
-		numField.drawTextBox();
 	}
 	
 	@Override
@@ -127,27 +117,4 @@ public class GuiHuntEditor extends GuiQuesting
 			mc.displayGuiScreen(new GuiJsonObject(this, data));
 		}
 	}
-	
-    /**
-     * Called when the mouse is clicked.
-     */
-	@Override
-    protected void mouseClicked(int mx, int my, int click)
-    {
-		super.mouseClicked(mx, my, click);
-		
-		numField.mouseClicked(mx, my, click);
-    }
-
-    /**
-     * Fired when a key is typed. This is the equivalent of KeyListener.keyTyped(KeyEvent e).
-     */
-	@Override
-    protected void keyTyped(char character, int keyCode)
-    {
-        super.keyTyped(character, keyCode);
-        
-        numField.textboxKeyTyped(character, keyCode);
-		data.addProperty("required", numField.getNumber().intValue());
-    }
 }

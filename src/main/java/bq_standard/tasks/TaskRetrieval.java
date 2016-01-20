@@ -12,6 +12,7 @@ import net.minecraftforge.fluids.FluidStack;
 import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
+import betterquesting.quests.QuestDatabase;
 import betterquesting.quests.tasks.TaskBase;
 import betterquesting.quests.tasks.advanced.IContainerTask;
 import betterquesting.utils.BigItemStack;
@@ -41,7 +42,7 @@ public class TaskRetrieval extends TaskBase implements IContainerTask
 	@Override
 	public void Update(EntityPlayer player)
 	{
-		if(!consume && player.ticksExisted%200 == 0) // Every ~10 seconds auto detect this quest as long as it isn't consuming items
+		if(!consume && player.ticksExisted%200 == 0 && !QuestDatabase.editMode) // Every ~10 seconds auto detect this quest as long as it isn't consuming items
 		{
 			Detect(player);
 		}
@@ -159,7 +160,7 @@ public class TaskRetrieval extends TaskBase implements IContainerTask
 		ignoreNBT = JsonHelper.GetBoolean(json, "ignoreNBT", ignoreNBT);
 		consume = JsonHelper.GetBoolean(json, "consume", true);
 		
-		requiredItems.clear();
+		requiredItems = new ArrayList<BigItemStack>();
 		for(JsonElement entry : JsonHelper.GetArray(json, "requiredItems"))
 		{
 			if(entry == null || !entry.isJsonObject())
@@ -178,7 +179,7 @@ public class TaskRetrieval extends TaskBase implements IContainerTask
 			}
 		}
 		
-		userProgress.clear();
+		userProgress = new HashMap<UUID,int[]>();
 		for(JsonElement entry : JsonHelper.GetArray(json, "userProgress"))
 		{
 			if(entry == null || !entry.isJsonObject())
@@ -223,8 +224,8 @@ public class TaskRetrieval extends TaskBase implements IContainerTask
 	@Override
 	public void ResetAllProgress()
 	{
-		completeUsers.clear();
-		userProgress.clear();
+		completeUsers = new ArrayList<UUID>();
+		userProgress = new HashMap<UUID,int[]>();
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package bq_standard.tasks;
 
+import java.util.ArrayList;
 import java.util.UUID;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MovingObjectPosition;
@@ -7,6 +8,7 @@ import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.util.Vec3;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
+import betterquesting.quests.QuestDatabase;
 import betterquesting.quests.tasks.TaskBase;
 import betterquesting.utils.JsonHelper;
 import bq_standard.client.gui.tasks.GuiTaskLocation;
@@ -32,7 +34,7 @@ public class TaskLocation extends TaskBase
 	@Override
 	public void Update(EntityPlayer player)
 	{
-		if(player.ticksExisted%60 != 0) // Only auto-detect every 3 seconds
+		if(player.ticksExisted%100 != 0 && !QuestDatabase.editMode) // Only auto-detect every 5 seconds
 		{
 			return;
 		}
@@ -74,6 +76,8 @@ public class TaskLocation extends TaskBase
 	@Override
 	public void writeToJson(JsonObject json)
 	{
+		super.writeToJson(json);
+		
 		json.addProperty("name", name);
 		json.addProperty("posX", x);
 		json.addProperty("posY", y);
@@ -82,13 +86,13 @@ public class TaskLocation extends TaskBase
 		json.addProperty("range", range);
 		json.addProperty("visible", visible);
 		json.addProperty("hideInfo", hideInfo);
-		
-		super.writeToJson(json);
 	}
 	
 	@Override
 	public void readFromJson(JsonObject json)
 	{
+		super.readFromJson(json);
+		
 		name = JsonHelper.GetString(json, "name", "New Location");
 		x = JsonHelper.GetNumber(json, "posX", 0).intValue();
 		y = JsonHelper.GetNumber(json, "posY", 0).intValue();
@@ -108,7 +112,7 @@ public class TaskLocation extends TaskBase
 	@Override
 	public void ResetAllProgress()
 	{
-		completeUsers.clear();
+		completeUsers = new ArrayList<UUID>();
 	}
 
 	@Override

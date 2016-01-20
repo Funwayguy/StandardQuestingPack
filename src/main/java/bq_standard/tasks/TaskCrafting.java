@@ -114,7 +114,7 @@ public class TaskCrafting extends AdvancedTaskBase
 		partialMatch = JsonHelper.GetBoolean(json, "partialMatch", partialMatch);
 		ignoreNBT = JsonHelper.GetBoolean(json, "ignoreNBT", ignoreNBT);
 		
-		requiredItems.clear();
+		requiredItems = new ArrayList<BigItemStack>();
 		for(JsonElement entry : JsonHelper.GetArray(json, "requiredItems"))
 		{
 			if(entry == null || !entry.isJsonObject())
@@ -139,7 +139,7 @@ public class TaskCrafting extends AdvancedTaskBase
 			}
 		}
 		
-		userProgress.clear();
+		userProgress = new HashMap<UUID,int[]>();
 		for(JsonElement entry : JsonHelper.GetArray(json, "userProgress"))
 		{
 			if(entry == null || !entry.isJsonObject())
@@ -184,8 +184,8 @@ public class TaskCrafting extends AdvancedTaskBase
 	@Override
 	public void ResetAllProgress()
 	{
-		completeUsers.clear();
-		userProgress.clear();
+		completeUsers = new ArrayList<UUID>();
+		userProgress = new HashMap<UUID, int[]>();
 	}
 
 	@Override

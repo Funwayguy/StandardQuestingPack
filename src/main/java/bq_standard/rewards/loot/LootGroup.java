@@ -50,7 +50,7 @@ public class LootGroup
 		weight = JsonHelper.GetNumber(json, "weight", 1).intValue();
 		weight = Math.max(1, weight);
 		
-		lootEntry.clear();
+		lootEntry = new ArrayList<LootEntry>();
 		JsonArray jRew = JsonHelper.GetArray(json, "rewards");
 		for(JsonElement entry : jRew)
 		{
@@ -95,7 +95,7 @@ public class LootGroup
 			weight = JsonHelper.GetNumber(json, "weight", 0).intValue();
 			weight = Math.max(1, weight);
 			
-			items.clear();
+			items = new ArrayList<BigItemStack>();
 			JsonArray jItm = JsonHelper.GetArray(json, "items");
 			for(JsonElement entry : jItm)
 			{

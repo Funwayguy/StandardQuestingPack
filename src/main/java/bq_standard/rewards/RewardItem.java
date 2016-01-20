@@ -52,7 +52,7 @@ public class RewardItem extends RewardBase
 	@Override
 	public void readFromJson(JsonObject json)
 	{
-		items.clear();
+		items = new ArrayList<BigItemStack>();
 		for(JsonElement entry : JsonHelper.GetArray(json, "rewards"))
 		{
 			if(entry == null || !entry.isJsonObject())

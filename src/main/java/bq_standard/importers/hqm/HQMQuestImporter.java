@@ -49,7 +49,7 @@ public class HQMQuestImporter extends ImporterBase
 	@SideOnly(Side.CLIENT)
 	public static void StartImport()
 	{
-		idMap.clear(); // Reset ID map in preparation
+		idMap = new HashMap<String,QuestInstance>(); // Reset ID map in preparation
 		JFileChooser fc = new JFileChooser();
 		fc.setDialogTitle("Import HQM Quest Line");
 		fc.setCurrentDirectory(new File("."));

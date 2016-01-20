@@ -4,12 +4,15 @@ bq_standard.task.hunt=Mob Hunt Task
 bq_standard.task.scoreboard=Scoreboard Task
 bq_standard.task.location=Location Task
 bq_standard.task.fluid=Fluid Task
+bq_standard.task.meeting=Meeting Task
 
 bq_standard.reward.choice=Choice Reward
 bq_standard.reward.item=Item Reward
 bq_standard.reward.scoreboard=Scoreboard Reward
+bq_standard.reward.command=Command Reward
 
-bq_standard.title.edit_hut=Edit Task Hunt
+bq_standard.title.edit_hunt=Edit Task Hunt
+bq_standard.title.edit_meeting=Edit Task Meeting
 
 bq_standard.btn.select_mob=Select Mob
 
@@ -21,6 +24,7 @@ bq_standard.gui.dimension=Dimension: %s
 bq_standard.gui.found=Found!
 bq_standard.gui.undiscovered=Undiscovered
 bq_standard.gui.condition=Condition: %s
+bq_standard.gui.meet=Meet %s
 
 bq_standard.importer.hqm_bag.name=HQM Bag Importer
 bq_standard.importer.hqm_bag.desc=Imports HQM rewards bags exported in json format.

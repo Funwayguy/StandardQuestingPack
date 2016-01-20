@@ -15,6 +15,7 @@ import net.minecraftforge.fluids.IFluidContainerItem;
 import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
+import betterquesting.quests.QuestDatabase;
 import betterquesting.quests.tasks.TaskBase;
 import betterquesting.quests.tasks.advanced.IContainerTask;
 import betterquesting.utils.JsonHelper;
@@ -41,7 +42,7 @@ public class TaskFluid extends TaskBase implements IContainerTask
 	@Override
 	public void Update(EntityPlayer player)
 	{
-		if(!consume && player.ticksExisted%200 == 0) // Every ~10 seconds auto detect this quest as long as it isn't consuming items
+		if(!consume && player.ticksExisted%100 == 0 && !QuestDatabase.editMode) // Every ~5 seconds auto detect this quest as long as it isn't consuming items
 		{
 			Detect(player);
 		}
@@ -165,71 +166,6 @@ public class TaskFluid extends TaskBase implements IContainerTask
 		}
 	}
 	
-	public DrainData drainFluidContents(ItemStack container, int amount, boolean doDrain)
-	{
-		if(container == null || amount <= 0)
-		{
-			return new DrainData(null, container, null);
-		}
-		
-		if(container.getItem() instanceof IFluidContainerItem)
-		{
-			IFluidContainerItem fCon = (IFluidContainerItem)container.getItem();
-			
-			return new DrainData(fCon.drain(container, amount, doDrain), container, null);
-		} else
-		{
-			FluidStack fluid = FluidContainerRegistry.getFluidForFilledItem(container);
-			ItemStack empty = FluidContainerRegistry.drainFluidContainer(container);
-			int tmp1 = fluid.amount;
-			int tmp2 = 1;
-			
-			while(fluid.amount < amount && tmp2 < (empty == null? container.stackSize : Math.min(container.stackSize, empty.getMaxStackSize())));
-			{
-				tmp2++;
-				fluid.amount += tmp1;
-			}
-			
-			if(!doDrain)
-			{
-				container = container.copy();
-			}
-			
-			container.stackSize -= tmp2;
-			empty.stackSize = tmp2;
-			
-			return new DrainData(fluid, container, empty);
-		}
-	}
-	
-	/**
-	 * Helper data container for draining containers
-	 */
-	static class DrainData
-	{
-		/**
-		 * The fluid drained from the container
-		 */
-		public final FluidStack fluid;
-		
-		/**
-		 * The resulting container (if any) post drain
-		 */
-		public final ItemStack filled;
-		
-		/**
-		 * The leftover emptied containers (if any)
-		 */
-		public final ItemStack emptied;
-		
-		public DrainData(FluidStack fluid, ItemStack container, ItemStack emptied)
-		{
-			this.fluid = fluid;
-			this.filled = container;
-			this.emptied = emptied;
-		}
-	}
-	
 	@Override
 	public void writeToJson(JsonObject json)
 	{
@@ -267,7 +203,7 @@ public class TaskFluid extends TaskBase implements IContainerTask
 		
 		consume = JsonHelper.GetBoolean(json, "consume", true);
 		
-		requiredFluids.clear();
+		requiredFluids = new ArrayList<FluidStack>();
 		for(JsonElement entry : JsonHelper.GetArray(json, "requiredFluids"))
 		{
 			if(entry == null || !entry.isJsonObject())
@@ -286,7 +222,7 @@ public class TaskFluid extends TaskBase implements IContainerTask
 			}
 		}
 		
-		userProgress.clear();
+		userProgress = new HashMap<UUID, int[]>();
 		for(JsonElement entry : JsonHelper.GetArray(json, "userProgress"))
 		{
 			if(entry == null || !entry.isJsonObject())
@@ -331,8 +267,8 @@ public class TaskFluid extends TaskBase implements IContainerTask
 	@Override
 	public void ResetAllProgress()
 	{
-		completeUsers.clear();
-		userProgress.clear();
+		completeUsers = new ArrayList<UUID>();
+		userProgress = new HashMap<UUID,int[]>();
 	}
 
 	@Override

@@ -16,6 +16,7 @@ import com.google.gson.JsonObject;
 public class RewardScoreboard extends RewardBase
 {
 	public String score = "Reputation";
+	public boolean relative = true;
 	public int value = 1;
 	
 	@Override
@@ -54,7 +55,13 @@ public class RewardScoreboard extends RewardBase
 		
 		Score s = board.func_96529_a(player.getCommandSenderName(), scoreObj);
 		
-		s.increseScore(value);
+		if(relative)
+		{
+			s.increseScore(value);
+		} else
+		{
+			s.setScorePoints(value);
+		}
 	}
 	
 	@Override
@@ -62,6 +69,7 @@ public class RewardScoreboard extends RewardBase
 	{
 		score = JsonHelper.GetString(json, "score", "Reputation");
 		value = JsonHelper.GetNumber(json, "value", 1).intValue();
+		relative = JsonHelper.GetBoolean(json, "relative", true);
 	}
 	
 	@Override
@@ -69,6 +77,7 @@ public class RewardScoreboard extends RewardBase
 	{
 		json.addProperty("score", score);
 		json.addProperty("value", value);
+		json.addProperty("relative", relative);
 	}
 
 	@Override

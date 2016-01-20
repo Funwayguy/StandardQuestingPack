@@ -10,14 +10,14 @@ import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.utils.RenderUtils;
-import bq_standard.tasks.TaskHunt;
+import bq_standard.tasks.TaskMeeting;
 
-public class GuiTaskHunt extends GuiEmbedded
+public class GuiTaskMeeting extends GuiEmbedded
 {
-	TaskHunt task;
+	TaskMeeting task;
 	Entity target;
 	
-	public GuiTaskHunt(TaskHunt task, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public GuiTaskMeeting(TaskMeeting task, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
 		super(screen, posX, posY, sizeX, sizeY);
 		this.task = task;
@@ -63,10 +63,8 @@ public class GuiTaskHunt extends GuiEmbedded
 			}
 		}
 		
-		Integer progress = task.userProgress.get(screen.mc.thePlayer.getUniqueID());
-		progress = progress == null? 0 : progress;
 		String tnm = !task.ignoreNBT && target != null? target.getCommandSenderName() : task.idName;
-		String txt = I18n.format("bq_standard.gui.kill", tnm) + " " + progress + "/" + task.required;
+		String txt = I18n.format("bq_standard.gui.meet", tnm);
 		screen.mc.fontRenderer.drawString(txt, posX + sizeX/2 - screen.mc.fontRenderer.getStringWidth(txt)/2, posY, ThemeRegistry.curTheme().textColor().getRGB());
 	}
 	

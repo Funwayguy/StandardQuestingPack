@@ -6,8 +6,11 @@ import java.util.Random;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.common.ChestGenHooks;
+import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.event.world.WorldEvent;
+import betterquesting.commands.BQ_Commands;
 import betterquesting.core.BQ_Settings;
 import betterquesting.utils.BigItemStack;
 import betterquesting.utils.JsonHelper;
@@ -125,7 +128,7 @@ public class LootRegistry
 	
 	public static void readFromJson(JsonObject json)
 	{
-		lootGroups.clear();
+		lootGroups = new ArrayList<LootGroup>();
 		for(JsonElement entry : JsonHelper.GetArray(json, "groups"))
 		{
 			if(entry == null || !entry.isJsonObject())
@@ -204,7 +207,36 @@ public class LootRegistry
 	{
 		if(!event.player.worldObj.isRemote && event.player instanceof EntityPlayerMP)
 		{
-			
+			sendDatabase((EntityPlayerMP)event.player);
+		}
+	}
+	
+	@SubscribeEvent
+	public void onCommand(CommandEvent event)
+	{
+		if(!event.sender.getEntityWorld().isRemote && event.command instanceof BQ_Commands && event.parameters.length == 1)
+		{
+			if(event.parameters[0].equalsIgnoreCase("make_default"))
+			{
+				JsonObject jsonQ = new JsonObject();
+				writeToJson(jsonQ);
+				JsonIO.WriteToFile(new File(MinecraftServer.getServer().getFile("config/betterquesting/"), "DefaultLoot.json"), jsonQ);
+				event.sender.addChatMessage(new ChatComponentText("Loot database set as global default"));
+			} else if(event.parameters[0].equalsIgnoreCase("load_default"))
+			{
+		    	File f1 = new File(BQ_Settings.defaultDir, "DefaultLoot.json");
+				JsonObject j1 = new JsonObject();
+				
+				if(f1.exists())
+				{
+					j1 = JsonIO.ReadFromFile(f1);
+					readFromJson(j1);
+					event.sender.addChatMessage(new ChatComponentText("Reloaded default loot database"));
+				} else
+				{
+					event.sender.addChatMessage(new ChatComponentText("No default loot currently set"));
+				}
+			}
 		}
 	}
 }

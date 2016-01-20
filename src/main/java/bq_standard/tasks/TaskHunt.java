@@ -1,5 +1,6 @@
 package bq_standard.tasks;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -8,12 +9,15 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.quests.tasks.advanced.AdvancedTaskBase;
+import betterquesting.utils.ItemComparison;
 import betterquesting.utils.JsonHelper;
+import betterquesting.utils.NBTConverter;
 import bq_standard.client.gui.editors.GuiHuntEditor;
 import bq_standard.client.gui.tasks.GuiTaskHunt;
 import bq_standard.core.BQ_Standard;
@@ -28,7 +32,13 @@ public class TaskHunt extends AdvancedTaskBase
 	public HashMap<UUID, Integer> userProgress = new HashMap<UUID, Integer>();
 	public String idName = "Zombie";
 	public int required = 1;
-	public Entity target; // This is only used for display purposes
+	public boolean ignoreNBT = true;
+	public boolean subtypes = true;
+	
+	/**
+	 * NBT representation of the intended target. Used only for NBT comparison checks
+	 */
+	public NBTTagCompound targetTags;
 	
 	@Override
 	public String getUnlocalisedName()
@@ -41,7 +51,7 @@ public class TaskHunt extends AdvancedTaskBase
 	{
 		EntityPlayer player = (EntityPlayer)source.getEntity();
 		
-		if(player == null || this.isComplete(player.getUniqueID()))
+		if(player == null || entity == null || this.isComplete(player.getUniqueID()))
 		{
 			return;
 		}
@@ -49,16 +59,35 @@ public class TaskHunt extends AdvancedTaskBase
 		Integer progress = userProgress.get(player.getUniqueID());
 		progress = progress == null? 0 : progress;
 		
-		if(EntityList.getEntityString(entity).equals(idName))
+		Class<? extends Entity> subject = entity.getClass();
+		@SuppressWarnings("unchecked")
+		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.stringToClassMapping.get(idName);
+		
+		if(subject == null || target == null)
 		{
-			progress++;
-			
-			userProgress.put(player.getUniqueID(), progress);
-			
-			if(progress >= required)
-			{
-				this.completeUsers.add(player.getUniqueID());
-			}
+			return; // Missing necessary data
+		} else if(subtypes && !target.isAssignableFrom(subject))
+		{
+			return; // This is not the intended target or sub-type
+		} else if(!subtypes && !EntityList.getEntityString(entity).equals(idName))
+		{
+			return; // This isn't the exact target required
+		}
+		
+		NBTTagCompound subjectTags = new NBTTagCompound();
+		entity.writeToNBTOptional(subjectTags);
+		if(!ignoreNBT && !ItemComparison.CompareNBTTag(targetTags, subjectTags, true))
+		{
+			return;
+		}
+		
+		progress++;
+		
+		userProgress.put(player.getUniqueID(), progress);
+		
+		if(progress >= required)
+		{
+			this.completeUsers.add(player.getUniqueID());
 		}
 	}
 	
@@ -80,6 +109,9 @@ public class TaskHunt extends AdvancedTaskBase
 		
 		json.addProperty("target", idName);
 		json.addProperty("required", required);
+		json.addProperty("subtypes", subtypes);
+		json.addProperty("ignoreNBT", ignoreNBT);
+		json.add("targetNBT", NBTConverter.NBTtoJSON_Compound(targetTags, new JsonObject()));
 		
 		JsonArray progArray = new JsonArray();
 		for(Entry<UUID,Integer> entry : userProgress.entrySet())
@@ -99,8 +131,11 @@ public class TaskHunt extends AdvancedTaskBase
 		
 		idName = JsonHelper.GetString(json, "target", "Zombie");
 		required = JsonHelper.GetNumber(json, "required", 1).intValue();
+		subtypes = JsonHelper.GetBoolean(json, "subtypes", true);
+		ignoreNBT = JsonHelper.GetBoolean(json, "ignoreNBT", true);
+		targetTags = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "targetNBT"), new NBTTagCompound());
 		
-		userProgress.clear();
+		userProgress = new HashMap<UUID,Integer>();
 		for(JsonElement entry : JsonHelper.GetArray(json, "userProgress"))
 		{
 			if(entry == null || !entry.isJsonObject())
@@ -142,8 +177,8 @@ public class TaskHunt extends AdvancedTaskBase
 	@Override
 	public void ResetAllProgress()
 	{
-		completeUsers.clear();
-		userProgress.clear();
+		completeUsers = new ArrayList<UUID>();
+		userProgress = new HashMap<UUID,Integer>();
 	}
 
 	@Override
