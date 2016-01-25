@@ -1,8 +1,11 @@
 package bq_standard.client.gui;
 
 import java.util.ArrayList;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.oredict.OreDictionary;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.GuiQuesting;
@@ -88,10 +91,31 @@ public class GuiScrollingItems extends GuiBQScrolling
 		int y = posY/2;
 		parent.drawTexturedModalRect(x, y + t/2, 0, 48 + t/2, 18, h);
 		
+		ItemStack tmpStack = entry.stack.getBaseStack();
+		
+		if(entry.stack.oreDict != null)
+		{
+			ArrayList<ItemStack> ores = OreDictionary.getOres(entry.stack.oreDict);
+			
+			if(ores != null && ores.size() > 0)
+			{
+				tmpStack = ores.get((int)(Minecraft.getSystemTime()/16000)%ores.size()).copy();
+				tmpStack.setItemDamage((int)(Minecraft.getSystemTime()/1000)%16);
+				tmpStack.setTagCompound(entry.stack.GetTagCompound());
+			}
+		}
+		
 		if(!clipped)
 		{
 			GL11.glEnable(GL11.GL_DEPTH_TEST);
-			RenderUtils.RenderItemStack(parent.mc, entry.stack.getBaseStack(), x + 1, y + 1, entry.stack.stackSize > 0? "" : "" + entry.stack.stackSize);
+			
+			try
+			{
+				RenderUtils.RenderItemStack(parent.mc, tmpStack, x + 1, y + 1, entry.stack.stackSize > 0? "" : "" + entry.stack.stackSize);
+			} catch(Exception e)
+			{
+				
+			}
 		}
 		GL11.glPopMatrix();
 		
@@ -101,7 +125,7 @@ public class GuiScrollingItems extends GuiBQScrolling
 			
 			if(mx >= left + 2 && mx < left + 34 && my >= posY + 2 && my < posY + 34)
 			{
-				toolTip = (ArrayList<String>)entry.stack.getBaseStack().getTooltip(parent.mc.thePlayer, parent.mc.gameSettings.advancedItemTooltips);
+				toolTip = (ArrayList<String>)tmpStack.getTooltip(parent.mc.thePlayer, parent.mc.gameSettings.advancedItemTooltips);
 			}
 		}
 	}
