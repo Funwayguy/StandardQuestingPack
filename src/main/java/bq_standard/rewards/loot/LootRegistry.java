@@ -26,7 +26,8 @@ import cpw.mods.fml.common.gameevent.PlayerEvent;
 
 public class LootRegistry
 {
-	static ArrayList<LootGroup> lootGroups = new ArrayList<LootGroup>();
+	public static ArrayList<LootGroup> lootGroups = new ArrayList<LootGroup>();
+	public static boolean updateUI = false;
 	
 	public static void registerGroup(LootGroup group)
 	{
@@ -89,11 +90,6 @@ public class LootRegistry
 		return stacks;
 	}
 	
-	public static ArrayList<LootGroup> getGroups()
-	{
-		return lootGroups;
-	}
-	
 	public static void updateClients()
 	{
 		NBTTagCompound tags = new NBTTagCompound();
@@ -141,6 +137,8 @@ public class LootRegistry
 			
 			lootGroups.add(group);
 		}
+		
+		updateUI = true;
 	}
 	
 	static File worldDir = null;

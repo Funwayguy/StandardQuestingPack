@@ -81,7 +81,7 @@ public class TaskRetrieval extends TaskBase implements IContainerTask
 
 				int remaining = rStack.stackSize - progress[j];
 				
-				if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch))
+				if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.oreDict, rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
 				{
 					if(consume)
 					{
@@ -260,7 +260,7 @@ public class TaskRetrieval extends TaskBase implements IContainerTask
 				continue;
 			}
 			
-			if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch))
+			if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.oreDict, rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
 			{
 				return true;
 			}
@@ -304,7 +304,7 @@ public class TaskRetrieval extends TaskBase implements IContainerTask
 
 			int remaining = rStack.stackSize - progress[j];
 			
-			if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch))
+			if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.oreDict, rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
 			{
 				int removed = Math.min(stack.stackSize, remaining);
 				stack.stackSize -= removed;

@@ -9,6 +9,7 @@ import net.minecraft.entity.EntityList;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.MathHelper;
+import org.apache.logging.log4j.Level;
 import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.editors.json.GuiJsonEntitySelection;
@@ -19,6 +20,7 @@ import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.utils.JsonHelper;
 import betterquesting.utils.NBTConverter;
 import betterquesting.utils.RenderUtils;
+import bq_standard.core.BQ_Standard;
 import com.google.gson.JsonObject;
 
 public class GuiHuntEditor extends GuiQuesting
@@ -60,7 +62,13 @@ public class GuiHuntEditor extends GuiQuesting
 			data.add("targetNBT", new JsonObject());
 		} else
 		{
-			entity.readFromNBT(NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(data, "targetNBT"), new NBTTagCompound()));
+			try
+			{
+				entity.readFromNBT(NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(data, "targetNBT"), new NBTTagCompound()));
+			} catch(Exception e)
+			{
+				BQ_Standard.logger.log(Level.ERROR, "An error occured while loading entity in UI", e);
+			}
 		}
 		
 		numField = new GuiNumberField(mc.fontRenderer, guiLeft + sizeX/2 + 1, guiTop + sizeY/2 + 1, 98, 18);

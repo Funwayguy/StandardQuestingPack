@@ -50,7 +50,7 @@ public class TaskCrafting extends AdvancedTaskBase
 				continue;
 			}
 			
-			if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch))
+			if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.oreDict, rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
 			{
 				progress[i] += stack.stackSize;
 			}
@@ -72,7 +72,37 @@ public class TaskCrafting extends AdvancedTaskBase
 	@Override
 	public void onItemSmelted(EntityPlayer player, ItemStack stack)
 	{
+		int[] progress = userProgress.get(player.getUniqueID());
+		progress = progress == null || progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
 		
+		boolean flag = true;
+		
+		for(int i = 0; i < requiredItems.size(); i++)
+		{
+			BigItemStack rStack = requiredItems.get(i);
+			
+			if(progress[i] >= rStack.stackSize)
+			{
+				continue;
+			}
+			
+			if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.oreDict, rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
+			{
+				progress[i] += stack.stackSize;
+			}
+			
+			if(progress[i] < rStack.stackSize)
+			{
+				flag = false;
+			}
+		}
+		
+		userProgress.put(player.getUniqueID(), progress);
+		
+		if(flag)
+		{
+			this.completeUsers.add(player.getUniqueID());
+		}
 	}
 	
 	@Override

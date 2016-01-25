@@ -5,11 +5,13 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.util.MathHelper;
+import org.apache.logging.log4j.Level;
 import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.utils.RenderUtils;
+import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskHunt;
 
 public class GuiTaskHunt extends GuiEmbedded
@@ -58,8 +60,14 @@ public class GuiTaskHunt extends GuiEmbedded
 		{
 			if(EntityList.stringToClassMapping.containsKey(task.idName))
 			{
-				target = EntityList.createEntityByName(task.idName, screen.mc.theWorld);
-				target.readFromNBT(task.targetTags);
+				try
+				{
+					target = EntityList.createEntityByName(task.idName, screen.mc.theWorld);
+					target.readFromNBT(task.targetTags);
+				} catch(Exception e)
+				{
+					BQ_Standard.logger.log(Level.ERROR, "An error occured while loading entity in UI", e);
+				}
 			}
 		}
 		

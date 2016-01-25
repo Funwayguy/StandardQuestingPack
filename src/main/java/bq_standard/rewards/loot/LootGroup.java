@@ -90,7 +90,7 @@ public class LootGroup
 		public int weight = 1;
 		public ArrayList<BigItemStack> items = new ArrayList<BigItemStack>();
 		
-		void readFromJson(JsonObject json)
+		public void readFromJson(JsonObject json)
 		{
 			weight = JsonHelper.GetNumber(json, "weight", 0).intValue();
 			weight = Math.max(1, weight);
@@ -113,7 +113,7 @@ public class LootGroup
 			}
 		}
 		
-		void writeToJson(JsonObject json)
+		public void writeToJson(JsonObject json)
 		{
 			json.addProperty("weight", weight);
 			
