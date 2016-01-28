@@ -1,10 +1,10 @@
 package bq_standard.client.gui.editors;
 
+import java.text.DecimalFormat;
 import java.util.List;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
 import org.lwjgl.input.Mouse;
@@ -14,10 +14,7 @@ import betterquesting.client.gui.editors.json.GuiJsonObject;
 import betterquesting.client.gui.misc.GuiButtonQuesting;
 import betterquesting.client.gui.misc.GuiNumberField;
 import betterquesting.client.themes.ThemeRegistry;
-import betterquesting.utils.NBTConverter;
 import betterquesting.utils.RenderUtils;
-import bq_standard.core.BQ_Standard;
-import bq_standard.network.PacketStandard;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootGroup.LootEntry;
 import bq_standard.rewards.loot.LootRegistry;
@@ -52,7 +49,6 @@ public class GuiLootEntryEditor extends GuiQuesting
 		if(lastEdit != null && selected != null)
 		{
 			selected.readFromJson(lastEdit);
-			SendChanges();
 		}
 		
 		lastEdit = null;
@@ -61,7 +57,7 @@ public class GuiLootEntryEditor extends GuiQuesting
 		maxRows = (sizeY - 80)/20;
 		int btnWidth = Math.min(sizeX/2 - 24, 198);
 		
-		lineWeight = new GuiNumberField(mc.fontRenderer, guiLeft + sizeX/4*3 - (btnWidth/2 + 4) + 1, height/2 - 19, btnWidth + 8 - 2, 18);
+		lineWeight = new GuiNumberField(mc.fontRenderer, guiLeft + sizeX/4*3 - (btnWidth/2 + 4) + 1, height/2 - 19, btnWidth/2 + 8 - 2, 18);
 		lineWeight.setMaxStringLength(Integer.MAX_VALUE);
 		 
 		this.buttonList.add(new GuiButtonQuesting(1, guiLeft + sizeX/4 - (btnWidth/2 + 4), guiTop + sizeY - 48, btnWidth, 20, I18n.format("betterquesting.btn.new")));
@@ -117,17 +113,12 @@ public class GuiLootEntryEditor extends GuiQuesting
 		mc.fontRenderer.drawString(EnumChatFormatting.BOLD + group.name, guiLeft + sizeX/4*3 - (btnWidth/2 + 4), height/2 - 52, ThemeRegistry.curTheme().textColor().getRGB(), false);
 		mc.fontRenderer.drawString(I18n.format("bq_standard.gui.weight"), guiLeft + sizeX/4*3 - (btnWidth/2 + 4), height/2 - 32, ThemeRegistry.curTheme().textColor().getRGB(), false);
 		
+		if(selected != null)
+		{
+			mc.fontRenderer.drawString("" + new DecimalFormat("#.##").format((float)selected.weight/(float)group.getTotalWeight() * 100F) + "%", guiLeft + sizeX/4*3 + 8, height/2 - 12, ThemeRegistry.curTheme().textColor().getRGB(), false);
+		}
+		
 		lineWeight.drawTextBox();
-	}
-	
-	public void SendChanges()
-	{
-		JsonObject json = new JsonObject();
-		LootRegistry.writeToJson(json);
-		NBTTagCompound tags = new NBTTagCompound();
-		tags.setInteger("ID", 1);
-		tags.setTag("Database", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
-		BQ_Standard.instance.network.sendToServer(new PacketStandard(tags));
 	}
 	
 	@Override
@@ -138,7 +129,6 @@ public class GuiLootEntryEditor extends GuiQuesting
 		if(btn.id == 1) // Add quest line
 		{
 			group.lootEntry.add(new LootEntry());
-			SendChanges();
 			RefreshColumns();
 		} else if(btn.id == 2) // Add loot group
 		{
@@ -173,7 +163,6 @@ public class GuiLootEntryEditor extends GuiQuesting
 				if(n3 >= 0 && n3 < group.lootEntry.size())
 				{
 					group.lootEntry.remove(n3);
-					SendChanges();
 				}
 			}
 		}
@@ -205,17 +194,9 @@ public class GuiLootEntryEditor extends GuiQuesting
 		
 		if(selected != null)
 		{
-			boolean flag = false;
-			
 			if(!lineWeight.isFocused() && lineWeight.getNumber().intValue() != selected.weight)
 			{
 				selected.weight = lineWeight.getNumber().intValue();
-				flag = true;
-			}
-			
-			if(flag)
-			{
-				SendChanges();
 			}
 		}
     }

@@ -188,6 +188,14 @@ public class HQMQuestImporter extends ImporterBase
 				quest.itemIcon = new BigItemStack(Items.nether_star);
 			}
 			
+			if(json.has("repeat")) // Assuming this is in Minecraft time
+			{
+				JsonObject jRpt = JsonHelper.GetObject(jQuest, "repeat");
+				quest.repeatTime = 0;
+				quest.repeatTime += JsonHelper.GetNumber(jRpt, "days", 0).intValue() * 24000;
+				quest.repeatTime += JsonHelper.GetNumber(jRpt, "hours", 0).intValue() * 1000;
+			}
+			
 			for(JsonElement er : JsonHelper.GetArray(jQuest, "prerequisites"))
 			{
 				if(er == null || !er.isJsonPrimitive() || !er.getAsJsonPrimitive().isString())

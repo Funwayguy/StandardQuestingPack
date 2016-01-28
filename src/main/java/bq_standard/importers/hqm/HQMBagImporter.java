@@ -85,7 +85,23 @@ public class HQMBagImporter extends ImporterBase
 			group.name = JsonHelper.GetString(jGrp, "name", "HQM Loot");
 			try
 			{
-				group.weight = JsonHelper.GetArray(jGrp, "weights").get(4).getAsInt();
+				int tmp = 0;
+				
+				JsonArray jWht = JsonHelper.GetArray(jGrp, "weights");
+				
+				for(int i = 0; i < jWht.size(); i++)
+				{
+					JsonElement w = jWht.get(i);
+					
+					if(w == null || !w.isJsonPrimitive() || !w.getAsJsonPrimitive().isNumber())
+					{
+						continue;
+					}
+					
+					tmp += w.getAsInt() * (jWht.size() - i);
+				}
+				
+				group.weight = Math.max(1, tmp/4);
 			} catch(Exception ex)
 			{
 				group.weight = 1;

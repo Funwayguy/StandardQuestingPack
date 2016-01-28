@@ -8,6 +8,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.Level;
 import betterquesting.core.BetterQuesting;
 import betterquesting.utils.BigItemStack;
@@ -96,6 +97,8 @@ public class HQMUtilities
 		Item item = (Item)Item.itemRegistry.getObject(iID);
 		int amount = JsonHelper.GetNumber(rJson, "required", 1).intValue();
 		int damage = JsonHelper.GetNumber(json, "damage", 0).intValue();
+		boolean oreDict = JsonHelper.GetString(rJson, "precision", "").equalsIgnoreCase("ORE_DICTIONARY");
+		
 		NBTTagCompound tags = null;
 		
 		if(json.has("nbt"))
@@ -148,6 +151,16 @@ public class HQMUtilities
 		if(tags != null)
 		{
 			stack.SetTagCompound(tags);
+		}
+		
+		if(oreDict)
+		{
+			int[] oreId = OreDictionary.getOreIDs(stack.getBaseStack());
+			
+			if(oreId.length > 0)
+			{
+				stack.oreDict = OreDictionary.getOreName(oreId[0]);
+			}
 		}
 		
 		return stack;

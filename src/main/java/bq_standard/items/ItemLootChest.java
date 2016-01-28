@@ -2,6 +2,7 @@ package bq_standard.items;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.logging.log4j.Level;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -61,7 +62,6 @@ public class ItemLootChest extends Item
 	    	
 	    	if(group == null)
 	    	{
-	    		System.out.println("No loot group returned");
 	    		loot = LootRegistry.getStandardLoot(itemRand);
 	    	} else
 	    	{
@@ -70,6 +70,7 @@ public class ItemLootChest extends Item
 	    		
 	    		if(loot == null || loot.size() <= 0)
 	    		{
+	    			BQ_Standard.logger.log(Level.WARN, "Unable to get random loot entry from group " + group.name + "! Reason: Contains 0 loot entries");
 	    			title = "Dungeon Loot";
 	    			loot = LootRegistry.getStandardLoot(itemRand);
 	    		}

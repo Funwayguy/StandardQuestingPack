@@ -38,7 +38,7 @@ public class TaskHunt extends AdvancedTaskBase
 	/**
 	 * NBT representation of the intended target. Used only for NBT comparison checks
 	 */
-	public NBTTagCompound targetTags;
+	public NBTTagCompound targetTags = new NBTTagCompound();
 	
 	@Override
 	public String getUnlocalisedName()

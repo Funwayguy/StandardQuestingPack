@@ -1,5 +1,6 @@
 package bq_standard.client.gui.editors;
 
+import java.text.DecimalFormat;
 import java.util.List;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -45,7 +46,10 @@ public class GuiLootGroupEditor extends GuiQuesting
 	{
 		super.initGui();
 		
-		selected = null;
+		if(selected != null && !LootRegistry.updateUI)
+		{
+			SendChanges();
+		}
 		
 		maxRows = (sizeY - 80)/20;
 		int btnWidth = Math.min(sizeX/2 - 24, 198);
@@ -53,7 +57,7 @@ public class GuiLootGroupEditor extends GuiQuesting
 		lineTitle = new GuiTextField(mc.fontRenderer, guiLeft + sizeX/4*3 - (btnWidth/2 + 4) + 1, height/2 - 59, btnWidth + 8 - 2, 18);
 		lineTitle.setMaxStringLength(Integer.MAX_VALUE);
 		
-		lineWeight = new GuiNumberField(mc.fontRenderer, guiLeft + sizeX/4*3 - (btnWidth/2 + 4) + 1, height/2 - 19, btnWidth + 8 - 2, 18);
+		lineWeight = new GuiNumberField(mc.fontRenderer, guiLeft + sizeX/4*3 - (btnWidth/2 + 4) + 1, height/2 - 19, btnWidth/2 + 8 - 2, 18);
 		lineWeight.setMaxStringLength(Integer.MAX_VALUE);
 		 
 		this.buttonList.add(new GuiButtonQuesting(1, guiLeft + sizeX/4 - (btnWidth/2 + 4), guiTop + sizeY - 48, btnWidth, 20, I18n.format("betterquesting.btn.new")));
@@ -107,6 +111,11 @@ public class GuiLootGroupEditor extends GuiQuesting
 		
 		mc.fontRenderer.drawString(I18n.format("betterquesting.gui.name"), guiLeft + sizeX/4*3 - (btnWidth/2 + 4), height/2 - 72, ThemeRegistry.curTheme().textColor().getRGB(), false);
 		mc.fontRenderer.drawString(I18n.format("bq_standard.gui.weight"), guiLeft + sizeX/4*3 - (btnWidth/2 + 4), height/2 - 32, ThemeRegistry.curTheme().textColor().getRGB(), false);
+		
+		if(selected != null)
+		{
+			mc.fontRenderer.drawString("" + new DecimalFormat("#.##").format((float)selected.weight/(float)LootRegistry.getTotalWeight() * 100F) + "%", guiLeft + sizeX/4*3 + 8, height/2 - 12, ThemeRegistry.curTheme().textColor().getRGB(), false);
+		}
 		
 		lineTitle.drawTextBox();
 		lineWeight.drawTextBox();

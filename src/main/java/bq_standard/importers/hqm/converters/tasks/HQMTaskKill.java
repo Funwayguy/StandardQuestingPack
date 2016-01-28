@@ -26,6 +26,7 @@ public class HQMTaskKill extends HQMTask
 			TaskHunt task = new TaskHunt();
 			task.idName = JsonHelper.GetString(jMob, "mob", "Zombie");
 			task.required = JsonHelper.GetNumber(jMob, "kills", 1).intValue();
+			task.subtypes = !JsonHelper.GetBoolean(jMob, "exact", false);
 			tList.add(task);
 		}
 		

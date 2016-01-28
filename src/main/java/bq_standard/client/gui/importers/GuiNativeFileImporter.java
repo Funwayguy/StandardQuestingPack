@@ -6,7 +6,7 @@ import betterquesting.client.gui.misc.GuiButtonQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.utils.RenderUtils;
-import bq_standard.importers.hqm.NativeFileImporter;
+import bq_standard.importers.NativeFileImporter;
 
 public class GuiNativeFileImporter extends GuiEmbedded
 {

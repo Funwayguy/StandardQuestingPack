@@ -8,7 +8,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class LootGroup
+public class LootGroup implements Comparable<LootGroup>
 {
 	public String name = "Loot Group";
 	public int weight = 1;
@@ -84,8 +84,14 @@ public class LootGroup
 		}
 		json.add("rewards", jRew);
 	}
+
+	@Override
+	public int compareTo(LootGroup group)
+	{
+		return (int)Math.signum(group.weight - weight);
+	}
 	
-	public static class LootEntry
+	public static class LootEntry implements Comparable<LootEntry>
 	{
 		public int weight = 1;
 		public ArrayList<BigItemStack> items = new ArrayList<BigItemStack>();
@@ -123,6 +129,12 @@ public class LootGroup
 				jItm.add(JsonHelper.ItemStackToJson(stack, new JsonObject()));
 			}
 			json.add("items", jItm);
+		}
+
+		@Override
+		public int compareTo(LootEntry entry)
+		{
+			return (int)Math.signum(entry.weight - weight);
 		}
 	}
 }

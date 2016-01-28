@@ -8,9 +8,10 @@ import betterquesting.quests.rewards.RewardRegistry;
 import betterquesting.quests.tasks.TaskRegistry;
 import bq_standard.core.proxies.CommonProxy;
 import bq_standard.handlers.ConfigHandler;
+import bq_standard.importers.NativeFileImporter;
+import bq_standard.importers.NativeUrlImporter;
 import bq_standard.importers.hqm.HQMBagImporter;
 import bq_standard.importers.hqm.HQMQuestImporter;
-import bq_standard.importers.hqm.NativeFileImporter;
 import bq_standard.items.ItemLootChest;
 import bq_standard.network.GuiHandler;
 import bq_standard.rewards.RewardChoice;
@@ -89,7 +90,7 @@ public class BQ_Standard
     	ImporterRegistry.registerImporter(new HQMQuestImporter());
     	ImporterRegistry.registerImporter(new HQMBagImporter());
     	ImporterRegistry.registerImporter(new NativeFileImporter());
-    	//ImporterRegistry.registerImporter(new NativeUrlImporter());
+    	ImporterRegistry.registerImporter(new NativeUrlImporter());
     	
     	proxy.registerThemes();
     }

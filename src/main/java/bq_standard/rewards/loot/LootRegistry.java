@@ -2,6 +2,7 @@ package bq_standard.rewards.loot;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
@@ -10,6 +11,7 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.common.ChestGenHooks;
 import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.event.world.WorldEvent;
+import org.apache.logging.log4j.Level;
 import betterquesting.commands.BQ_Commands;
 import betterquesting.core.BQ_Settings;
 import betterquesting.utils.BigItemStack;
@@ -48,10 +50,20 @@ public class LootRegistry
 	public static LootGroup getWeightedGroup(float weight, Random rand)
 	{
 		int total = getTotalWeight();
+		
+		if(total <= 0)
+		{
+			BQ_Standard.logger.log(Level.WARN, "Unable to get random loot group! Reason: Total weights <= 0");
+			return null;
+		}
+		
 		float r = rand.nextFloat() * total/4F + weight*total*0.75F;
 		int cnt = 0;
 		
-		for(LootGroup entry : lootGroups)
+		ArrayList<LootGroup> sorted = new ArrayList<LootGroup>(lootGroups);
+		Collections.sort(sorted);
+		
+		for(LootGroup entry : sorted)
 		{
 			cnt += entry.weight;
 			if(cnt >= r)
@@ -60,6 +72,7 @@ public class LootRegistry
 			}
 		}
 		
+		BQ_Standard.logger.log(Level.WARN, "Unable to get random loot group! Reason: Unknown");
 		return null;
 	}
 	
@@ -234,6 +247,39 @@ public class LootRegistry
 				{
 					event.sender.addChatMessage(new ChatComponentText("No default loot currently set"));
 				}
+			} else if(event.parameters[0].equalsIgnoreCase("delete_all"))
+			{
+				lootGroups.clear();
+				updateClients();
+			    
+				event.sender.addChatMessage(new ChatComponentText("Deleted all loot groups"));
+			} else if(event.parameters[0].equalsIgnoreCase("reload"))
+			{
+			    if(BQ_Settings.curWorldDir == null)
+			    {
+			    	return; // An error should already have been sent to the user's chat. No need to send another
+			    }
+			    
+			    File f1 = new File(worldDir, "QuestLoot.json");
+				JsonObject j1 = new JsonObject();
+				
+				if(f1.exists())
+				{
+					j1 = JsonIO.ReadFromFile(f1);
+				} else
+				{
+					f1 = new File(BQ_Settings.defaultDir + "QuestLoot.json");
+					
+					if(f1.exists())
+					{
+						j1 = JsonIO.ReadFromFile(f1);
+					}
+				}
+				
+				readFromJson(j1);
+				updateClients();
+			    
+				event.sender.addChatMessage(new ChatComponentText("Reloaded " + lootGroups.size() + " loot groups from file"));
 			}
 		}
 	}

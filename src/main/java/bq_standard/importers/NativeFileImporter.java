@@ -1,4 +1,4 @@
-package bq_standard.importers.hqm;
+package bq_standard.importers;
 
 import java.io.File;
 import java.io.FileReader;
@@ -78,7 +78,7 @@ public class NativeFileImporter extends ImporterBase
 		}
 	}
 
-	private static void ImportQuestLine(JsonObject json)
+	protected static void ImportQuestLine(JsonObject json)
 	{
 		if(json == null)
 		{
