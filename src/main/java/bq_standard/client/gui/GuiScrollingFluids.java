@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.util.IIcon;
 import net.minecraftforge.fluids.FluidStack;
 import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.misc.GuiBQScrolling;
@@ -73,7 +74,18 @@ public class GuiScrollingFluids extends GuiBQScrolling
 		{
 			GL11.glEnable(GL11.GL_DEPTH_TEST);
 			parent.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
-			RenderUtils.itemRender.renderIcon(x + 1, y + 1, entry.stack.getFluid().getIcon(), 16, 16);
+			
+			try
+			{
+				if(entry.stack.getFluid().getIcon() != null)
+				{
+					RenderUtils.itemRender.renderIcon(x + 1, y + 1, entry.stack.getFluid().getIcon(), 16, 16);
+				} else
+				{
+		            IIcon missing = ((TextureMap)parent.mc.renderEngine.getTexture(TextureMap.locationBlocksTexture)).getAtlasSprite("missingno");
+					RenderUtils.itemRender.renderIcon(x + 1, y + 1, missing, 16, 16);
+				}
+			} catch(Exception e){}
 		}
 		GL11.glPopMatrix();
 		

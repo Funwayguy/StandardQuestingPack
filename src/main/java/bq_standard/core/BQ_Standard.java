@@ -18,6 +18,7 @@ import bq_standard.rewards.RewardChoice;
 import bq_standard.rewards.RewardCommand;
 import bq_standard.rewards.RewardItem;
 import bq_standard.rewards.RewardScoreboard;
+import bq_standard.rewards.RewardXP;
 import bq_standard.tasks.TaskCrafting;
 import bq_standard.tasks.TaskFluid;
 import bq_standard.tasks.TaskHunt;
@@ -25,6 +26,7 @@ import bq_standard.tasks.TaskLocation;
 import bq_standard.tasks.TaskMeeting;
 import bq_standard.tasks.TaskRetrieval;
 import bq_standard.tasks.TaskScoreboard;
+import bq_standard.tasks.TaskXP;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -81,11 +83,13 @@ public class BQ_Standard
     	TaskRegistry.RegisterTask(TaskScoreboard.class, "scoreboard");
     	TaskRegistry.RegisterTask(TaskFluid.class, "fluid");
     	TaskRegistry.RegisterTask(TaskMeeting.class, "meeting");
+    	TaskRegistry.RegisterTask(TaskXP.class, "xp");
     	
     	RewardRegistry.RegisterReward(RewardItem.class, "item");
     	RewardRegistry.RegisterReward(RewardChoice.class, "choice");
     	RewardRegistry.RegisterReward(RewardScoreboard.class, "scoreboard");
     	RewardRegistry.RegisterReward(RewardCommand.class, "command");
+    	RewardRegistry.RegisterReward(RewardXP.class, "xp");
     	
     	ImporterRegistry.registerImporter(new HQMQuestImporter());
     	ImporterRegistry.registerImporter(new HQMBagImporter());

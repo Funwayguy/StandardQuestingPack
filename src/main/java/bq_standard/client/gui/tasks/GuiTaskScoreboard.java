@@ -1,6 +1,5 @@
 package bq_standard.client.gui.tasks;
 
-import java.awt.Color;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
@@ -23,7 +22,7 @@ public class GuiTaskScoreboard extends GuiEmbedded
 	@Override
 	public void drawGui(int mx, int my, float partialTick)
 	{
-		screen.mc.fontRenderer.drawString(task.scoreName, posX, posY, Color.BLACK.getRGB(), false);
+		screen.mc.fontRenderer.drawString(task.scoreName, posX, posY, ThemeRegistry.curTheme().textColor().getRGB(), false);
 		
 		Scoreboard board = screen.mc.thePlayer.getWorldScoreboard();
 		ScoreObjective scoreObj = board == null? null : board.getObjective(task.scoreName);
