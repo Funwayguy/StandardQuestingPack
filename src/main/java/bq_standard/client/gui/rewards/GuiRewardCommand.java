@@ -1,11 +1,11 @@
 package bq_standard.client.gui.rewards;
 
-import org.lwjgl.opengl.GL11;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
+import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.client.themes.ThemeRegistry;
@@ -26,7 +26,7 @@ public class GuiRewardCommand extends GuiEmbedded
 	public void drawGui(int mx, int my, float partialTick)
 	{
 		String txt1 = I18n.format("advMode.command");
-		String txt2 = ChatFormatting.ITALIC + (reward.hideCmd? "[HIDDEN]" : reward.command);
+		String txt2 = EnumChatFormatting.ITALIC + (reward.hideCmd? "[HIDDEN]" : reward.command);
 		
 		screen.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
 		IIcon icon = Blocks.command_block.getIcon(0, 0);

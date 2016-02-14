@@ -19,6 +19,7 @@ import bq_standard.rewards.RewardCommand;
 import bq_standard.rewards.RewardItem;
 import bq_standard.rewards.RewardScoreboard;
 import bq_standard.rewards.RewardXP;
+import bq_standard.tasks.TaskBlockBreak;
 import bq_standard.tasks.TaskCrafting;
 import bq_standard.tasks.TaskFluid;
 import bq_standard.tasks.TaskHunt;
@@ -84,6 +85,7 @@ public class BQ_Standard
     	TaskRegistry.RegisterTask(TaskFluid.class, "fluid");
     	TaskRegistry.RegisterTask(TaskMeeting.class, "meeting");
     	TaskRegistry.RegisterTask(TaskXP.class, "xp");
+    	TaskRegistry.RegisterTask(TaskBlockBreak.class, "block_break");
     	
     	RewardRegistry.RegisterReward(RewardItem.class, "item");
     	RewardRegistry.RegisterReward(RewardChoice.class, "choice");

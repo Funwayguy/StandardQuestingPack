@@ -20,7 +20,7 @@ import com.google.gson.JsonObject;
 
 public class TaskBlockBreak extends AdvancedTaskBase
 {
-	HashMap<UUID, Integer> userProgress = new HashMap<UUID, Integer>();
+	public HashMap<UUID, Integer> userProgress = new HashMap<UUID, Integer>();
 	public Block targetBlock = Blocks.log;
 	public int targetMeta = -1;
 	public int targetNum = 1;
@@ -29,16 +29,21 @@ public class TaskBlockBreak extends AdvancedTaskBase
 	@Override
 	public String getUnlocalisedName()
 	{
-		return "bq_standard.task.block.break";
+		return "bq_standard.task.block_break";
 	}
 	
 	@Override
 	public void onBlockBreak(EntityPlayer player, Block block, int metadata, int x, int y, int z)
 	{
+		if(isComplete(player.getUniqueID()))
+		{
+			return;
+		}
+		
 		Integer progress = userProgress.get(player.getUniqueID());
 		progress = progress == null? 0 : progress;
 		
-		if(block == targetBlock && metadata == targetMeta)
+		if(block == targetBlock && (targetMeta < 0 || metadata == targetMeta))
 		{
 			progress++;
 			userProgress.put(player.getUniqueID(), progress);

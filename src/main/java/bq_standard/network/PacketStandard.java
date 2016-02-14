@@ -9,6 +9,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.WorldServer;
 import org.apache.logging.log4j.Level;
 import betterquesting.utils.BigItemStack;
@@ -17,7 +18,6 @@ import bq_standard.client.gui.GuiLootChest;
 import bq_standard.core.BQ_Standard;
 import bq_standard.rewards.loot.LootRegistry;
 import com.google.gson.JsonObject;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
@@ -92,7 +92,7 @@ public class PacketStandard implements IMessage
 				if(!MinecraftServer.getServer().getConfigurationManager().func_152596_g(player.getGameProfile()))
 				{
 					BQ_Standard.logger.log(Level.WARN, "Player " + player.getCommandSenderName() + " (UUID:" + player.getUniqueID() + ") tried to edit loot chests without OP permissions!");
-					player.addChatComponentMessage(new ChatComponentText(ChatFormatting.RED + "You need to be OP to edit loot!"));
+					player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.RED + "You need to be OP to edit loot!"));
 					return null; // Player is not operator. Do nothing
 				}
 				

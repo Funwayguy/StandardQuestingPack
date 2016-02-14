@@ -36,6 +36,11 @@ public class TaskCrafting extends AdvancedTaskBase
 	@Override
 	public void onItemCrafted(EntityPlayer player, ItemStack stack)
 	{
+		if(isComplete(player.getUniqueID()))
+		{
+			return;
+		}
+		
 		int[] progress = userProgress.get(player.getUniqueID());
 		progress = progress == null || progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
 		

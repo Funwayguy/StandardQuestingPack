@@ -2,6 +2,7 @@ package bq_standard.client.gui;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.EnumChatFormatting;
@@ -27,6 +28,8 @@ public class GuiLootChest extends GuiScreen
 	public void initGui()
 	{
 		super.initGui();
+		
+		mc.getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("random.chestopen"), 1.0F));
 	}
 	
 	@Override
