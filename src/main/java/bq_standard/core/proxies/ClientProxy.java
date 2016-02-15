@@ -1,6 +1,8 @@
 package bq_standard.core.proxies;
 
 import java.awt.Color;
+import org.apache.logging.log4j.Level;
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.relauncher.Side;
 import net.minecraft.util.ResourceLocation;
 import betterquesting.client.themes.ThemeRegistry;
@@ -24,8 +26,17 @@ public class ClientProxy extends CommonProxy
 		
     	BQ_Standard.instance.network.registerMessage(PacketStandard.HandlerClient.class, PacketStandard.class, 0, Side.CLIENT);
     	
+    	if(Loader.isModLoaded("CodeChickenCore"))
+    	{
+    		registerNEI();
+    	}
+	}
+	
+	public void registerNEI()
+	{
     	try
     	{
+    		BQ_Standard.logger.log(Level.INFO, "Registered NEI handler for " + BQ_Standard.NAME);
     		codechicken.nei.api.API.registerRecipeHandler(new NEIRewardHandler());
     	} catch(Exception e){}
 	}
