@@ -98,14 +98,20 @@ public class GuiTaskLocation extends GuiEmbedded
 			
 			for(Integer i : dimNums)
 			{
-				WorldProvider prov = DimensionManager.getProvider(i);
-				
-				if(prov == null)
+				try
 				{
-					continue;
+					WorldProvider prov = DimensionManager.createProviderFor(i);
+					
+					if(prov == null)
+					{
+						continue;
+					}
+					
+					dimNameCache.put(i, prov.getDimensionName());
+				} catch(Exception e)
+				{
+					dimNameCache.put(i, "ERROR");
 				}
-				
-				dimNameCache.put(i, prov.getDimensionName());
 			}
 		}
 		
