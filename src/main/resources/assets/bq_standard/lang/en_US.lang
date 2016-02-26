@@ -7,6 +7,7 @@ bq_standard.task.fluid=Fluid Task
 bq_standard.task.meeting=Meeting Task
 bq_standard.task.xp=Experience Task
 bq_standard.task.block_break=Break Block Task
+bq_standard.task.checkbox=Checkbox Task
 
 bq_standard.reward.choice=Choice Reward
 bq_standard.reward.item=Item Reward

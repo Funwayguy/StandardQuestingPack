@@ -12,11 +12,14 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.WorldServer;
 import org.apache.logging.log4j.Level;
+import betterquesting.quests.QuestDatabase;
+import betterquesting.quests.tasks.TaskBase;
 import betterquesting.utils.BigItemStack;
 import betterquesting.utils.NBTConverter;
 import bq_standard.client.gui.GuiLootChest;
 import bq_standard.core.BQ_Standard;
 import bq_standard.rewards.loot.LootRegistry;
+import bq_standard.tasks.TaskCheckbox;
 import com.google.gson.JsonObject;
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
@@ -101,6 +104,26 @@ public class PacketStandard implements IMessage
 				LootRegistry.readFromJson(NBTConverter.NBTtoJSON_Compound(message.tags.getCompoundTag("Database"), new JsonObject()));
 				LootRegistry.updateClients();
 				return null;
+			} else if(ID == 2 && player != null)
+			{
+				int qId = !message.tags.hasKey("qId")? -1 : message.tags.getInteger("qId");
+				int tId = qId < 0 && !message.tags.hasKey("tId")? -1 : message.tags.getInteger("tId");
+				
+				if(qId >= 0 && tId >= 0)
+				{
+					try
+					{
+						TaskBase task = QuestDatabase.getQuestByID(qId).tasks.get(tId);
+						
+						if(task instanceof TaskCheckbox)
+						{
+							task.setCompletion(player.getUniqueID(), true);
+						}
+					} catch(Exception e)
+					{
+						return null;
+					}
+				}
 			}
 			
 			return null;

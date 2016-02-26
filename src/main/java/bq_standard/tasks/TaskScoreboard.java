@@ -2,6 +2,7 @@ package bq_standard.tasks;
 
 import java.util.ArrayList;
 import java.util.UUID;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
@@ -11,8 +12,11 @@ import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.quests.QuestDatabase;
 import betterquesting.quests.tasks.TaskBase;
 import betterquesting.utils.JsonHelper;
+import bq_standard.client.gui.editors.GuiScoreEditor;
 import bq_standard.client.gui.tasks.GuiTaskScoreboard;
 import com.google.gson.JsonObject;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class TaskScoreboard extends TaskBase
 {
@@ -54,28 +58,7 @@ public class TaskScoreboard extends TaskBase
 		Score score = board.func_96529_a(player.getCommandSenderName(), scoreObj);
 		int points = score.getScorePoints();
 		
-		boolean flag = false;
-		
-		switch(operation)
-		{
-			case EQUAL:
-				flag = points == target;
-				break;
-			case LESS_THAN:
-				flag = points < target;
-				break;
-			case MORE_THAN:
-				flag = points > target;
-				break;
-			case LESS_OR_EQUAL:
-				flag = points <= target;
-				break;
-			case MORE_OR_EQUAL:
-				flag = points >= target;
-				break;
-		}
-		
-		if(flag)
+		if(operation.checkValues(points, target))
 		{
 			this.completeUsers.add(player.getUniqueID());
 		}
@@ -120,6 +103,25 @@ public class TaskScoreboard extends TaskBase
 		{
 			return text;
 		}
+		
+		public boolean checkValues(int n1, int n2)
+		{
+			switch(this)
+			{
+				case EQUAL:
+					return n1 == n2;
+				case LESS_THAN:
+					return n1 < n2;
+				case MORE_THAN:
+					return n1 > n2;
+				case LESS_OR_EQUAL:
+					return n1 <= n2;
+				case MORE_OR_EQUAL:
+					return n1 >= n2;
+			}
+			
+			return false;
+		}
 	}
 
 	@Override
@@ -135,8 +137,16 @@ public class TaskScoreboard extends TaskBase
 	}
 
 	@Override
+	@SideOnly(Side.CLIENT)
 	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
 		return new GuiTaskScoreboard(this, screen, posX, posY, sizeX, sizeY);
+	}
+	
+	@Override
+	@SideOnly(Side.CLIENT)
+	public GuiScreen GetEditor(GuiScreen parent, JsonObject data)
+	{
+		return new GuiScoreEditor(parent, data);
 	}
 }
