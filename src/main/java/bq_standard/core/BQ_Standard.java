@@ -1,11 +1,15 @@
 package bq_standard.core;
 
+import net.minecraft.command.ICommandManager;
+import net.minecraft.command.ServerCommandManager;
 import net.minecraft.item.Item;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.config.Configuration;
 import org.apache.logging.log4j.Logger;
 import betterquesting.importers.ImporterRegistry;
 import betterquesting.quests.rewards.RewardRegistry;
 import betterquesting.quests.tasks.TaskRegistry;
+import bq_standard.commands.BQS_Commands;
 import bq_standard.core.proxies.CommonProxy;
 import bq_standard.handlers.ConfigHandler;
 import bq_standard.importers.NativeFileImporter;
@@ -36,6 +40,7 @@ import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -107,4 +112,14 @@ public class BQ_Standard
     public void postInit(FMLPostInitializationEvent event)
     {
     }
+	
+	@EventHandler
+	public void serverStart(FMLServerStartingEvent event)
+	{
+		MinecraftServer server = MinecraftServer.getServer();
+		ICommandManager command = server.getCommandManager();
+		ServerCommandManager manager = (ServerCommandManager) command;
+		
+		manager.registerCommand(new BQS_Commands());
+	}
 }
