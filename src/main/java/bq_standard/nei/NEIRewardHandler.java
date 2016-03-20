@@ -1,4 +1,4 @@
-package bq_standard.client.gui;
+package bq_standard.nei;
 
 import java.awt.Color;
 import java.util.ArrayList;

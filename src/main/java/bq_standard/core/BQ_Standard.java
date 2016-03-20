@@ -49,7 +49,9 @@ import cpw.mods.fml.common.registry.GameRegistry;
 public class BQ_Standard
 {
     public static final String MODID = "bq_standard";
-    public static final String VERSION = "BQS_VER_KEY";
+    public static final String VERSION = "CI_MOD_VERSION";
+    public static final String HASH = "CI_MOD_HASH";
+    public static final String BRANCH = "CI_MOD_BRANCH";
     public static final String NAME = "Standard Expansion";
     public static final String PROXY = "bq_standard.core.proxies";
     public static final String CHANNEL = "BQ_STANDARD";

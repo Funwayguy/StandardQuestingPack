@@ -17,7 +17,7 @@ buildscript {
 
 apply plugin: 'forge'
 
-version = "BQS_VER_KEY"
+version = "CI_MOD_VERSION"
 group= "bq_standard" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "StandardExpansion"
 

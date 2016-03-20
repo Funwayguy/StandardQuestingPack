@@ -1,3 +1,4 @@
 echo "Downloading dependencies..."
+curl -k -o make_logs https://gist.githubusercontent.com/Funwayguy/69940c2849310e59816c/raw/bq_standard_make_logs
 curl -u Funwayguy:$BB_PASS -o dependencies/CodeChickenCore.jar https://bitbucket.org/Funwayguy/moddependencies/raw/master/CodeChickenCore-1.7.10-1.0.7.47-dev.jar
 curl -u Funwayguy:$BB_PASS -o dependencies/NotEnoughItems.jar https://bitbucket.org/Funwayguy/moddependencies/raw/master/NotEnoughItems-1.7.10-1.0.5.120-dev.jar

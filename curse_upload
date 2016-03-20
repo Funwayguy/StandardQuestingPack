@@ -1,6 +1,6 @@
 #!/bin/bash
 
-FILE_NAME=`echo "StandardExpansion-BQS_VER_KEY.jar"`
+FILE_NAME=`echo "StandardExpansion-CI_MOD_VERSION.jar"`
 FILE_LOCATION=`echo "./build/libs/$FILE_NAME"`
 CHANGE_LOG=`git log -1 --pretty=format:"%B"`
 
