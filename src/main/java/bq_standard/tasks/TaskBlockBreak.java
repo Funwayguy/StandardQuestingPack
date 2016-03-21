@@ -6,8 +6,11 @@ import java.util.UUID;
 import java.util.Map.Entry;
 import org.apache.logging.log4j.Level;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.ResourceLocation;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.quests.tasks.advanced.AdvancedTaskBase;
@@ -33,7 +36,7 @@ public class TaskBlockBreak extends AdvancedTaskBase
 	}
 	
 	@Override
-	public void onBlockBreak(EntityPlayer player, Block block, int metadata, int x, int y, int z)
+	public void onBlockBreak(EntityPlayer player, IBlockState state, BlockPos pos)
 	{
 		if(isComplete(player.getUniqueID()))
 		{
@@ -43,7 +46,7 @@ public class TaskBlockBreak extends AdvancedTaskBase
 		Integer progress = userProgress.get(player.getUniqueID());
 		progress = progress == null? 0 : progress;
 		
-		if(block == targetBlock && (targetMeta < 0 || metadata == targetMeta))
+		if(state.getBlock() == targetBlock && (targetMeta < 0 || state.getBlock().getMetaFromState(state) == targetMeta))
 		{
 			progress++;
 			userProgress.put(player.getUniqueID(), progress);
@@ -60,7 +63,7 @@ public class TaskBlockBreak extends AdvancedTaskBase
 	{
 		super.writeToJson(json);
 		
-		json.addProperty("blockID", Block.blockRegistry.getNameForObject(targetBlock));
+		json.addProperty("blockID", Block.blockRegistry.getNameForObject(targetBlock).toString());
 		json.addProperty("blockMeta", targetMeta);
 		json.addProperty("amount", targetNum);
 		
@@ -80,7 +83,7 @@ public class TaskBlockBreak extends AdvancedTaskBase
 	{
 		super.readFromJson(json);
 		
-		targetBlock = (Block)Block.blockRegistry.getObject(JsonHelper.GetString(json, "blockID", "minecraft:log"));
+		targetBlock = (Block)Block.blockRegistry.getObject(new ResourceLocation(JsonHelper.GetString(json, "blockID", "minecraft:log")));
 		targetBlock = targetBlock != null? targetBlock : Blocks.log;
 		targetMeta = JsonHelper.GetNumber(json, "blockMeta", -1).intValue();
 		targetNum = JsonHelper.GetNumber(json, "amount", 1).intValue();

@@ -8,6 +8,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.quests.tasks.TaskBase;
@@ -17,8 +19,6 @@ import betterquesting.utils.NBTConverter;
 import bq_standard.client.gui.editors.GuiMeetingEditor;
 import bq_standard.client.gui.tasks.GuiTaskMeeting;
 import com.google.gson.JsonObject;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
 public class TaskMeeting extends TaskBase
 {
@@ -57,9 +57,7 @@ public class TaskMeeting extends TaskBase
 			return;
 		}
 		
-		@SuppressWarnings("unchecked")
-		List<Entity> list = player.worldObj.getEntitiesWithinAABBExcludingEntity(player, player.boundingBox.expand(4D, 4D, 4D));
-		@SuppressWarnings("unchecked")
+		List<Entity> list = player.worldObj.getEntitiesWithinAABBExcludingEntity(player, player.getEntityBoundingBox().expand(4D, 4D, 4D));
 		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.stringToClassMapping.get(idName);
 		
 		if(target == null)

@@ -36,8 +36,8 @@ public class GuiRewardXP extends GuiEmbedded
 		
 		GL11.glPushMatrix();
 		GL11.glScalef(1.5F, 1.5F, 1F);
-		screen.mc.fontRenderer.drawString(txt1, (int)((posX + sizeX/2 - screen.mc.fontRenderer.getStringWidth(txt1)/1.5F)/1.5F), (int)((posY + sizeY/2 - 16)/1.5F), ThemeRegistry.curTheme().textColor().getRGB(), false);
-		screen.mc.fontRenderer.drawString(txt2, (int)((posX + sizeX/2 - screen.mc.fontRenderer.getStringWidth(txt2)/1.5F)/1.5F), (int)((posY + sizeY/2)/1.5F), ThemeRegistry.curTheme().textColor().getRGB(), false);
+		screen.mc.fontRendererObj.drawString(txt1, (int)((posX + sizeX/2 - screen.mc.fontRendererObj.getStringWidth(txt1)/1.5F)/1.5F), (int)((posY + sizeY/2 - 16)/1.5F), ThemeRegistry.curTheme().textColor().getRGB(), false);
+		screen.mc.fontRendererObj.drawString(txt2, (int)((posX + sizeX/2 - screen.mc.fontRendererObj.getStringWidth(txt2)/1.5F)/1.5F), (int)((posY + sizeY/2)/1.5F), ThemeRegistry.curTheme().textColor().getRGB(), false);
 		GL11.glPopMatrix();
 	}
 }

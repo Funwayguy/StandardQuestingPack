@@ -1,5 +1,6 @@
 package bq_standard.client.gui.editors;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.List;
 import net.minecraft.client.gui.GuiButton;
@@ -9,6 +10,8 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.GuiQuesting;
@@ -22,8 +25,6 @@ import bq_standard.network.PacketStandard;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootRegistry;
 import com.google.gson.JsonObject;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class GuiLootGroupEditor extends GuiQuesting
@@ -40,7 +41,6 @@ public class GuiLootGroupEditor extends GuiQuesting
 		super(parent, "bq_standard.title.edit_loot_groups");
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public void initGui()
 	{
@@ -55,10 +55,10 @@ public class GuiLootGroupEditor extends GuiQuesting
 		int btnWidth = sizeX/2 - 16;
 		int sx = sizeX - 32;
 		
-		lineTitle = new GuiTextField(mc.fontRenderer, guiLeft + sizeX/2 + 9, height/2 - 59, btnWidth - 18, 18);
+		lineTitle = new GuiTextField(0, mc.fontRendererObj, guiLeft + sizeX/2 + 9, height/2 - 59, btnWidth - 18, 18);
 		lineTitle.setMaxStringLength(Integer.MAX_VALUE);
 		
-		lineWeight = new GuiNumberField(mc.fontRenderer, guiLeft + sizeX/2 + 9, height/2 - 19, btnWidth/2 - 10, 18);
+		lineWeight = new GuiNumberField(mc.fontRendererObj, guiLeft + sizeX/2 + 9, height/2 - 19, btnWidth/2 - 10, 18);
 		lineWeight.setMaxStringLength(Integer.MAX_VALUE);
 		 
 		this.buttonList.add(new GuiButtonQuesting(1, guiLeft + 16 + sx/4 - 50, guiTop + sizeY - 48, 100, 20, I18n.format("betterquesting.btn.new")));
@@ -108,12 +108,12 @@ public class GuiLootGroupEditor extends GuiQuesting
 		
 		RenderUtils.DrawLine(width/2, guiTop + 32, width/2, guiTop + sizeY - 48, 2F, ThemeRegistry.curTheme().textColor());
 		
-		mc.fontRenderer.drawString(I18n.format("betterquesting.gui.name"), guiLeft + sizeX/2 + 8, guiTop + sizeY/2 - 72, ThemeRegistry.curTheme().textColor().getRGB(), false);
-		mc.fontRenderer.drawString(I18n.format("bq_standard.gui.weight"), guiLeft + sizeX/2 + 8, guiTop + sizeY/2 - 32, ThemeRegistry.curTheme().textColor().getRGB(), false);
+		mc.fontRendererObj.drawString(I18n.format("betterquesting.gui.name"), guiLeft + sizeX/2 + 8, guiTop + sizeY/2 - 72, ThemeRegistry.curTheme().textColor().getRGB(), false);
+		mc.fontRendererObj.drawString(I18n.format("bq_standard.gui.weight"), guiLeft + sizeX/2 + 8, guiTop + sizeY/2 - 32, ThemeRegistry.curTheme().textColor().getRGB(), false);
 		
 		if(selected != null)
 		{
-			mc.fontRenderer.drawString("" + new DecimalFormat("0.##").format((float)selected.weight/(float)LootRegistry.getTotalWeight() * 100F) + "%", guiLeft + 16 + (sizeX - 32)/4*3 + 8, guiTop + sizeY/2 - 14, ThemeRegistry.curTheme().textColor().getRGB(), false);
+			mc.fontRendererObj.drawString("" + new DecimalFormat("0.##").format((float)selected.weight/(float)LootRegistry.getTotalWeight() * 100F) + "%", guiLeft + 16 + (sizeX - 32)/4*3 + 8, guiTop + sizeY/2 - 14, ThemeRegistry.curTheme().textColor().getRGB(), false);
 		}
 		
 		lineTitle.drawTextBox();
@@ -180,7 +180,7 @@ public class GuiLootGroupEditor extends GuiQuesting
      * Fired when a key is typed. This is the equivalent of KeyListener.keyTyped(KeyEvent e).
      */
 	@Override
-    protected void keyTyped(char character, int keyCode)
+    protected void keyTyped(char character, int keyCode) throws IOException
     {
         super.keyTyped(character, keyCode);
         
@@ -195,7 +195,7 @@ public class GuiLootGroupEditor extends GuiQuesting
      * Called when the mouse is clicked.
      */
 	@Override
-    protected void mouseClicked(int mx, int my, int click)
+    protected void mouseClicked(int mx, int my, int click) throws IOException
     {
 		super.mouseClicked(mx, my, click);
 		
@@ -229,7 +229,7 @@ public class GuiLootGroupEditor extends GuiQuesting
      * Handles mouse input.
      */
 	@Override
-    public void handleMouseInput()
+    public void handleMouseInput() throws IOException
     {
 		super.handleMouseInput();
 		
@@ -260,7 +260,6 @@ public class GuiLootGroupEditor extends GuiQuesting
 			}
 		}
 
-		@SuppressWarnings("unchecked")
 		List<GuiButton> btnList = this.buttonList;
 		
 		for(int i = 3; i < btnList.size(); i++)

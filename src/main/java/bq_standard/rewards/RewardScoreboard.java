@@ -53,7 +53,7 @@ public class RewardScoreboard extends RewardBase
 			return;
 		}
 		
-		Score s = board.func_96529_a(player.getCommandSenderName(), scoreObj);
+		Score s = board.getValueFromObjective(player.getName(), scoreObj);
 		
 		if(relative)
 		{

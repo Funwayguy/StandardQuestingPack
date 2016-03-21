@@ -29,7 +29,7 @@ public class GuiLootChest extends GuiScreen
 	{
 		super.initGui();
 		
-		mc.getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("random.chestopen"), 1.0F));
+		mc.getSoundHandler().playSound(PositionedSoundRecord.create(new ResourceLocation("random.chestopen"), 1.0F));
 	}
 	
 	@Override
@@ -47,7 +47,7 @@ public class GuiLootChest extends GuiScreen
 		this.drawTexturedModalRect(width/2 - cw/2, height/2, 0, 0, cw, ch);
 		
 		String txt = EnumChatFormatting.BOLD + "" + EnumChatFormatting.UNDERLINE + I18n.format(title);
-		mc.fontRenderer.drawString(txt, width/2 - mc.fontRenderer.getStringWidth(txt)/2, height/2 + ch + 8, Color.WHITE.getRGB(), false);
+		mc.fontRendererObj.drawString(txt, width/2 - mc.fontRendererObj.getStringWidth(txt)/2, height/2 + ch + 8, Color.WHITE.getRGB(), false);
 		
 		// Auto balance row size
 		int rowL = MathHelper.ceiling_float_int(rewards.size()/8F);
@@ -88,8 +88,6 @@ public class GuiLootChest extends GuiScreen
 		{
 			this.drawHoveringText(ttStack.getBaseStack().getTooltip(mc.thePlayer, mc.gameSettings.advancedItemTooltips), mx, my, fontRendererObj);
 		}
-		
-		// TODO: Finish rewards renderer then finish reward registry/editor/importer
 	}
 	
 	@Override

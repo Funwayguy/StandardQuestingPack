@@ -3,8 +3,8 @@ package bq_standard.client.gui;
 import java.util.ArrayList;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.util.IIcon;
 import net.minecraftforge.fluids.FluidStack;
 import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.misc.GuiBQScrolling;
@@ -77,21 +77,17 @@ public class GuiScrollingFluids extends GuiBQScrolling
 			
 			try
 			{
-				if(entry.stack.getFluid().getIcon() != null)
-				{
-					RenderUtils.itemRender.renderIcon(x + 1, y + 1, entry.stack.getFluid().getIcon(), 16, 16);
-				} else
-				{
-		            IIcon missing = ((TextureMap)parent.mc.renderEngine.getTexture(TextureMap.locationBlocksTexture)).getAtlasSprite("missingno");
-					RenderUtils.itemRender.renderIcon(x + 1, y + 1, missing, 16, 16);
-				}
+				parent.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
+				TextureAtlasSprite fluidTx = parent.mc.getTextureMapBlocks().getAtlasSprite(entry.stack.getFluid().getStill().toString());
+				fluidTx = fluidTx != null? fluidTx : parent.mc.getTextureMapBlocks().getAtlasSprite("missingno");
+				parent.drawTexturedModalRect(x + 1, y + 1, fluidTx, 16, 16);
 			} catch(Exception e){}
 		}
 		GL11.glPopMatrix();
 		
 		if(!clipped)
 		{
-			RenderUtils.drawSplitString(parent.mc.fontRenderer, entry.text, left + 40, posY + 4, listWidth - 48, ThemeRegistry.curTheme().textColor().getRGB(), false, 0, 2);
+			RenderUtils.drawSplitString(parent.mc.fontRendererObj, entry.text, left + 40, posY + 4, listWidth - 48, ThemeRegistry.curTheme().textColor().getRGB(), false, 0, 2);
 		}
 	}
 	

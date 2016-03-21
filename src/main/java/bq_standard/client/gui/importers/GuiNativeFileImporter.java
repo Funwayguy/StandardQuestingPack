@@ -21,7 +21,7 @@ public class GuiNativeFileImporter extends GuiEmbedded
 	@Override
 	public void drawGui(int mx, int my, float partialTick)
 	{
-		RenderUtils.drawSplitString(this.screen.mc.fontRenderer, I18n.format("bq_standard.importer.nat_file.desc"), this.posX + 8, this.posY, this.sizeX - 16, ThemeRegistry.curTheme().textColor().getRGB(), false);
+		RenderUtils.drawSplitString(this.screen.mc.fontRendererObj, I18n.format("bq_standard.importer.nat_file.desc"), this.posX + 8, this.posY, this.sizeX - 16, ThemeRegistry.curTheme().textColor().getRGB(), false);
 		btn.drawButton(screen.mc, mx, my);
 	}
 	

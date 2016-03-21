@@ -33,7 +33,7 @@ public class GuiTaskBlock extends GuiEmbedded
 			GL11.glEnable(GL11.GL_DEPTH_TEST);
 			RenderUtils.RenderItemStack(screen.mc, dispStack.getBaseStack(), posX + sizeX/2 - 8, posY + sizeY/2 - 17, "");
 			String txt = progress + "/" + task.targetNum;
-			screen.mc.fontRenderer.drawString(txt, posX + sizeX/2 - screen.mc.fontRenderer.getStringWidth(txt)/2, posY + sizeY/2 + 2, ThemeRegistry.curTheme().textColor().getRGB());
+			screen.mc.fontRendererObj.drawString(txt, posX + sizeX/2 - screen.mc.fontRendererObj.getStringWidth(txt)/2, posY + sizeY/2 + 2, ThemeRegistry.curTheme().textColor().getRGB());
 			
 			if(mx >= posX + sizeX/2 - 8 && mx < posX + sizeX/2 + 8 && my >= posY + sizeY/2 - 17 && my < posY + sizeY/2 - 1)
 			{

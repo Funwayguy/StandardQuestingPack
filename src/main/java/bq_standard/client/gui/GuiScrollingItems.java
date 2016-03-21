@@ -55,7 +55,6 @@ public class GuiScrollingItems extends GuiBQScrolling
 	{
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	protected void drawSlot(int index, int var2, int posY, int var4, Tessellator var5)
 	{
@@ -95,7 +94,7 @@ public class GuiScrollingItems extends GuiBQScrolling
 		
 		if(entry.stack.oreDict != null)
 		{
-			ArrayList<ItemStack> ores = OreDictionary.getOres(entry.stack.oreDict);
+			ArrayList<ItemStack> ores = new ArrayList<ItemStack>(OreDictionary.getOres(entry.stack.oreDict));
 			
 			if(ores != null && ores.size() > 0)
 			{
@@ -121,7 +120,7 @@ public class GuiScrollingItems extends GuiBQScrolling
 		
 		if(!clipped)
 		{
-			RenderUtils.drawSplitString(parent.mc.fontRenderer, entry.text, left + 40, posY + 4, listWidth - 48, ThemeRegistry.curTheme().textColor().getRGB(), false, 0, 2);
+			RenderUtils.drawSplitString(parent.mc.fontRendererObj, entry.text, left + 40, posY + 4, listWidth - 48, ThemeRegistry.curTheme().textColor().getRGB(), false, 0, 2);
 			
 			if(mx >= left + 2 && mx < left + 34 && my >= posY + 2 && my < posY + 34)
 			{

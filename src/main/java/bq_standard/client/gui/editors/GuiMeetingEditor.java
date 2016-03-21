@@ -34,7 +34,6 @@ public class GuiMeetingEditor extends GuiQuesting
 	}
 	
 	@Override
-	@SuppressWarnings("unchecked")
 	public void initGui()
 	{
 		super.initGui();

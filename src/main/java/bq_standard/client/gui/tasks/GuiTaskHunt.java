@@ -73,9 +73,9 @@ public class GuiTaskHunt extends GuiEmbedded
 		
 		Integer progress = task.userProgress.get(screen.mc.thePlayer.getUniqueID());
 		progress = progress == null? 0 : progress;
-		String tnm = !task.ignoreNBT && target != null? target.getCommandSenderName() : task.idName;
+		String tnm = !task.ignoreNBT && target != null? target.getName() : task.idName;
 		String txt = I18n.format("bq_standard.gui.kill", tnm) + " " + progress + "/" + task.required;
-		screen.mc.fontRenderer.drawString(txt, posX + sizeX/2 - screen.mc.fontRenderer.getStringWidth(txt)/2, posY, ThemeRegistry.curTheme().textColor().getRGB());
+		screen.mc.fontRendererObj.drawString(txt, posX + sizeX/2 - screen.mc.fontRendererObj.getStringWidth(txt)/2, posY, ThemeRegistry.curTheme().textColor().getRGB());
 	}
 	
 }

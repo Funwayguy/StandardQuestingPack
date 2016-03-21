@@ -2,7 +2,6 @@ package bq_standard.items;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.logging.log4j.Level;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -14,6 +13,9 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import org.apache.logging.log4j.Level;
 import betterquesting.core.BetterQuesting;
 import betterquesting.quests.QuestDatabase;
 import betterquesting.utils.BigItemStack;
@@ -21,8 +23,6 @@ import bq_standard.core.BQ_Standard;
 import bq_standard.network.PacketStandard;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootRegistry;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
 public class ItemLootChest extends Item
 {
@@ -31,13 +31,13 @@ public class ItemLootChest extends Item
 		this.setMaxStackSize(1);
 		this.setHasSubtypes(true);
 		this.setUnlocalizedName("bq_standard.loot_chest");
-		this.setTextureName("bq_standard:loot_chest");
 		this.setCreativeTab(BetterQuesting.tabQuesting);
 	}
 
     /**
      * Called whenever this item is equipped and the right mouse button is pressed. Args: itemStack, world, entityPlayer
      */
+	@Override
     public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player)
     {
     	if(stack.getItemDamage() >= 102)
@@ -130,6 +130,7 @@ public class ItemLootChest extends Item
     /**
      * returns a list of items with the same ID, but different meta (eg: dye returns 16 items)
      */
+	@Override
 	@SideOnly(Side.CLIENT)
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void getSubItems(Item item, CreativeTabs tab, List list)
@@ -160,25 +161,26 @@ public class ItemLootChest extends Item
 		
 		if(dmg > 100)
 		{
-			return EnumRarity.common;
+			return EnumRarity.COMMON;
 		} else if(dmg >= 75)
 		{
-			return EnumRarity.epic;
+			return EnumRarity.EPIC;
 		} else if(dmg >= 50)
 		{
-			return EnumRarity.rare;
+			return EnumRarity.RARE;
 		} else if(dmg >= 25)
 		{
-			return EnumRarity.uncommon;
+			return EnumRarity.UNCOMMON;
 		} else
 		{
-			return EnumRarity.common;
+			return EnumRarity.COMMON;
 		}
     }
 
     /**
      * allows items to add custom lines of information to the mouseover description
      */
+	@Override
 	@SideOnly(Side.CLIENT)
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void addInformation(ItemStack stack, EntityPlayer player, List list, boolean advanced)

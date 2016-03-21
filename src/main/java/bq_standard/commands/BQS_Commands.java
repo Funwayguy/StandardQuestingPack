@@ -9,6 +9,7 @@ import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootRegistry;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
@@ -31,7 +32,7 @@ public class BQS_Commands extends CommandBase
 	}
 
 	@Override
-	public void processCommand(ICommandSender sender, String[] args)
+	public void processCommand(ICommandSender sender, String[] args) throws CommandException
 	{
 		if(args.length != 2)
 		{

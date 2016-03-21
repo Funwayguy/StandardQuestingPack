@@ -1,15 +1,13 @@
 package bq_standard.client.gui.rewards;
 
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IIcon;
 import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.client.themes.ThemeRegistry;
-import betterquesting.utils.RenderUtils;
 import bq_standard.rewards.RewardCommand;
 
 public class GuiRewardCommand extends GuiEmbedded
@@ -29,14 +27,15 @@ public class GuiRewardCommand extends GuiEmbedded
 		String txt2 = EnumChatFormatting.ITALIC + (reward.hideCmd? "[HIDDEN]" : reward.command);
 		
 		screen.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
-		IIcon icon = Blocks.command_block.getIcon(0, 0);
+		TextureAtlasSprite blockSprite = screen.mc.getTextureMapBlocks().getAtlasSprite("minecraft:command_block");
+		blockSprite = blockSprite != null? blockSprite : screen.mc.getTextureMapBlocks().getAtlasSprite("missingno");
 		
 		GL11.glPushMatrix();
 		GL11.glScalef(2F, 2F, 1F);
-		RenderUtils.itemRender.renderIcon(posX/2, (posY + sizeY/2 - 16)/2, icon, 16, 16);
+		screen.drawTexturedModalRect(posX/2, (posY + sizeY/2 - 16)/2, blockSprite, 16, 16);
 		GL11.glPopMatrix();
 		
-		screen.mc.fontRenderer.drawString(txt1, posX + 40, posY + sizeY/2 - 16, ThemeRegistry.curTheme().textColor().getRGB());
-		screen.mc.fontRenderer.drawString(screen.mc.fontRenderer.trimStringToWidth(txt2, sizeX - (32 + 8)), posX + 40, posY + sizeY/2, ThemeRegistry.curTheme().textColor().getRGB());
+		screen.mc.fontRendererObj.drawString(txt1, posX + 40, posY + sizeY/2 - 16, ThemeRegistry.curTheme().textColor().getRGB());
+		screen.mc.fontRendererObj.drawString(screen.mc.fontRendererObj.trimStringToWidth(txt2, sizeX - (32 + 8)), posX + 40, posY + sizeY/2, ThemeRegistry.curTheme().textColor().getRGB());
 	}
 }

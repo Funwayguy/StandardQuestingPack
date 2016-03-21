@@ -1,9 +1,9 @@
 package bq_standard.network;
 
-import bq_standard.client.gui.editors.GuiLootGroupEditor;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
-import cpw.mods.fml.common.network.IGuiHandler;
+import net.minecraftforge.fml.common.network.IGuiHandler;
+import bq_standard.client.gui.editors.GuiLootGroupEditor;
 
 public class GuiHandler implements IGuiHandler
 {

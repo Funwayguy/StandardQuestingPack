@@ -1,5 +1,6 @@
 package bq_standard.client.gui.editors;
 
+import java.io.IOException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -40,7 +41,6 @@ public class GuiHuntEditor extends GuiQuesting
 	}
 	
 	@Override
-	@SuppressWarnings("unchecked")
 	public void initGui()
 	{
 		super.initGui();
@@ -71,7 +71,7 @@ public class GuiHuntEditor extends GuiQuesting
 			}
 		}
 		
-		numField = new GuiNumberField(mc.fontRenderer, guiLeft + sizeX/2 + 1, guiTop + sizeY/2 + 1, 98, 18);
+		numField = new GuiNumberField(mc.fontRendererObj, guiLeft + sizeX/2 + 1, guiTop + sizeY/2 + 1, 98, 18);
 		numField.setText("" + JsonHelper.GetNumber(data, "required", 1).intValue());
 		this.buttonList.add(new GuiButtonQuesting(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 20, 200, 20, I18n.format("bq_standard.btn.select_mob")));
 		this.buttonList.add(new GuiButtonQuesting(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 40, 200, 20, I18n.format("betterquesting.btn.advanced")));
@@ -112,7 +112,7 @@ public class GuiHuntEditor extends GuiQuesting
 		}
 		
 		String txt = I18n.format("bq_standard.gui.amount") + ": ";
-		mc.fontRenderer.drawString(txt, guiLeft + sizeX/2 - mc.fontRenderer.getStringWidth(txt), guiTop + sizeY/2 + 6, ThemeRegistry.curTheme().textColor().getRGB());
+		mc.fontRendererObj.drawString(txt, guiLeft + sizeX/2 - mc.fontRendererObj.getStringWidth(txt), guiTop + sizeY/2 + 6, ThemeRegistry.curTheme().textColor().getRGB());
 		numField.drawTextBox();
 	}
 	
@@ -140,7 +140,7 @@ public class GuiHuntEditor extends GuiQuesting
      * Called when the mouse is clicked.
      */
 	@Override
-    protected void mouseClicked(int mx, int my, int click)
+    protected void mouseClicked(int mx, int my, int click) throws IOException
     {
 		super.mouseClicked(mx, my, click);
 		
@@ -151,7 +151,7 @@ public class GuiHuntEditor extends GuiQuesting
      * Fired when a key is typed. This is the equivalent of KeyListener.keyTyped(KeyEvent e).
      */
 	@Override
-    protected void keyTyped(char character, int keyCode)
+    protected void keyTyped(char character, int keyCode) throws IOException
     {
         super.keyTyped(character, keyCode);
         

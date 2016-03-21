@@ -27,12 +27,12 @@ public class GuiTaskScoreboard extends GuiEmbedded
 		GL11.glTranslatef(posX + sizeX/2, posY + sizeY/2, 0F);
 		GL11.glScalef(2F, 2F, 1F);
 		
-		int tw1 = screen.mc.fontRenderer.getStringWidth(EnumChatFormatting.BOLD + task.scoreName);
-		screen.mc.fontRenderer.drawString(EnumChatFormatting.BOLD + task.scoreName, -tw1/2, -12, ThemeRegistry.curTheme().textColor().getRGB(), false);
+		int tw1 = screen.mc.fontRendererObj.getStringWidth(EnumChatFormatting.BOLD + task.scoreName);
+		screen.mc.fontRendererObj.drawString(EnumChatFormatting.BOLD + task.scoreName, -tw1/2, -12, ThemeRegistry.curTheme().textColor().getRGB(), false);
 		
 		Scoreboard board = screen.mc.thePlayer.getWorldScoreboard();
 		ScoreObjective scoreObj = board == null? null : board.getObjective(task.scoreName);
-		Score score = scoreObj == null? null : board.func_96529_a(screen.mc.thePlayer.getCommandSenderName(), scoreObj);
+		Score score = scoreObj == null? null : board.getValueFromObjective(screen.mc.thePlayer.getName(), scoreObj);
 		String value = score == null? "?" : "" + score.getScorePoints();
 		
 		String txt = EnumChatFormatting.BOLD + value + " " + EnumChatFormatting.RESET + task.operation.GetText() + " " + task.target;
@@ -45,8 +45,8 @@ public class GuiTaskScoreboard extends GuiEmbedded
 			txt = EnumChatFormatting.RED + txt;
 		}
 		
-		int tw2 = screen.mc.fontRenderer.getStringWidth(txt);
-		screen.mc.fontRenderer.drawString(txt, -tw2/2, 1, ThemeRegistry.curTheme().textColor().getRGB(), false);
+		int tw2 = screen.mc.fontRendererObj.getStringWidth(txt);
+		screen.mc.fontRendererObj.drawString(txt, -tw2/2, 1, ThemeRegistry.curTheme().textColor().getRGB(), false);
 		GL11.glPopMatrix();
 	}
 }

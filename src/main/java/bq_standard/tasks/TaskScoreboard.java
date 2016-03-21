@@ -7,6 +7,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.quests.QuestDatabase;
@@ -15,8 +17,6 @@ import betterquesting.utils.JsonHelper;
 import bq_standard.client.gui.editors.GuiScoreEditor;
 import bq_standard.client.gui.tasks.GuiTaskScoreboard;
 import com.google.gson.JsonObject;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
 public class TaskScoreboard extends TaskBase
 {
@@ -55,7 +55,7 @@ public class TaskScoreboard extends TaskBase
 			return;
 		}
 		
-		Score score = board.func_96529_a(player.getCommandSenderName(), scoreObj);
+		Score score = board.getValueFromObjective(player.getName(), scoreObj);
 		int points = score.getScorePoints();
 		
 		if(operation.checkValues(points, target))

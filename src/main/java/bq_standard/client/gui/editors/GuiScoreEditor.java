@@ -1,5 +1,6 @@
 package bq_standard.client.gui.editors;
 
+import java.io.IOException;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
@@ -29,14 +30,13 @@ public class GuiScoreEditor extends GuiQuesting
 	}
 	
 	@Override
-	@SuppressWarnings("unchecked")
 	public void initGui()
 	{
 		super.initGui();
 		
-		txtField = new GuiTextField(mc.fontRenderer, guiLeft + sizeX/2 - 99, guiTop + sizeY/2 - 19, 198, 18);
+		txtField = new GuiTextField(0, mc.fontRendererObj, guiLeft + sizeX/2 - 99, guiTop + sizeY/2 - 19, 198, 18);
 		txtField.setText(JsonHelper.GetString(data, "scoreName", "Score"));
-		numField = new GuiNumberField(mc.fontRenderer, guiLeft + sizeX/2 + 1, guiTop + sizeY/2 + 1, 98, 18);
+		numField = new GuiNumberField(mc.fontRendererObj, guiLeft + sizeX/2 + 1, guiTop + sizeY/2 + 1, 98, 18);
 		numField.setText("" + JsonHelper.GetNumber(data, "target", 1).intValue());
 		this.buttonList.add(new GuiButtonQuesting(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2, 100, 20, operation.GetText()));
 		this.buttonList.add(new GuiButtonQuesting(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 20, 200, 20, I18n.format("betterquesting.btn.advanced")));
@@ -47,7 +47,7 @@ public class GuiScoreEditor extends GuiQuesting
 	{
 		super.drawScreen(mx, my, partialTick);
 		
-		mc.fontRenderer.drawString(I18n.format("betterquesting.gui.name"), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 - 32, ThemeRegistry.curTheme().textColor().getRGB());
+		mc.fontRendererObj.drawString(I18n.format("betterquesting.gui.name"), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 - 32, ThemeRegistry.curTheme().textColor().getRGB());
 		numField.drawTextBox();
 		txtField.drawTextBox();
 	}
@@ -73,7 +73,7 @@ public class GuiScoreEditor extends GuiQuesting
      * Called when the mouse is clicked.
      */
 	@Override
-    protected void mouseClicked(int mx, int my, int click)
+    protected void mouseClicked(int mx, int my, int click) throws IOException
     {
 		super.mouseClicked(mx, my, click);
 		
@@ -85,7 +85,7 @@ public class GuiScoreEditor extends GuiQuesting
      * Fired when a key is typed. This is the equivalent of KeyListener.keyTyped(KeyEvent e).
      */
 	@Override
-    protected void keyTyped(char character, int keyCode)
+    protected void keyTyped(char character, int keyCode) throws IOException
     {
         super.keyTyped(character, keyCode);
         

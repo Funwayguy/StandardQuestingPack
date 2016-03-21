@@ -3,8 +3,8 @@ package bq_standard.handlers;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraftforge.fml.client.IModGuiFactory;
 import bq_standard.client.gui.GuiBQSConfig;
-import cpw.mods.fml.client.IModGuiFactory;
 
 public class ConfigGuiFactory implements IModGuiFactory
 {

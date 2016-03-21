@@ -5,6 +5,7 @@ import net.minecraft.item.Item;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
@@ -27,7 +28,7 @@ public class HQMUtilities
 	public static BigItemStack HQMStackT1(JsonObject json) // This can return multiple stacks in the event the stack size exceeds 127
 	{
 		String iID = JsonHelper.GetString(json, "id", "minecraft:stone");
-		Item item = (Item)Item.itemRegistry.getObject(iID);
+		Item item = (Item)Item.itemRegistry.getObject(new ResourceLocation(iID));
 		int amount = JsonHelper.GetNumber(json, "amount", 1).intValue();
 		int damage = JsonHelper.GetNumber(json, "damage", 0).intValue();
 		NBTTagCompound tags = null;
@@ -48,7 +49,7 @@ public class HQMUtilities
 				rawNbt = rawNbt.replace("[\\\"", "[\""); // Fix start of lists
 				rawNbt = rawNbt.replace("\\n", "\n");
 				
-				NBTBase nbt = JsonToNBT.func_150315_a(rawNbt);
+				NBTBase nbt = JsonToNBT.getTagFromJson(rawNbt);
 				
 				if(nbt != null && nbt instanceof NBTTagCompound)
 				{
@@ -94,7 +95,7 @@ public class HQMUtilities
 	{
 		JsonObject json = JsonHelper.GetObject(rJson, "item");
 		String iID = JsonHelper.GetString(json, "id", "minecraft:stone");
-		Item item = (Item)Item.itemRegistry.getObject(iID);
+		Item item = (Item)Item.itemRegistry.getObject(new ResourceLocation(iID));
 		int amount = JsonHelper.GetNumber(rJson, "required", 1).intValue();
 		int damage = JsonHelper.GetNumber(json, "damage", 0).intValue();
 		boolean oreDict = JsonHelper.GetString(rJson, "precision", "").equalsIgnoreCase("ORE_DICTIONARY");
@@ -117,7 +118,7 @@ public class HQMUtilities
 				rawNbt = rawNbt.replace("[\\\"", "[\""); // Fix start of lists
 				rawNbt = rawNbt.replace("\\n", "\n");
 				
-				NBTBase nbt = JsonToNBT.func_150315_a(rawNbt);
+				NBTBase nbt = JsonToNBT.getTagFromJson(rawNbt);
 				
 				if(nbt != null && nbt instanceof NBTTagCompound)
 				{

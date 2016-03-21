@@ -54,10 +54,10 @@ public class TaskLocation extends TaskBase
 		{
 			if(visible && range > 0) // Do not do ray casting with infinite range!
 			{
-				Vec3 pPos = Vec3.createVectorHelper(player.posX, player.posY + player.getEyeHeight(), player.posZ);
-				Vec3 tPos = Vec3.createVectorHelper(x, y, z);
+				Vec3 pPos = new Vec3(player.posX, player.posY + player.getEyeHeight(), player.posZ);
+				Vec3 tPos = new Vec3(x, y, z);
 				boolean liquids = false;
-				MovingObjectPosition mop = player.worldObj.func_147447_a(pPos, tPos, liquids, !liquids, false);
+				MovingObjectPosition mop = player.worldObj.rayTraceBlocks(pPos, tPos, liquids, !liquids, false);
 				
 				if(mop == null || mop.typeOfHit != MovingObjectType.BLOCK)
 				{

@@ -54,7 +54,7 @@ public class GuiRewardChoice extends GuiEmbedded
 			}
 		}
 		
-		screen.mc.fontRenderer.drawString(I18n.format("betterquesting.gui.selection"), posX, posY + 32, ThemeRegistry.curTheme().textColor().getRGB(), false);
+		screen.mc.fontRendererObj.drawString(I18n.format("betterquesting.gui.selection"), posX, posY + 32, ThemeRegistry.curTheme().textColor().getRGB(), false);
 		GL11.glColor4f(1F, 1F, 1F, 1F);
 		screen.mc.renderEngine.bindTexture(ThemeRegistry.curTheme().guiTexture());
 		GL11.glDisable(GL11.GL_DEPTH_TEST);

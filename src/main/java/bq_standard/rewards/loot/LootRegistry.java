@@ -9,6 +9,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.ChestGenHooks;
 import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import org.apache.logging.log4j.Level;
 import betterquesting.core.BQ_Settings;
 import betterquesting.utils.BigItemStack;
@@ -20,8 +22,6 @@ import bq_standard.network.PacketStandard;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.PlayerEvent;
 
 public class LootRegistry
 {
@@ -193,7 +193,7 @@ public class LootRegistry
 	@SubscribeEvent
 	public void onWorldSave(WorldEvent.Save event)
 	{
-		if(!event.world.isRemote && worldDir != null && event.world.provider.dimensionId == 0)
+		if(!event.world.isRemote && worldDir != null && event.world.provider.getDimensionId() == 0)
 		{
 			JsonObject jsonQ = new JsonObject();
 			writeToJson(jsonQ);

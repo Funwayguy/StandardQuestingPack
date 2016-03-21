@@ -1,14 +1,19 @@
 package bq_standard.core.proxies;
 
 import java.awt.Color;
+import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.client.themes.ThemeStandard;
 import bq_standard.core.BQ_Standard;
-import bq_standard.nei.NEIRegister;
 import bq_standard.network.PacketStandard;
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.relauncher.Side;
 
 public class ClientProxy extends CommonProxy
 {
@@ -25,9 +30,9 @@ public class ClientProxy extends CommonProxy
 		
     	BQ_Standard.instance.network.registerMessage(PacketStandard.HandlerClient.class, PacketStandard.class, 0, Side.CLIENT);
     	
-    	if(Loader.isModLoaded("NotEnoughItems"))
+    	if(Loader.isModLoaded("JustEnoughItems"))
     	{
-    		NEIRegister.instance.registerHandler();
+    		//NEIRegister.instance.registerHandler();
     	}
 	}
 	
@@ -41,5 +46,68 @@ public class ClientProxy extends CommonProxy
 		ThemeRegistry.RegisterTheme(new ThemeStandard("Nether", new ResourceLocation("bq_standard", "textures/gui/editor_gui_nether.png")).setTextColor(Color.WHITE), "nether");
 		ThemeRegistry.RegisterTheme(new ThemeStandard("End", new ResourceLocation("bq_standard", "textures/gui/editor_gui_end.png")).setTextColor(Color.WHITE), "end");
 		ThemeRegistry.RegisterTheme(new ThemeStandard("Vanilla", new ResourceLocation("bq_standard", "textures/gui/editor_gui_vanilla.png")), "vanilla");
+	}
+	
+	@Override
+	public void registerRenderers()
+	{
+		super.registerRenderers();
+		
+		registerItemModelSubtypes(BQ_Standard.lootChest, 0, 102, BQ_Standard.lootChest.getRegistryName());
+	}
+	
+	@SideOnly(Side.CLIENT)
+	public static void registerBlockModel(Block block)
+	{
+		registerBlockModel(block, 0, block.getRegistryName());
+	}
+	
+	@SideOnly(Side.CLIENT)
+	public static void registerBlockModel(Block block, int meta, String name)
+	{
+		Item item = Item.getItemFromBlock(block);
+		ModelResourceLocation model = new ModelResourceLocation(name, "inventory");
+		
+		if(!name.equals(item.getRegistryName()))
+		{
+		    ModelBakery.registerItemVariants(item, model);
+		}
+		
+	    Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, meta, model);
+	}
+	
+	@SideOnly(Side.CLIENT)
+	public static void registerItemModelSubtypes(Item item, int metaStart, int metaEnd, String name)
+	{
+		if(metaStart > metaEnd)
+		{
+			int tmp = metaStart;
+			metaStart = metaEnd;
+			metaEnd = tmp;
+		}
+		
+		for(int m = metaStart; m <= metaEnd; m++)
+		{
+			registerItemModel(item, m, name);
+		}
+	}
+	
+	@SideOnly(Side.CLIENT)
+	public static void registerItemModel(Item item)
+	{
+		registerItemModel(item, 0, item.getRegistryName());
+	}
+	
+	@SideOnly(Side.CLIENT)
+	public static void registerItemModel(Item item, int meta, String name)
+	{
+		ModelResourceLocation model = new ModelResourceLocation(name, "inventory");
+		
+		if(!name.equals(item.getRegistryName()))
+		{
+		    ModelBakery.registerItemVariants(item, model);
+		}
+		
+	    Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, meta, model);
 	}
 }
