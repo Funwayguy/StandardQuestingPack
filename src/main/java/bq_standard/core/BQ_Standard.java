@@ -3,7 +3,6 @@ package bq_standard.core;
 import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.item.Item;
-import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -119,8 +118,7 @@ public class BQ_Standard
 	@EventHandler
 	public void serverStart(FMLServerStartingEvent event)
 	{
-		MinecraftServer server = MinecraftServer.getServer();
-		ICommandManager command = server.getCommandManager();
+		ICommandManager command = event.getServer().getCommandManager();
 		ServerCommandManager manager = (ServerCommandManager) command;
 		
 		manager.registerCommand(new BQS_Commands());

@@ -10,8 +10,11 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.StatCollector;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -38,15 +41,20 @@ public class ItemLootChest extends Item
      * Called whenever this item is equipped and the right mouse button is pressed. Args: itemStack, world, entityPlayer
      */
 	@Override
-    public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player)
+    public ActionResult<ItemStack> onItemRightClick(ItemStack stack, World world, EntityPlayer player, EnumHand hand)
     {
+		if(hand != EnumHand.MAIN_HAND)
+		{
+			return new ActionResult<ItemStack>(EnumActionResult.PASS, stack);
+		}
+		
     	if(stack.getItemDamage() >= 102)
     	{
     		if(QuestDatabase.editMode)
     		{
     			player.openGui(BQ_Standard.instance, 0, world, (int)player.posX, (int)player.posY, (int)player.posZ);
     		}
-			return stack;
+			return new ActionResult<ItemStack>(EnumActionResult.PASS, stack);
     	} else if(!world.isRemote)
     	{
     		LootGroup group;
@@ -62,7 +70,7 @@ public class ItemLootChest extends Item
 	    	
 	    	if(group == null)
 	    	{
-	    		loot = LootRegistry.getStandardLoot(itemRand);
+	    		loot = LootRegistry.getStandardLoot(player);
 	    	} else
 	    	{
 	    		title = group.name;
@@ -72,7 +80,7 @@ public class ItemLootChest extends Item
 	    		{
 	    			BQ_Standard.logger.log(Level.WARN, "Unable to get random loot entry from group " + group.name + "! Reason: Contains 0 loot entries");
 	    			title = "Dungeon Loot";
-	    			loot = LootRegistry.getStandardLoot(itemRand);
+	    			loot = LootRegistry.getStandardLoot(player);
 	    		}
 	    	}
 	    	
@@ -101,7 +109,7 @@ public class ItemLootChest extends Item
     		stack.stackSize--;
     	}
     	
-    	return stack;
+    	return new ActionResult<ItemStack>(EnumActionResult.PASS, stack);
     }
 	
 	public void sendGui(EntityPlayerMP player, ArrayList<BigItemStack> loot, String title)
@@ -187,13 +195,13 @@ public class ItemLootChest extends Item
     {
 		if(stack.getItemDamage() > 101)
 		{
-			list.add(StatCollector.translateToLocal("betterquesting.btn.edit"));
+			list.add(I18n.translateToLocal("betterquesting.btn.edit"));
 		} else if(stack.getItemDamage() == 101)
 		{
-			list.add(StatCollector.translateToLocalFormatted("bq_standard.tooltip.loot_chest", "???"));
+			list.add(I18n.translateToLocalFormatted("bq_standard.tooltip.loot_chest", "???"));
 		} else
 		{
-			list.add(StatCollector.translateToLocalFormatted("bq_standard.tooltip.loot_chest", MathHelper.clamp_int(stack.getItemDamage(), 0, 100) + "%"));
+			list.add(I18n.translateToLocalFormatted("bq_standard.tooltip.loot_chest", MathHelper.clamp_int(stack.getItemDamage(), 0, 100) + "%"));
 		}
     }
 }

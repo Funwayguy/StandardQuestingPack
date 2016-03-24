@@ -2,8 +2,8 @@ package bq_standard.client.gui.rewards;
 
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.text.translation.I18n;
+import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
@@ -23,8 +23,8 @@ public class GuiRewardCommand extends GuiEmbedded
 	@Override
 	public void drawGui(int mx, int my, float partialTick)
 	{
-		String txt1 = I18n.format("advMode.command");
-		String txt2 = EnumChatFormatting.ITALIC + (reward.hideCmd? "[HIDDEN]" : reward.command);
+		String txt1 = I18n.translateToLocal("advMode.command");
+		String txt2 = TextFormatting.ITALIC + (reward.hideCmd? "[HIDDEN]" : reward.command);
 		
 		screen.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
 		TextureAtlasSprite blockSprite = screen.mc.getTextureMapBlocks().getAtlasSprite("minecraft:command_block");

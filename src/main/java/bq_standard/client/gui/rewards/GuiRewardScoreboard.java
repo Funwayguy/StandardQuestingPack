@@ -1,6 +1,6 @@
 package bq_standard.client.gui.rewards;
 
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
@@ -21,17 +21,17 @@ public class GuiRewardScoreboard extends GuiEmbedded
 	public void drawGui(int mx, int my, float partialTick)
 	{
 		String txt1 = reward.score;
-		String txt2 = "" + EnumChatFormatting.BOLD;
+		String txt2 = "" + TextFormatting.BOLD;
 		
 		if(!reward.relative)
 		{
 			txt2 += "= " + reward.value;
 		} else if(reward.value >= 0)
 		{
-			txt2 += EnumChatFormatting.GREEN + "+ " + Math.abs(reward.value);
+			txt2 += TextFormatting.GREEN + "+ " + Math.abs(reward.value);
 		} else
 		{
-			txt2 += EnumChatFormatting.RED + "- " + Math.abs(reward.value);
+			txt2 += TextFormatting.RED + "- " + Math.abs(reward.value);
 		}
 		
 		GL11.glPushMatrix();

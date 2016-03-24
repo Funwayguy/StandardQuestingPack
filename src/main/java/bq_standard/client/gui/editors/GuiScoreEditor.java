@@ -4,7 +4,7 @@ import java.io.IOException;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
-import net.minecraft.client.resources.I18n;
+import net.minecraft.util.text.translation.I18n;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.editors.json.GuiJsonObject;
 import betterquesting.client.gui.misc.GuiButtonQuesting;
@@ -39,7 +39,7 @@ public class GuiScoreEditor extends GuiQuesting
 		numField = new GuiNumberField(mc.fontRendererObj, guiLeft + sizeX/2 + 1, guiTop + sizeY/2 + 1, 98, 18);
 		numField.setText("" + JsonHelper.GetNumber(data, "target", 1).intValue());
 		this.buttonList.add(new GuiButtonQuesting(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2, 100, 20, operation.GetText()));
-		this.buttonList.add(new GuiButtonQuesting(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 20, 200, 20, I18n.format("betterquesting.btn.advanced")));
+		this.buttonList.add(new GuiButtonQuesting(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 20, 200, 20, I18n.translateToLocal("betterquesting.btn.advanced")));
 	}
 	
 	@Override
@@ -47,7 +47,7 @@ public class GuiScoreEditor extends GuiQuesting
 	{
 		super.drawScreen(mx, my, partialTick);
 		
-		mc.fontRendererObj.drawString(I18n.format("betterquesting.gui.name"), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 - 32, ThemeRegistry.curTheme().textColor().getRGB());
+		mc.fontRendererObj.drawString(I18n.translateToLocal("betterquesting.gui.name"), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 - 32, ThemeRegistry.curTheme().textColor().getRGB());
 		numField.drawTextBox();
 		txtField.drawTextBox();
 	}

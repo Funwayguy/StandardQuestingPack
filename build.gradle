@@ -18,8 +18,8 @@ group= "bq_standard" // http://maven.apache.org/guides/mini/guide-naming-convent
 archivesBaseName = "StandardExpansion"
 
 minecraft {
-    version = "1.8.9-11.15.1.1722"
-    mappings = "stable_20"
+    version = "1.9-12.16.0.1804-1.9"
+    mappings = "snapshot_20160312"
 }
 
 dependencies {

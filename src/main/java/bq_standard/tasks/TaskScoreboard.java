@@ -55,7 +55,7 @@ public class TaskScoreboard extends TaskBase
 			return;
 		}
 		
-		Score score = board.getValueFromObjective(player.getName(), scoreObj);
+		Score score = board.getOrCreateScore(player.getName(), scoreObj);
 		int points = score.getScorePoints();
 		
 		if(operation.checkValues(points, target))

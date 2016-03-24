@@ -4,8 +4,8 @@ import java.awt.Color;
 import org.lwjgl.opengl.GL11;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.math.MathHelper;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.utils.RenderUtils;
@@ -55,7 +55,7 @@ public class GuiTaskXP extends GuiEmbedded
 		GL11.glPopMatrix();
 		GuiQuesting.drawRect(posX + midX - barSize/2, posY + sizeY/2, posX + midX + barSize/2, posY + sizeY/2 + 16, Color.BLACK.getRGB());
 		GuiQuesting.drawRect(posX + midX - barSize/2 + 1, posY + sizeY/2 + 1, posX + midX - barSize/2 + barProg + 1, posY + sizeY/2 + 15, Color.GREEN.getRGB());
-		String txt = EnumChatFormatting.BOLD + "" + xp + "/" + task.amount + (task.levels? "L" : "XP");
+		String txt = TextFormatting.BOLD + "" + xp + "/" + task.amount + (task.levels? "L" : "XP");
 		screen.mc.fontRendererObj.drawString(txt, posX + sizeX/2 - screen.mc.fontRendererObj.getStringWidth(txt)/2, posY + sizeY/2 + 4, Color.WHITE.getRGB(), true);
 	}
 	

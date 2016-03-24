@@ -1,10 +1,10 @@
 package bq_standard.client.gui.tasks;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.I18n;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.MathHelper;
 import org.apache.logging.log4j.Level;
 import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.GuiQuesting;
@@ -74,7 +74,7 @@ public class GuiTaskHunt extends GuiEmbedded
 		Integer progress = task.userProgress.get(screen.mc.thePlayer.getUniqueID());
 		progress = progress == null? 0 : progress;
 		String tnm = !task.ignoreNBT && target != null? target.getName() : task.idName;
-		String txt = I18n.format("bq_standard.gui.kill", tnm) + " " + progress + "/" + task.required;
+		String txt = I18n.translateToLocalFormatted("bq_standard.gui.kill", tnm) + " " + progress + "/" + task.required;
 		screen.mc.fontRendererObj.drawString(txt, posX + sizeX/2 - screen.mc.fontRendererObj.getStringWidth(txt)/2, posY, ThemeRegistry.curTheme().textColor().getRGB());
 	}
 	

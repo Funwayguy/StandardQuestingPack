@@ -4,10 +4,11 @@ import java.awt.Color;
 import java.util.ArrayList;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.text.translation.I18n;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
 import org.lwjgl.opengl.GL11;
 import betterquesting.utils.BigItemStack;
 import betterquesting.utils.RenderUtils;
@@ -29,7 +30,7 @@ public class GuiLootChest extends GuiScreen
 	{
 		super.initGui();
 		
-		mc.getSoundHandler().playSound(PositionedSoundRecord.create(new ResourceLocation("random.chestopen"), 1.0F));
+		mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(new SoundEvent(new ResourceLocation("random.chestopen")), 1.0F));
 	}
 	
 	@Override
@@ -46,7 +47,7 @@ public class GuiLootChest extends GuiScreen
 		
 		this.drawTexturedModalRect(width/2 - cw/2, height/2, 0, 0, cw, ch);
 		
-		String txt = EnumChatFormatting.BOLD + "" + EnumChatFormatting.UNDERLINE + I18n.format(title);
+		String txt = TextFormatting.BOLD + "" + TextFormatting.UNDERLINE + I18n.translateToLocal(title);
 		mc.fontRendererObj.drawString(txt, width/2 - mc.fontRendererObj.getStringWidth(txt)/2, height/2 + ch + 8, Color.WHITE.getRGB(), false);
 		
 		// Auto balance row size

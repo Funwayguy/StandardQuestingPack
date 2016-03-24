@@ -3,7 +3,7 @@ package bq_standard.rewards;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.scoreboard.Score;
-import net.minecraft.scoreboard.ScoreDummyCriteria;
+import net.minecraft.scoreboard.ScoreCriteria;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
 import betterquesting.client.gui.GuiQuesting;
@@ -45,7 +45,7 @@ public class RewardScoreboard extends RewardBase
 		
 		if(scoreObj == null)
 		{
-			scoreObj = board.addScoreObjective(score, new ScoreDummyCriteria(score));
+			scoreObj = board.addScoreObjective(score, new ScoreCriteria(score));
 		}
 		
 		if(scoreObj == null || scoreObj.getCriteria().isReadOnly())
@@ -53,11 +53,11 @@ public class RewardScoreboard extends RewardBase
 			return;
 		}
 		
-		Score s = board.getValueFromObjective(player.getName(), scoreObj);
+		Score s = board.getOrCreateScore(player.getName(), scoreObj);
 		
 		if(relative)
 		{
-			s.increseScore(value);
+			s.increaseScore(value);
 		} else
 		{
 			s.setScorePoints(value);

@@ -4,10 +4,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.common.ChestGenHooks;
+import net.minecraft.world.WorldServer;
+import net.minecraft.world.storage.loot.LootContext;
+import net.minecraft.world.storage.loot.LootTable;
+import net.minecraft.world.storage.loot.LootTableList;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
@@ -85,16 +90,16 @@ public class LootRegistry
 		return i;
 	}
 	
-	public static ArrayList<BigItemStack> getStandardLoot(Random rand)
+	public static ArrayList<BigItemStack> getStandardLoot(EntityPlayer player)
 	{
 		ArrayList<BigItemStack> stacks = new ArrayList<BigItemStack>();
 		
-		int i = 1 + rand.nextInt(7);
+		LootTable table = player.worldObj.getLootTableManager().getLootTableFromLocation(LootTableList.CHESTS_SIMPLE_DUNGEON);
 		
-		while(i > 0)
+		LootContext.Builder lcBuilder = new LootContext.Builder((WorldServer)player.worldObj);
+		for(ItemStack s : table.generateLootForPools(player.getRNG(), lcBuilder.build()))
 		{
-			stacks.add(new BigItemStack(ChestGenHooks.getOneItem(ChestGenHooks.DUNGEON_CHEST, rand)));
-			i--;
+			stacks.add(new BigItemStack(s));
 		}
 		
 		return stacks;
@@ -161,7 +166,7 @@ public class LootRegistry
 			return;
 		}
 		
-		MinecraftServer server = MinecraftServer.getServer();
+		MinecraftServer server = event.world.getMinecraftServer();
 		
 		if(BQ_Standard.proxy.isClient())
 		{
@@ -193,7 +198,7 @@ public class LootRegistry
 	@SubscribeEvent
 	public void onWorldSave(WorldEvent.Save event)
 	{
-		if(!event.world.isRemote && worldDir != null && event.world.provider.getDimensionId() == 0)
+		if(!event.world.isRemote && worldDir != null && event.world.provider.getDimension() == 0)
 		{
 			JsonObject jsonQ = new JsonObject();
 			writeToJson(jsonQ);
@@ -204,7 +209,7 @@ public class LootRegistry
 	@SubscribeEvent
 	public void onWorldUnload(WorldEvent.Unload event)
 	{
-		if(!event.world.isRemote && !MinecraftServer.getServer().isServerRunning())
+		if(!event.world.isRemote && !event.world.getMinecraftServer().isServerRunning())
 		{
 			worldDir = null;
 		}

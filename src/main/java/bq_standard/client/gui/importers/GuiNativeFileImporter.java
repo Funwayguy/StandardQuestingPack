@@ -1,6 +1,6 @@
 package bq_standard.client.gui.importers;
 
-import net.minecraft.client.resources.I18n;
+import net.minecraft.util.text.translation.I18n;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiButtonQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
@@ -15,13 +15,13 @@ public class GuiNativeFileImporter extends GuiEmbedded
 	public GuiNativeFileImporter(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
 		super(screen, posX, posY, sizeX, sizeY);
-		btn = new GuiButtonQuesting(0, posX + sizeX/2 - 50, posY + sizeY - 20, 100, 20, I18n.format("betterquesting.btn.import"));
+		btn = new GuiButtonQuesting(0, posX + sizeX/2 - 50, posY + sizeY - 20, 100, 20, I18n.translateToLocal("betterquesting.btn.import"));
 	}
 	
 	@Override
 	public void drawGui(int mx, int my, float partialTick)
 	{
-		RenderUtils.drawSplitString(this.screen.mc.fontRendererObj, I18n.format("bq_standard.importer.nat_file.desc"), this.posX + 8, this.posY, this.sizeX - 16, ThemeRegistry.curTheme().textColor().getRGB(), false);
+		RenderUtils.drawSplitString(this.screen.mc.fontRendererObj, I18n.translateToLocal("bq_standard.importer.nat_file.desc"), this.posX + 8, this.posY, this.sizeX - 16, ThemeRegistry.curTheme().textColor().getRGB(), false);
 		btn.drawButton(screen.mc, mx, my);
 	}
 	

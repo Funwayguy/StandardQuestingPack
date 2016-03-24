@@ -6,10 +6,10 @@ import java.util.List;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
-import net.minecraft.client.resources.I18n;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Mouse;
@@ -61,8 +61,8 @@ public class GuiLootGroupEditor extends GuiQuesting
 		lineWeight = new GuiNumberField(mc.fontRendererObj, guiLeft + sizeX/2 + 9, height/2 - 19, btnWidth/2 - 10, 18);
 		lineWeight.setMaxStringLength(Integer.MAX_VALUE);
 		 
-		this.buttonList.add(new GuiButtonQuesting(1, guiLeft + 16 + sx/4 - 50, guiTop + sizeY - 48, 100, 20, I18n.format("betterquesting.btn.new")));
-		this.buttonList.add(new GuiButtonQuesting(2, guiLeft + 16 + sx/4*3 - 75, height/2 + 20, 150, 20, I18n.format("bq_standard.btn.add_remove_drops")));
+		this.buttonList.add(new GuiButtonQuesting(1, guiLeft + 16 + sx/4 - 50, guiTop + sizeY - 48, 100, 20, I18n.translateToLocal("betterquesting.btn.new")));
+		this.buttonList.add(new GuiButtonQuesting(2, guiLeft + 16 + sx/4*3 - 75, height/2 + 20, 150, 20, I18n.translateToLocal("bq_standard.btn.add_remove_drops")));
 		
 		// Quest Line - Main
 		for(int i = 0; i < maxRows; i++)
@@ -74,7 +74,7 @@ public class GuiLootGroupEditor extends GuiQuesting
 		// Quest Line - Delete
 		for(int i = 0; i < maxRows; i++)
 		{
-			GuiButtonQuesting btn = new GuiButtonQuesting(this.buttonList.size(), guiLeft + 16, guiTop + 32 + (i*20), 20, 20, "" + EnumChatFormatting.RED + EnumChatFormatting.BOLD + "x");
+			GuiButtonQuesting btn = new GuiButtonQuesting(this.buttonList.size(), guiLeft + 16, guiTop + 32 + (i*20), 20, 20, "" + TextFormatting.RED + TextFormatting.BOLD + "x");
 			this.buttonList.add(btn);
 		}
 		
@@ -108,8 +108,8 @@ public class GuiLootGroupEditor extends GuiQuesting
 		
 		RenderUtils.DrawLine(width/2, guiTop + 32, width/2, guiTop + sizeY - 48, 2F, ThemeRegistry.curTheme().textColor());
 		
-		mc.fontRendererObj.drawString(I18n.format("betterquesting.gui.name"), guiLeft + sizeX/2 + 8, guiTop + sizeY/2 - 72, ThemeRegistry.curTheme().textColor().getRGB(), false);
-		mc.fontRendererObj.drawString(I18n.format("bq_standard.gui.weight"), guiLeft + sizeX/2 + 8, guiTop + sizeY/2 - 32, ThemeRegistry.curTheme().textColor().getRGB(), false);
+		mc.fontRendererObj.drawString(I18n.translateToLocal("betterquesting.gui.name"), guiLeft + sizeX/2 + 8, guiTop + sizeY/2 - 72, ThemeRegistry.curTheme().textColor().getRGB(), false);
+		mc.fontRendererObj.drawString(I18n.translateToLocal("bq_standard.gui.weight"), guiLeft + sizeX/2 + 8, guiTop + sizeY/2 - 32, ThemeRegistry.curTheme().textColor().getRGB(), false);
 		
 		if(selected != null)
 		{
@@ -273,7 +273,7 @@ public class GuiLootGroupEditor extends GuiQuesting
 			{
 				if(n3 >= 0 && n3 < LootRegistry.lootGroups.size())
 				{
-					btn.displayString = I18n.format(LootRegistry.lootGroups.get(n3).name);
+					btn.displayString = I18n.translateToLocal(LootRegistry.lootGroups.get(n3).name);
 					btn.enabled = btn.visible = true;
 				} else
 				{

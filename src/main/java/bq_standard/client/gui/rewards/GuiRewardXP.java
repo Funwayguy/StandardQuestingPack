@@ -1,7 +1,7 @@
 package bq_standard.client.gui.rewards;
 
-import net.minecraft.client.resources.I18n;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.text.translation.I18n;
+import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
@@ -21,15 +21,15 @@ public class GuiRewardXP extends GuiEmbedded
 	@Override
 	public void drawGui(int mx, int my, float partialTick)
 	{
-		String txt1 = I18n.format("bq_standard.gui.experience");
-		String txt2 = "" + EnumChatFormatting.BOLD;
+		String txt1 = I18n.translateToLocal("bq_standard.gui.experience");
+		String txt2 = "" + TextFormatting.BOLD;
 		
 		if(reward.amount >= 0)
 		{
-			txt2 += EnumChatFormatting.GREEN + "+" + Math.abs(reward.amount);
+			txt2 += TextFormatting.GREEN + "+" + Math.abs(reward.amount);
 		} else
 		{
-			txt2 += EnumChatFormatting.RED + "-" + Math.abs(reward.amount);
+			txt2 += TextFormatting.RED + "-" + Math.abs(reward.amount);
 		}
 		
 		txt2 += reward.levels? "L" : "XP";

@@ -1,7 +1,7 @@
 package bq_standard.client.gui.tasks;
 
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.text.TextFormatting;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiButtonQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
@@ -25,7 +25,7 @@ public class GuiTaskCheckbox extends GuiEmbedded
 		
 		if(task != null && task.isComplete(screen.mc.thePlayer.getUniqueID()))
 		{
-			btn = new GuiButtonQuesting(0, posX + sizeX/2 - 20, posY + sizeY/2 - 20, 40, 40, EnumChatFormatting.GREEN + "" + EnumChatFormatting.BOLD + "\u2713");
+			btn = new GuiButtonQuesting(0, posX + sizeX/2 - 20, posY + sizeY/2 - 20, 40, 40, TextFormatting.GREEN + "" + TextFormatting.BOLD + "\u2713");
 			btn.enabled = false;
 		} else if(task != null)
 		{
@@ -47,7 +47,7 @@ public class GuiTaskCheckbox extends GuiEmbedded
 				btn.enabled = false;
 			} else
 			{
-				btn = new GuiButtonQuesting(0, posX + sizeX/2 - 20, posY + sizeY/2 - 20, 40, 40, EnumChatFormatting.RED + "" + EnumChatFormatting.BOLD + "x");
+				btn = new GuiButtonQuesting(0, posX + sizeX/2 - 20, posY + sizeY/2 - 20, 40, 40, TextFormatting.RED + "" + TextFormatting.BOLD + "x");
 			}
 		} else
 		{

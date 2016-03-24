@@ -1,13 +1,13 @@
 package bq_standard.rewards;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.command.server.CommandBlockLogic;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.Vec3;
+import net.minecraft.tileentity.CommandBlockBaseLogic;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
@@ -44,8 +44,8 @@ public class RewardCommand extends RewardBase
 		
 		String tmp = command.replaceAll("VAR_NAME", player.getName());
 		RewardCommandSender cmdSender = new RewardCommandSender(player.worldObj, (int)player.posX, (int)player.posY, (int)player.posZ);
-		
-		MinecraftServer.getServer().getCommandManager().executeCommand(cmdSender, tmp);
+		MinecraftServer server = player.worldObj.getMinecraftServer();
+		server.getCommandManager().executeCommand(cmdSender, tmp);
 	}
 	
 	@Override
@@ -68,7 +68,7 @@ public class RewardCommand extends RewardBase
 		return new GuiRewardCommand(this, screen, posX, posY, sizeX, sizeY);
 	}
 	
-	public static class RewardCommandSender extends CommandBlockLogic
+	public static class RewardCommandSender extends CommandBlockBaseLogic
 	{
 		World world;
 		BlockPos blockLoc;
@@ -86,9 +86,9 @@ public class RewardCommand extends RewardBase
 		}
 
 		@Override
-		public Vec3 getPositionVector()
+		public Vec3d getPositionVector()
 		{
-			return new Vec3(blockLoc.getX() + 0.5D, blockLoc.getY() + 0.5D, blockLoc.getZ() + 0.5D);
+			return new Vec3d(blockLoc.getX() + 0.5D, blockLoc.getY() + 0.5D, blockLoc.getZ() + 0.5D);
 		}
 
 		@Override
@@ -126,5 +126,11 @@ public class RewardCommand extends RewardBase
 	    {
 	        return BQ_Standard.NAME;
 	    }
+
+		@Override
+		public MinecraftServer getServer()
+		{
+			return world.getMinecraftServer();
+		}
 	}
 }

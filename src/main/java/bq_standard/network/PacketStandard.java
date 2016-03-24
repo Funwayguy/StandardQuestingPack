@@ -2,15 +2,12 @@ package bq_standard.network;
 
 import io.netty.buffer.ByteBuf;
 import java.util.ArrayList;
-import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.world.WorldServer;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
@@ -48,12 +45,6 @@ public class PacketStandard implements IMessage
 	@Override
 	public void toBytes(ByteBuf buf)
 	{
-		if(BQ_Standard.proxy.isClient() && Minecraft.getMinecraft().thePlayer != null)
-		{
-			tags.setString("Sender", Minecraft.getMinecraft().thePlayer.getUniqueID().toString());
-			tags.setInteger("Dimension", Minecraft.getMinecraft().thePlayer.dimension);
-		}
-		
 		ByteBufUtils.writeTag(buf, tags);
 	}
 	
@@ -76,26 +67,14 @@ public class PacketStandard implements IMessage
 				return null;
 			}
 			
-			EntityPlayer player = null;
-			
-			if(message.tags.hasKey("Sender"))
-			{
-				try
-				{
-					WorldServer world = MinecraftServer.getServer().worldServerForDimension(message.tags.getInteger("Dimension"));
-					player = world.getPlayerEntityByUUID(UUID.fromString(message.tags.getString("Sender")));
-				} catch(Exception e)
-				{
-					
-				}
-			}
+			EntityPlayer player = ctx.getServerHandler().playerEntity;
 			
 			if(ID == 1 && player != null)
 			{
-				if(!MinecraftServer.getServer().getConfigurationManager().canSendCommands(player.getGameProfile()))
+				if(!player.getServer().getPlayerList().canSendCommands(player.getGameProfile()))
 				{
 					BQ_Standard.logger.log(Level.WARN, "Player " + player.getName() + " (UUID:" + player.getUniqueID() + ") tried to edit loot chests without OP permissions!");
-					player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.RED + "You need to be OP to edit loot!"));
+					player.addChatComponentMessage(new TextComponentString(TextFormatting.RED + "You need to be OP to edit loot!"));
 					return null; // Player is not operator. Do nothing
 				}
 				

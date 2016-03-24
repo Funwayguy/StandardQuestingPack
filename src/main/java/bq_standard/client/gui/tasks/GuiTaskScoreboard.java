@@ -3,7 +3,7 @@ package bq_standard.client.gui.tasks;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
@@ -27,22 +27,22 @@ public class GuiTaskScoreboard extends GuiEmbedded
 		GL11.glTranslatef(posX + sizeX/2, posY + sizeY/2, 0F);
 		GL11.glScalef(2F, 2F, 1F);
 		
-		int tw1 = screen.mc.fontRendererObj.getStringWidth(EnumChatFormatting.BOLD + task.scoreName);
-		screen.mc.fontRendererObj.drawString(EnumChatFormatting.BOLD + task.scoreName, -tw1/2, -12, ThemeRegistry.curTheme().textColor().getRGB(), false);
+		int tw1 = screen.mc.fontRendererObj.getStringWidth(TextFormatting.BOLD + task.scoreName);
+		screen.mc.fontRendererObj.drawString(TextFormatting.BOLD + task.scoreName, -tw1/2, -12, ThemeRegistry.curTheme().textColor().getRGB(), false);
 		
 		Scoreboard board = screen.mc.thePlayer.getWorldScoreboard();
 		ScoreObjective scoreObj = board == null? null : board.getObjective(task.scoreName);
-		Score score = scoreObj == null? null : board.getValueFromObjective(screen.mc.thePlayer.getName(), scoreObj);
+		Score score = scoreObj == null? null : board.getOrCreateScore(screen.mc.thePlayer.getName(), scoreObj);
 		String value = score == null? "?" : "" + score.getScorePoints();
 		
-		String txt = EnumChatFormatting.BOLD + value + " " + EnumChatFormatting.RESET + task.operation.GetText() + " " + task.target;
+		String txt = TextFormatting.BOLD + value + " " + TextFormatting.RESET + task.operation.GetText() + " " + task.target;
 		
 		if(score != null && task.operation.checkValues(score.getScorePoints(), task.target))
 		{
-			txt = EnumChatFormatting.GREEN + txt;
+			txt = TextFormatting.GREEN + txt;
 		} else
 		{
-			txt = EnumChatFormatting.RED + txt;
+			txt = TextFormatting.RED + txt;
 		}
 		
 		int tw2 = screen.mc.fontRendererObj.getStringWidth(txt);

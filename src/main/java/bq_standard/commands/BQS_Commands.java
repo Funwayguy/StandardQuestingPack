@@ -7,14 +7,14 @@ import betterquesting.core.BQ_Settings;
 import betterquesting.utils.JsonIO;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootRegistry;
-import net.minecraft.client.resources.I18n;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 
 public class BQS_Commands extends CommandBase
 {
@@ -32,7 +32,7 @@ public class BQS_Commands extends CommandBase
 	}
 
 	@Override
-	public void processCommand(ICommandSender sender, String[] args) throws CommandException
+	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
 	{
 		if(args.length != 2)
 		{
@@ -45,8 +45,8 @@ public class BQS_Commands extends CommandBase
 			{
 				JsonObject jsonQ = new JsonObject();
 				LootRegistry.writeToJson(jsonQ);
-				JsonIO.WriteToFile(new File(MinecraftServer.getServer().getFile("config/betterquesting/"), "DefaultLoot.json"), jsonQ);
-				sender.addChatMessage(new ChatComponentText("Loot database set as global default"));
+				JsonIO.WriteToFile(new File(server.getFile("config/betterquesting/"), "DefaultLoot.json"), jsonQ);
+				sender.addChatMessage(new TextComponentString("Loot database set as global default"));
 			} else if(args[1].equalsIgnoreCase("load"))
 			{
 		    	File f1 = new File(BQ_Settings.defaultDir, "DefaultLoot.json");
@@ -57,10 +57,10 @@ public class BQS_Commands extends CommandBase
 					j1 = JsonIO.ReadFromFile(f1);
 					LootRegistry.readFromJson(j1);
 					LootRegistry.updateClients();
-					sender.addChatMessage(new ChatComponentText("Reloaded default loot database"));
+					sender.addChatMessage(new TextComponentString("Reloaded default loot database"));
 				} else
 				{
-					sender.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + "No default loot currently set"));
+					sender.addChatMessage(new TextComponentString(TextFormatting.RED + "No default loot currently set"));
 				}
 			} else
 			{
@@ -72,7 +72,7 @@ public class BQS_Commands extends CommandBase
 			{
 				LootRegistry.lootGroups = new ArrayList<LootGroup>();
 				LootRegistry.updateClients();
-				sender.addChatMessage(new ChatComponentText("Deleted all loot groups"));
+				sender.addChatMessage(new TextComponentString("Deleted all loot groups"));
 			} else
 			{
 				try
@@ -80,7 +80,7 @@ public class BQS_Commands extends CommandBase
 					int idx = Integer.parseInt(args[1]);
 					LootGroup group = LootRegistry.lootGroups.remove(idx);
 					LootRegistry.updateClients();
-					sender.addChatMessage(new ChatComponentText("Deleted loot group '" + I18n.format(group.name) + "'"));
+					sender.addChatMessage(new TextComponentString("Deleted loot group '" + I18n.translateToLocal(group.name) + "'"));
 				} catch(Exception e)
 				{
 					throw new WrongUsageException(getCommandUsage(sender));
