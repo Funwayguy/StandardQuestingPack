@@ -2,10 +2,12 @@ package bq_standard.importers.hqm;
 
 import java.io.File;
 import java.io.FileReader;
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
+import betterquesting.client.gui.editors.explorer.FileExtentionFilter;
+import betterquesting.client.gui.editors.explorer.GuiFileExplorer;
+import betterquesting.client.gui.editors.explorer.IFileCallback;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.importers.ImporterBase;
 import betterquesting.utils.JsonHelper;
@@ -20,8 +22,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class HQMBagImporter extends ImporterBase
+public class HQMBagImporter extends ImporterBase implements IFileCallback
 {
+	public static HQMBagImporter instance = new HQMBagImporter();
+	
 	@Override
 	public String getUnlocalisedName()
 	{
@@ -30,44 +34,8 @@ public class HQMBagImporter extends ImporterBase
 	
 	public static void StartImport()
 	{
-		JFileChooser fc = new JFileChooser();
-		fc.setDialogTitle("Import HQM Reward Bags");
-		fc.setCurrentDirectory(new File("."));
-		fc.setMultiSelectionEnabled(true);
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON Reward Bags", "json");
-		fc.setFileFilter(filter);
-		
-		if(fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
-		{
-			File[] selList = fc.getSelectedFiles();
-			
-			for(File selected : selList)
-			{
-				if(selected == null || !selected.exists())
-				{
-					continue;
-				}
-				
-				JsonArray json; // Bag.json is formatting as an array!
-				
-				try
-				{
-					FileReader fr = new FileReader(selected);
-					Gson g = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
-					json = g.fromJson(fr, JsonArray.class);
-					fr.close();
-				} catch(Exception e)
-				{
-					BQ_Standard.logger.log(Level.ERROR, "An error occured during import", e);
-					continue;
-				}
-				
-				if(json != null)
-				{
-					ImportJsonBags(json);
-				}
-			}
-		}
+		Minecraft mc = Minecraft.getMinecraft();
+		mc.displayGuiScreen(new GuiFileExplorer(mc.currentScreen, instance, new File("."), new FileExtentionFilter(".json")));
 	}
 	
 	public static void ImportJsonBags(JsonArray json)
@@ -137,5 +105,38 @@ public class HQMBagImporter extends ImporterBase
 	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
 		return new GuiHQMBagImporter(screen, posX, posY, sizeX, sizeY);
+	}
+
+	@Override
+	public void setFiles(File... files)
+	{
+		for(File selected : files)
+		{
+			if(selected == null || !selected.exists())
+			{
+				continue;
+			}
+			
+			JsonArray json; // Bag.json is formatting as an array!
+			
+			try
+			{
+				FileReader fr = new FileReader(selected);
+				Gson g = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
+				json = g.fromJson(fr, JsonArray.class);
+				fr.close();
+			} catch(Exception e)
+			{
+				BQ_Standard.logger.log(Level.ERROR, "An error occured during import", e);
+				continue;
+			}
+			
+			if(json != null)
+			{
+				ImportJsonBags(json);
+			}
+		}
+		
+		LootRegistry.updateClients();
 	}
 }

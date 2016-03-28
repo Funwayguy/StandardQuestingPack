@@ -12,6 +12,7 @@ import bq_standard.core.BQ_Standard;
 
 public class NativeUrlImporter extends ImporterBase
 {
+	public static NativeUrlImporter instance = new NativeUrlImporter();
 	
 	@Override
 	public String getUnlocalisedName()
@@ -29,7 +30,7 @@ public class NativeUrlImporter extends ImporterBase
 	{
 		try
 		{
-			String rawJson = UpdateNotification.getNotification("url", true);
+			String rawJson = UpdateNotification.getNotification(url, true);
 			JsonObject json = new Gson().fromJson(rawJson, JsonObject.class);
 			NativeFileImporter.ImportQuestLine(json);
 			return true;

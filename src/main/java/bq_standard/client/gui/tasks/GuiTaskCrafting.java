@@ -36,7 +36,15 @@ public class GuiTaskCrafting extends GuiEmbedded
 				continue;
 			}
 			
-			String txt = stack.getBaseStack().getDisplayName() + "\n";
+			String txt = stack.getBaseStack().getDisplayName();
+			
+			if(stack.oreDict.length() > 0)
+			{
+				txt = "(OreDict: " + stack.oreDict + ")"; 
+			}
+			
+			txt += "\n";
+			
 			txt = txt + progress[i] + "/" + stack.stackSize;
 			
 			if(progress[i] >= stack.stackSize || task.isComplete(screen.mc.thePlayer.getUniqueID()))
