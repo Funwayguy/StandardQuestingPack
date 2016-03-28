@@ -14,12 +14,13 @@ import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.editors.json.GuiJsonEntitySelection;
 import betterquesting.client.gui.editors.json.GuiJsonObject;
 import betterquesting.client.gui.misc.GuiButtonQuesting;
+import betterquesting.client.gui.misc.IVolatileScreen;
 import betterquesting.utils.JsonHelper;
 import betterquesting.utils.NBTConverter;
 import betterquesting.utils.RenderUtils;
 import com.google.gson.JsonObject;
 
-public class GuiMeetingEditor extends GuiQuesting
+public class GuiMeetingEditor extends GuiQuesting implements IVolatileScreen
 {
 	String idName = "Villager";
 	JsonObject data;

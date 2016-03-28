@@ -36,7 +36,14 @@ public class GuiTaskRetrieval extends GuiEmbedded
 				continue;
 			}
 			
-			String txt = stack.getBaseStack().getDisplayName() + "\n";
+			String txt = stack.getBaseStack().getDisplayName();
+			
+			if(stack.oreDict.length() > 0)
+			{
+				txt = "(OreDict: " + stack.oreDict + ")"; 
+			}
+			
+			txt += "\n";
 			
 			if(task.consume)
 			{
