@@ -13,6 +13,7 @@ import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.editors.json.GuiJsonObject;
 import betterquesting.client.gui.misc.GuiButtonQuesting;
 import betterquesting.client.gui.misc.GuiNumberField;
+import betterquesting.client.gui.misc.IVolatileScreen;
 import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.utils.RenderUtils;
 import bq_standard.rewards.loot.LootGroup;
@@ -23,7 +24,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class GuiLootEntryEditor extends GuiQuesting
+public class GuiLootEntryEditor extends GuiQuesting implements IVolatileScreen
 {
 	LootGroup group;
 	GuiNumberField lineWeight;

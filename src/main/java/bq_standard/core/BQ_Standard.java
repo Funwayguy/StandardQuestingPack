@@ -102,10 +102,10 @@ public class BQ_Standard
     	RewardRegistry.RegisterReward(RewardCommand.class, "command");
     	RewardRegistry.RegisterReward(RewardXP.class, "xp");
     	
-    	ImporterRegistry.registerImporter(new HQMQuestImporter());
-    	ImporterRegistry.registerImporter(new HQMBagImporter());
-    	ImporterRegistry.registerImporter(new NativeFileImporter());
-    	ImporterRegistry.registerImporter(new NativeUrlImporter());
+    	ImporterRegistry.registerImporter(HQMQuestImporter.instance);
+    	ImporterRegistry.registerImporter(HQMBagImporter.instance);
+    	ImporterRegistry.registerImporter(NativeFileImporter.instance);
+    	ImporterRegistry.registerImporter(NativeUrlImporter.instance);
     	
     	proxy.registerThemes();
     }

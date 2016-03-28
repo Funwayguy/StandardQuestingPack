@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 import org.lwjgl.input.Mouse;
@@ -91,19 +93,8 @@ public class GuiScrollingItems extends GuiBQScrolling
 		int y = posY/2;
 		parent.drawTexturedModalRect(x, y + t/2, 0, 48 + t/2, 18, h);
 		
-		ItemStack tmpStack = entry.stack.getBaseStack();
-		
-		if(entry.stack.oreDict != null)
-		{
-			ArrayList<ItemStack> ores = OreDictionary.getOres(entry.stack.oreDict);
-			
-			if(ores != null && ores.size() > 0)
-			{
-				tmpStack = ores.get((int)(Minecraft.getSystemTime()/16000)%ores.size()).copy();
-				tmpStack.setItemDamage((int)(Minecraft.getSystemTime()/1000)%16);
-				tmpStack.setTagCompound(entry.stack.GetTagCompound());
-			}
-		}
+		ItemStack tmpStack = entry.subStacks.get((int)(Minecraft.getSystemTime()/1000)%entry.subStacks.size()).copy();
+		tmpStack.setTagCompound(entry.stack.GetTagCompound());
 		
 		if(!clipped)
 		{
@@ -112,10 +103,7 @@ public class GuiScrollingItems extends GuiBQScrolling
 			try
 			{
 				RenderUtils.RenderItemStack(parent.mc, tmpStack, x + 1, y + 1, entry.stack.stackSize > 0? "" : "" + entry.stack.stackSize);
-			} catch(Exception e)
-			{
-				
-			}
+			} catch(Exception e){}
 		}
 		GL11.glPopMatrix();
 		
@@ -158,10 +146,47 @@ public class GuiScrollingItems extends GuiBQScrolling
 		public BigItemStack stack;
 		public String text;
 		
+		public ArrayList<ItemStack> subStacks = new ArrayList<ItemStack>();
+		
 		public ItemEntry(BigItemStack stack, String text)
 		{
 			this.stack = stack;
 			this.text = text;
+			
+			if(stack == null || stack.getBaseStack() == null)
+			{
+				return;
+			}
+			
+			if(stack.oreDict.length() > 0)
+			{
+				for(ItemStack oreStack : new ArrayList<ItemStack>(OreDictionary.getOres(stack.oreDict)))
+				{
+					if(oreStack == null)
+					{
+						continue;
+					}
+					
+					Item item = oreStack.getItem();
+					
+					ArrayList<ItemStack> tmp = new ArrayList<ItemStack>();
+					
+					item.getSubItems(item, CreativeTabs.tabAllSearch, tmp);
+					
+					if(tmp.size() <= 0)
+					{
+						subStacks.add(oreStack);
+					} else
+					{
+						subStacks.addAll(tmp);
+					}
+				}
+			}
+			
+			if(subStacks.size() <= 0)
+			{
+				subStacks.add(stack.getBaseStack());
+			}
 		}
 	}
 }

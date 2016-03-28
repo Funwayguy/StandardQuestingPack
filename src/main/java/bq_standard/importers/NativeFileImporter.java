@@ -4,10 +4,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
+import betterquesting.client.gui.editors.explorer.FileExtentionFilter;
+import betterquesting.client.gui.editors.explorer.GuiFileExplorer;
+import betterquesting.client.gui.editors.explorer.IFileCallback;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.importers.ImporterBase;
 import betterquesting.quests.QuestDatabase;
@@ -21,8 +23,10 @@ import com.google.gson.JsonObject;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class NativeFileImporter extends ImporterBase
+public class NativeFileImporter extends ImporterBase implements IFileCallback
 {
+	public static NativeFileImporter instance = new NativeFileImporter();
+	
 	@Override
 	public String getUnlocalisedName()
 	{
@@ -38,44 +42,8 @@ public class NativeFileImporter extends ImporterBase
 	@SideOnly(Side.CLIENT)
 	public static void StartImport()
 	{
-		JFileChooser fc = new JFileChooser();
-		fc.setDialogTitle("Import Native Quest Database");
-		fc.setCurrentDirectory(new File("."));
-		fc.setMultiSelectionEnabled(true);
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON Quest Database", "json");
-		fc.setFileFilter(filter);
-		
-		if(fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
-		{
-			File[] selList = fc.getSelectedFiles();
-			
-			for(File selected : selList)
-			{
-				if(selected == null || !selected.exists())
-				{
-					continue;
-				}
-				
-				JsonObject json;
-				
-				try
-				{
-					FileReader fr = new FileReader(selected);
-					Gson g = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
-					json = g.fromJson(fr, JsonObject.class);
-					fr.close();
-				} catch(Exception e)
-				{
-					BQ_Standard.logger.log(Level.ERROR, "An error occured during import", e);
-					continue;
-				}
-				
-				if(json != null)
-				{
-					ImportQuestLine(json);
-				}
-			}
-		}
+		Minecraft mc = Minecraft.getMinecraft();
+		mc.displayGuiScreen(new GuiFileExplorer(mc.currentScreen, instance, new File("."), new FileExtentionFilter(".json")));
 	}
 
 	protected static void ImportQuestLine(JsonObject json)
@@ -105,5 +73,38 @@ public class NativeFileImporter extends ImporterBase
 			q.questID = id;
 			QuestDatabase.questDB.put(id, q);
 		}
+	}
+
+	@Override
+	public void setFiles(File... files)
+	{
+		for(File selected : files)
+		{
+			if(selected == null || !selected.exists())
+			{
+				continue;
+			}
+			
+			JsonObject json;
+			
+			try
+			{
+				FileReader fr = new FileReader(selected);
+				Gson g = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
+				json = g.fromJson(fr, JsonObject.class);
+				fr.close();
+			} catch(Exception e)
+			{
+				BQ_Standard.logger.log(Level.ERROR, "An error occured during import", e);
+				continue;
+			}
+			
+			if(json != null)
+			{
+				ImportQuestLine(json);
+			}
+		}
+		
+		QuestDatabase.UpdateClients();
 	}
 }

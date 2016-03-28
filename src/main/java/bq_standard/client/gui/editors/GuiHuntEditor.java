@@ -16,6 +16,7 @@ import betterquesting.client.gui.editors.json.GuiJsonEntitySelection;
 import betterquesting.client.gui.editors.json.GuiJsonObject;
 import betterquesting.client.gui.misc.GuiButtonQuesting;
 import betterquesting.client.gui.misc.GuiNumberField;
+import betterquesting.client.gui.misc.IVolatileScreen;
 import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.utils.JsonHelper;
 import betterquesting.utils.NBTConverter;
@@ -23,7 +24,7 @@ import betterquesting.utils.RenderUtils;
 import bq_standard.core.BQ_Standard;
 import com.google.gson.JsonObject;
 
-public class GuiHuntEditor extends GuiQuesting
+public class GuiHuntEditor extends GuiQuesting implements IVolatileScreen
 {
 	GuiNumberField numField;
 	int amount = 1;

@@ -8,12 +8,13 @@ import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.editors.json.GuiJsonObject;
 import betterquesting.client.gui.misc.GuiButtonQuesting;
 import betterquesting.client.gui.misc.GuiNumberField;
+import betterquesting.client.gui.misc.IVolatileScreen;
 import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.utils.JsonHelper;
 import bq_standard.tasks.TaskScoreboard.ScoreOperation;
 import com.google.gson.JsonObject;
 
-public class GuiScoreEditor extends GuiQuesting
+public class GuiScoreEditor extends GuiQuesting implements IVolatileScreen
 {
 	GuiTextField txtField;
 	GuiNumberField numField;

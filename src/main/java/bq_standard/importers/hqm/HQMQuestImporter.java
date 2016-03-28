@@ -5,11 +5,13 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import net.minecraft.client.Minecraft;
 import net.minecraft.init.Items;
 import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
+import betterquesting.client.gui.editors.explorer.FileExtentionFilter;
+import betterquesting.client.gui.editors.explorer.GuiFileExplorer;
+import betterquesting.client.gui.editors.explorer.IFileCallback;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.importers.ImporterBase;
 import betterquesting.quests.QuestDatabase;
@@ -39,9 +41,9 @@ import com.google.gson.JsonObject;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class HQMQuestImporter extends ImporterBase
+public class HQMQuestImporter extends ImporterBase implements IFileCallback
 {
-	// Commence project middle finger!
+	public static HQMQuestImporter instance = new HQMQuestImporter();
 	
 	public static HashMap<String, HQMTask> taskConverters = new HashMap<String, HQMTask>();
 	public static HashMap<String, HQMReward> rewardConverters = new HashMap<String, HQMReward>();
@@ -50,44 +52,8 @@ public class HQMQuestImporter extends ImporterBase
 	public static void StartImport()
 	{
 		idMap = new HashMap<String,QuestInstance>(); // Reset ID map in preparation
-		JFileChooser fc = new JFileChooser();
-		fc.setDialogTitle("Import HQM Quest Line");
-		fc.setCurrentDirectory(new File("."));
-		fc.setMultiSelectionEnabled(true);
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON Quest Line", "json");
-		fc.setFileFilter(filter);
-		
-		if(fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
-		{
-			File[] selList = fc.getSelectedFiles();
-			
-			for(File selected : selList)
-			{
-				if(selected == null || !selected.exists())
-				{
-					continue;
-				}
-				
-				JsonObject json;
-				
-				try
-				{
-					FileReader fr = new FileReader(selected);
-					Gson g = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
-					json = g.fromJson(fr, JsonObject.class);
-					fr.close();
-				} catch(Exception e)
-				{
-					BQ_Standard.logger.log(Level.ERROR, "An error occured during import", e);
-					continue;
-				}
-				
-				if(json != null)
-				{
-					ImportQuestLine(json);
-				}
-			}
-		}
+		Minecraft mc = Minecraft.getMinecraft();
+		mc.displayGuiScreen(new GuiFileExplorer(mc.currentScreen, instance, new File("."), new FileExtentionFilter(".json")));
 	}
 	
 	public static HashMap<Integer, String> reputations = new HashMap<Integer, String>();
@@ -273,7 +239,6 @@ public class HQMQuestImporter extends ImporterBase
 		}
 		
 		QuestDatabase.questLines.add(questLine);
-		QuestDatabase.UpdateClients();
 	}
 	
 	static
@@ -300,5 +265,38 @@ public class HQMQuestImporter extends ImporterBase
 	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
 		return new GuiHQMQuestImporter(screen, posX, posY, sizeX, sizeY);
+	}
+
+	@Override
+	public void setFiles(File... files)
+	{
+		for(File selected : files)
+		{
+			if(selected == null || !selected.exists())
+			{
+				continue;
+			}
+			
+			JsonObject json;
+			
+			try
+			{
+				FileReader fr = new FileReader(selected);
+				Gson g = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
+				json = g.fromJson(fr, JsonObject.class);
+				fr.close();
+			} catch(Exception e)
+			{
+				BQ_Standard.logger.log(Level.ERROR, "An error occured during import", e);
+				continue;
+			}
+			
+			if(json != null)
+			{
+				ImportQuestLine(json);
+			}
+		}
+		
+		QuestDatabase.UpdateClients();
 	}
 }

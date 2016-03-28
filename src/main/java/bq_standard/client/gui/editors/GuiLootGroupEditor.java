@@ -14,6 +14,7 @@ import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiButtonQuesting;
 import betterquesting.client.gui.misc.GuiNumberField;
+import betterquesting.client.gui.misc.IVolatileScreen;
 import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.utils.NBTConverter;
 import betterquesting.utils.RenderUtils;
@@ -26,7 +27,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class GuiLootGroupEditor extends GuiQuesting
+public class GuiLootGroupEditor extends GuiQuesting implements IVolatileScreen
 {
 	GuiTextField lineTitle;
 	GuiNumberField lineWeight;
