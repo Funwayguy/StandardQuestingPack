@@ -4,7 +4,12 @@ import java.awt.Color;
 import net.minecraft.util.ResourceLocation;
 import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.client.themes.ThemeStandard;
+import betterquesting.importers.ImporterRegistry;
 import bq_standard.core.BQ_Standard;
+import bq_standard.importers.NativeFileImporter;
+import bq_standard.importers.NativeUrlImporter;
+import bq_standard.importers.hqm.HQMBagImporter;
+import bq_standard.importers.hqm.HQMQuestImporter;
 import bq_standard.nei.NEIRegister;
 import bq_standard.network.PacketStandard;
 import cpw.mods.fml.common.Loader;
@@ -29,6 +34,11 @@ public class ClientProxy extends CommonProxy
     	{
     		NEIRegister.instance.registerHandler();
     	}
+    	
+    	ImporterRegistry.registerImporter(HQMQuestImporter.instance);
+    	ImporterRegistry.registerImporter(HQMBagImporter.instance);
+    	ImporterRegistry.registerImporter(NativeFileImporter.instance);
+    	ImporterRegistry.registerImporter(NativeUrlImporter.instance);
 	}
 	
 	@Override

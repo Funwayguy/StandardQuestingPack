@@ -6,16 +6,11 @@ import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.config.Configuration;
 import org.apache.logging.log4j.Logger;
-import betterquesting.importers.ImporterRegistry;
 import betterquesting.quests.rewards.RewardRegistry;
 import betterquesting.quests.tasks.TaskRegistry;
 import bq_standard.commands.BQS_Commands;
 import bq_standard.core.proxies.CommonProxy;
 import bq_standard.handlers.ConfigHandler;
-import bq_standard.importers.NativeFileImporter;
-import bq_standard.importers.NativeUrlImporter;
-import bq_standard.importers.hqm.HQMBagImporter;
-import bq_standard.importers.hqm.HQMQuestImporter;
 import bq_standard.items.ItemLootChest;
 import bq_standard.network.GuiHandler;
 import bq_standard.rewards.RewardChoice;
@@ -101,11 +96,6 @@ public class BQ_Standard
     	RewardRegistry.RegisterReward(RewardScoreboard.class, "scoreboard");
     	RewardRegistry.RegisterReward(RewardCommand.class, "command");
     	RewardRegistry.RegisterReward(RewardXP.class, "xp");
-    	
-    	ImporterRegistry.registerImporter(HQMQuestImporter.instance);
-    	ImporterRegistry.registerImporter(HQMBagImporter.instance);
-    	ImporterRegistry.registerImporter(NativeFileImporter.instance);
-    	ImporterRegistry.registerImporter(NativeUrlImporter.instance);
     	
     	proxy.registerThemes();
     }
