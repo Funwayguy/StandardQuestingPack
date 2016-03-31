@@ -2,20 +2,24 @@ package bq_standard.rewards;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.scoreboard.IScoreCriteria;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreCriteria;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
+import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.quests.rewards.RewardBase;
 import betterquesting.utils.JsonHelper;
 import bq_standard.client.gui.rewards.GuiRewardScoreboard;
+import bq_standard.core.BQ_Standard;
 import com.google.gson.JsonObject;
 
 public class RewardScoreboard extends RewardBase
 {
 	public String score = "Reputation";
+	public String type = "dummy";
 	public boolean relative = true;
 	public int value = 1;
 	
@@ -45,7 +49,16 @@ public class RewardScoreboard extends RewardBase
 		
 		if(scoreObj == null)
 		{
-			scoreObj = board.addScoreObjective(score, new ScoreCriteria(score));
+			try
+			{
+		        IScoreCriteria criteria = IScoreCriteria.INSTANCES.get(type);
+		        criteria = criteria != null? criteria : new ScoreCriteria(score);
+				scoreObj = board.addScoreObjective(score, criteria);
+				scoreObj.setDisplayName(score);
+			} catch(Exception e)
+			{
+				BQ_Standard.logger.log(Level.ERROR, "Unable to create score '" + score + "' for reward!", e);
+			}
 		}
 		
 		if(scoreObj == null || scoreObj.getCriteria().isReadOnly())
@@ -68,6 +81,7 @@ public class RewardScoreboard extends RewardBase
 	public void readFromJson(JsonObject json)
 	{
 		score = JsonHelper.GetString(json, "score", "Reputation");
+		type = JsonHelper.GetString(json, "type", type);
 		value = JsonHelper.GetNumber(json, "value", 1).intValue();
 		relative = JsonHelper.GetBoolean(json, "relative", true);
 	}
@@ -76,6 +90,7 @@ public class RewardScoreboard extends RewardBase
 	public void writeToJson(JsonObject json)
 	{
 		json.addProperty("score", score);
+		json.addProperty("type", type);
 		json.addProperty("value", value);
 		json.addProperty("relative", relative);
 	}

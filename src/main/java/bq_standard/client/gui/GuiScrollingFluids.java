@@ -2,11 +2,11 @@ package bq_standard.client.gui;
 
 import java.util.ArrayList;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraftforge.fluids.FluidStack;
-import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.misc.GuiBQScrolling;
 import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.utils.RenderUtils;
@@ -41,7 +41,7 @@ public class GuiScrollingFluids extends GuiBQScrolling
 	@Override
 	protected void drawSlot(int index, int var2, int posY, int var4, Tessellator var5)
 	{
-		GL11.glColor4f(1F, 1F, 1F, 1F);
+		GlStateManager.color(1F, 1F, 1F, 1F);
         
 		boolean clipped = false;
 		int t = 0;
@@ -63,8 +63,8 @@ public class GuiScrollingFluids extends GuiBQScrolling
 			return;
 		}
 		
-		GL11.glPushMatrix();
-		GL11.glScalef(2F, 2F, 2F); // Double stack size because it looks nicer in the listing
+		GlStateManager.pushMatrix();
+		GlStateManager.scale(2F, 2F, 2F); // Double stack size because it looks nicer in the listing
 		parent.mc.renderEngine.bindTexture(ThemeRegistry.curTheme().guiTexture());
 		int x = left/2;
 		int y = posY/2;
@@ -72,7 +72,7 @@ public class GuiScrollingFluids extends GuiBQScrolling
 		
 		if(!clipped)
 		{
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
+			GlStateManager.enableDepth();
 			parent.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
 			
 			try
@@ -83,7 +83,7 @@ public class GuiScrollingFluids extends GuiBQScrolling
 				parent.drawTexturedModalRect(x + 1, y + 1, fluidTx, 16, 16);
 			} catch(Exception e){}
 		}
-		GL11.glPopMatrix();
+		GlStateManager.popMatrix();
 		
 		if(!clipped)
 		{

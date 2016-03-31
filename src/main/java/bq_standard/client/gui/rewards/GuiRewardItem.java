@@ -1,7 +1,7 @@
 package bq_standard.client.gui.rewards;
 
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.math.MathHelper;
-import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.client.themes.ThemeRegistry;
@@ -42,9 +42,9 @@ public class GuiRewardItem extends GuiEmbedded
 		{
 			BigItemStack stack = reward.items.get(i + scroll);
 			screen.mc.renderEngine.bindTexture(ThemeRegistry.curTheme().guiTexture());
-			GL11.glDisable(GL11.GL_DEPTH_TEST);
+			GlStateManager.disableDepth();
 			screen.drawTexturedModalRect(posX + (i * 18) + 20, posY + 1, 0, 48, 18, 18);
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
+			GlStateManager.enableDepth();
 			RenderUtils.RenderItemStack(screen.mc, stack.getBaseStack(), posX + (i * 18) + 21, posY + 2, stack != null && stack.stackSize > 1? "" + stack.stackSize : "");
 			
 			if(screen.isWithin(mx, my, posX + (i * 18) + 20, posY + 1, 16, 16, false))

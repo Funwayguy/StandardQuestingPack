@@ -3,13 +3,13 @@ package bq_standard.client.gui;
 import java.util.ArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiBQScrolling;
 import betterquesting.client.themes.ThemeRegistry;
@@ -60,7 +60,7 @@ public class GuiScrollingItems extends GuiBQScrolling
 	@Override
 	protected void drawSlot(int index, int var2, int posY, int var4, Tessellator var5)
 	{
-		GL11.glColor4f(1F, 1F, 1F, 1F);
+		GlStateManager.color(1F, 1F, 1F, 1F);
 		
         int mx = Mouse.getEventX() * parent.width / parent.mc.displayWidth;
         int my = parent.height - Mouse.getEventY() * parent.height / parent.mc.displayHeight - 1;
@@ -85,8 +85,8 @@ public class GuiScrollingItems extends GuiBQScrolling
 			return;
 		}
 		
-		GL11.glPushMatrix();
-		GL11.glScalef(2F, 2F, 2F); // Double stack size because it looks nicer in the listing
+		GlStateManager.pushMatrix();
+		GlStateManager.scale(2F, 2F, 2F); // Double stack size because it looks nicer in the listing
 		parent.mc.renderEngine.bindTexture(ThemeRegistry.curTheme().guiTexture());
 		int x = left/2;
 		int y = posY/2;
@@ -97,7 +97,7 @@ public class GuiScrollingItems extends GuiBQScrolling
 		
 		if(!clipped)
 		{
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
+			GlStateManager.enableDepth();
 			
 			try
 			{
@@ -107,7 +107,7 @@ public class GuiScrollingItems extends GuiBQScrolling
 				
 			}
 		}
-		GL11.glPopMatrix();
+		GlStateManager.popMatrix();
 		
 		if(!clipped)
 		{

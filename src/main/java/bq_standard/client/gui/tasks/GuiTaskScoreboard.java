@@ -1,10 +1,10 @@
 package bq_standard.client.gui.tasks;
 
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.text.TextFormatting;
-import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.client.themes.ThemeRegistry;
@@ -23,9 +23,9 @@ public class GuiTaskScoreboard extends GuiEmbedded
 	@Override
 	public void drawGui(int mx, int my, float partialTick)
 	{
-		GL11.glPushMatrix();
-		GL11.glTranslatef(posX + sizeX/2, posY + sizeY/2, 0F);
-		GL11.glScalef(2F, 2F, 1F);
+		GlStateManager.pushMatrix();
+		GlStateManager.translate(posX + sizeX/2, posY + sizeY/2, 0F);
+		GlStateManager.scale(2F, 2F, 1F);
 		
 		int tw1 = screen.mc.fontRendererObj.getStringWidth(TextFormatting.BOLD + task.scoreName);
 		screen.mc.fontRendererObj.drawString(TextFormatting.BOLD + task.scoreName, -tw1/2, -12, ThemeRegistry.curTheme().textColor().getRGB(), false);
@@ -47,6 +47,6 @@ public class GuiTaskScoreboard extends GuiEmbedded
 		
 		int tw2 = screen.mc.fontRendererObj.getStringWidth(txt);
 		screen.mc.fontRendererObj.drawString(txt, -tw2/2, 1, ThemeRegistry.curTheme().textColor().getRGB(), false);
-		GL11.glPopMatrix();
+		GlStateManager.popMatrix();
 	}
 }

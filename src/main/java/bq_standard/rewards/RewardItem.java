@@ -10,6 +10,7 @@ import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.quests.rewards.RewardBase;
 import betterquesting.utils.BigItemStack;
 import betterquesting.utils.JsonHelper;
+import bq_standard.NBTReplaceUtil;
 import bq_standard.client.gui.rewards.GuiRewardItem;
 import bq_standard.core.BQ_Standard;
 import com.google.gson.JsonArray;
@@ -41,6 +42,12 @@ public class RewardItem extends RewardBase
 			
 			for(ItemStack s : stack.getCombinedStacks())
 			{
+				if(s.getTagCompound() != null)
+				{
+					s.setTagCompound(NBTReplaceUtil.replaceStrings(s.getTagCompound(), "VAR_NAME", player.getName()));
+					s.setTagCompound(NBTReplaceUtil.replaceStrings(s.getTagCompound(), "VAR_UUID", player.getUniqueID().toString()));
+				}
+				
 				if(!player.inventory.addItemStackToInventory(s))
 				{
 					player.dropPlayerItemWithRandomChoice(s, false);

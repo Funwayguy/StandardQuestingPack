@@ -1,12 +1,12 @@
 package bq_standard.client.gui.tasks;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.text.translation.I18n;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.translation.I18n;
 import org.apache.logging.log4j.Level;
-import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.client.themes.ThemeRegistry;
@@ -30,10 +30,10 @@ public class GuiTaskHunt extends GuiEmbedded
 	{
 		if(target != null)
 		{
-			GL11.glPushMatrix();
+			GlStateManager.pushMatrix();
 			
-			GL11.glScalef(1F, 1F, 1F);
-			GL11.glColor4f(1F, 1F, 1F, 1F);
+			GlStateManager.scale(1F, 1F, 1F);
+			GlStateManager.color(1F, 1F, 1F, 1F);
 			
 			float angle = ((float)Minecraft.getSystemTime()%30000F)/30000F * 360F;
 			float scale = 64F;
@@ -55,7 +55,7 @@ public class GuiTaskHunt extends GuiEmbedded
 			{
 			}
 			
-			GL11.glPopMatrix();
+			GlStateManager.popMatrix();
 		} else
 		{
 			if(EntityList.stringToClassMapping.containsKey(task.idName))

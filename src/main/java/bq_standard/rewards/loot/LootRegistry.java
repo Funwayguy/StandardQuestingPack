@@ -161,12 +161,12 @@ public class LootRegistry
 	@SubscribeEvent
 	public void onWorldLoad(WorldEvent.Load event)
 	{
-		if(event.world.isRemote || worldDir != null)
+		if(event.getWorld().isRemote || worldDir != null)
 		{
 			return;
 		}
 		
-		MinecraftServer server = event.world.getMinecraftServer();
+		MinecraftServer server = event.getWorld().getMinecraftServer();
 		
 		if(BQ_Standard.proxy.isClient())
 		{
@@ -198,7 +198,7 @@ public class LootRegistry
 	@SubscribeEvent
 	public void onWorldSave(WorldEvent.Save event)
 	{
-		if(!event.world.isRemote && worldDir != null && event.world.provider.getDimension() == 0)
+		if(!event.getWorld().isRemote && worldDir != null && event.getWorld().provider.getDimension() == 0)
 		{
 			JsonObject jsonQ = new JsonObject();
 			writeToJson(jsonQ);
@@ -209,7 +209,7 @@ public class LootRegistry
 	@SubscribeEvent
 	public void onWorldUnload(WorldEvent.Unload event)
 	{
-		if(!event.world.isRemote && !event.world.getMinecraftServer().isServerRunning())
+		if(!event.getWorld().isRemote && !event.getWorld().getMinecraftServer().isServerRunning())
 		{
 			worldDir = null;
 		}

@@ -1,10 +1,10 @@
 package bq_standard.client.gui.rewards;
 
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.util.text.translation.I18n;
 import net.minecraft.util.text.TextFormatting;
-import org.lwjgl.opengl.GL11;
+import net.minecraft.util.text.translation.I18n;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.client.themes.ThemeRegistry;
@@ -27,14 +27,15 @@ public class GuiRewardCommand extends GuiEmbedded
 		String txt2 = TextFormatting.ITALIC + (reward.hideCmd? "[HIDDEN]" : reward.command);
 		
 		screen.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
-		TextureAtlasSprite blockSprite = screen.mc.getTextureMapBlocks().getAtlasSprite("minecraft:command_block");
+		TextureAtlasSprite blockSprite = screen.mc.getTextureMapBlocks().getAtlasSprite("minecraft:blocks/command_block_front");
 		blockSprite = blockSprite != null? blockSprite : screen.mc.getTextureMapBlocks().getAtlasSprite("missingno");
 		
-		GL11.glPushMatrix();
-		GL11.glScalef(2F, 2F, 1F);
+		GlStateManager.pushMatrix();
+		GlStateManager.scale(2F, 2F, 1F);
 		screen.drawTexturedModalRect(posX/2, (posY + sizeY/2 - 16)/2, blockSprite, 16, 16);
-		GL11.glPopMatrix();
+		GlStateManager.popMatrix();
 		
+		GlStateManager.color(1F, 1F, 1F);
 		screen.mc.fontRendererObj.drawString(txt1, posX + 40, posY + sizeY/2 - 16, ThemeRegistry.curTheme().textColor().getRGB());
 		screen.mc.fontRendererObj.drawString(screen.mc.fontRendererObj.trimStringToWidth(txt2, sizeX - (32 + 8)), posX + 40, posY + sizeY/2, ThemeRegistry.curTheme().textColor().getRGB());
 	}

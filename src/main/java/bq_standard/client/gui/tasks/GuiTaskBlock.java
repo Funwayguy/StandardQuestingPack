@@ -1,6 +1,6 @@
 package bq_standard.client.gui.tasks;
 
-import org.lwjgl.opengl.GL11;
+import net.minecraft.client.renderer.GlStateManager;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.client.themes.ThemeRegistry;
@@ -28,9 +28,9 @@ public class GuiTaskBlock extends GuiEmbedded
 		if(dispStack.getBaseStack() != null)
 		{
 			screen.mc.renderEngine.bindTexture(ThemeRegistry.curTheme().guiTexture());
-			GL11.glDisable(GL11.GL_DEPTH_TEST);
+			GlStateManager.disableDepth();
 			screen.drawTexturedModalRect(posX + sizeX/2 - 9, posY + sizeY/2 - 18, 0, 48, 18, 18);
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
+			GlStateManager.enableDepth();
 			RenderUtils.RenderItemStack(screen.mc, dispStack.getBaseStack(), posX + sizeX/2 - 8, posY + sizeY/2 - 17, "");
 			String txt = progress + "/" + task.targetNum;
 			screen.mc.fontRendererObj.drawString(txt, posX + sizeX/2 - screen.mc.fontRendererObj.getStringWidth(txt)/2, posY + sizeY/2 + 2, ThemeRegistry.curTheme().textColor().getRGB());
