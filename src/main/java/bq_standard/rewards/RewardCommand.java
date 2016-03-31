@@ -11,6 +11,7 @@ import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.quests.rewards.RewardBase;
 import betterquesting.utils.JsonHelper;
+import bq_standard.AdminExecute;
 import bq_standard.client.gui.rewards.GuiRewardCommand;
 import bq_standard.core.BQ_Standard;
 import com.google.gson.JsonObject;
@@ -19,6 +20,7 @@ public class RewardCommand extends RewardBase
 {
 	public String command = "/say VAR_NAME Claimed a reward";
 	public boolean hideCmd = false;
+	public boolean viaPlayer = false;
 	
 	@Override
 	public String getUnlocalisedName()
@@ -41,9 +43,17 @@ public class RewardCommand extends RewardBase
 		}
 		
 		String tmp = command.replaceAll("VAR_NAME", player.getCommandSenderName());
-		RewardCommandSender cmdSender = new RewardCommandSender(player.worldObj, (int)player.posX, (int)player.posY, (int)player.posZ);
+		tmp = tmp.replaceAll("VAR_UUID", player.getUniqueID().toString());
 		
-		MinecraftServer.getServer().getCommandManager().executeCommand(cmdSender, tmp);
+		if(viaPlayer)
+		{
+			MinecraftServer.getServer().getCommandManager().executeCommand(new AdminExecute(player), tmp);
+		} else
+		{
+			RewardCommandSender cmdSender = new RewardCommandSender(player.worldObj, (int)player.posX, (int)player.posY, (int)player.posZ);
+			
+			MinecraftServer.getServer().getCommandManager().executeCommand(cmdSender, tmp);
+		}
 	}
 	
 	@Override
@@ -51,6 +61,7 @@ public class RewardCommand extends RewardBase
 	{
 		command = JsonHelper.GetString(json, "command", "/say VAR_NAME Claimed a reward");
 		hideCmd = JsonHelper.GetBoolean(json, "hideCommand", false);
+		viaPlayer = JsonHelper.GetBoolean(json, "viaPlayer", false);
 	}
 	
 	@Override
@@ -58,6 +69,7 @@ public class RewardCommand extends RewardBase
 	{
 		json.addProperty("command", command);
 		json.addProperty("hideCommand", hideCmd);
+		json.addProperty("viaPlayer", viaPlayer);
 	}
 	
 	@Override

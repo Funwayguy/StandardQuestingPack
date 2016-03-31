@@ -2,9 +2,12 @@ package bq_standard.tasks;
 
 import java.util.ArrayList;
 import java.util.UUID;
+import org.apache.logging.log4j.Level;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.scoreboard.IScoreObjectiveCriteria;
 import net.minecraft.scoreboard.Score;
+import net.minecraft.scoreboard.ScoreDummyCriteria;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
 import betterquesting.client.gui.GuiQuesting;
@@ -14,6 +17,7 @@ import betterquesting.quests.tasks.TaskBase;
 import betterquesting.utils.JsonHelper;
 import bq_standard.client.gui.editors.GuiScoreEditor;
 import bq_standard.client.gui.tasks.GuiTaskScoreboard;
+import bq_standard.core.BQ_Standard;
 import com.google.gson.JsonObject;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -21,6 +25,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class TaskScoreboard extends TaskBase
 {
 	public String scoreName = "Score";
+	public String type = "dummy";
 	public int target = 1;
 	public ScoreOperation operation = ScoreOperation.MORE_OR_EQUAL;
 	
@@ -52,7 +57,16 @@ public class TaskScoreboard extends TaskBase
 		
 		if(scoreObj == null)
 		{
-			return;
+			try
+			{
+		        IScoreObjectiveCriteria criteria = (IScoreObjectiveCriteria)IScoreObjectiveCriteria.field_96643_a.get(type);
+		        criteria = criteria != null? criteria : new ScoreDummyCriteria(scoreName);
+				scoreObj = board.addScoreObjective(scoreName, criteria);
+				scoreObj.setDisplayName(scoreName);
+			} catch(Exception e)
+			{
+				BQ_Standard.logger.log(Level.ERROR, "Unable to create score '" + scoreName + "' for task!", e);
+			}
 		}
 		
 		Score score = board.func_96529_a(player.getCommandSenderName(), scoreObj);
@@ -70,6 +84,7 @@ public class TaskScoreboard extends TaskBase
 		super.writeToJson(json);
 		
 		json.addProperty("scoreName", scoreName);
+		json.addProperty("type", type);
 		json.addProperty("target", target);
 		json.addProperty("operation", operation.name());
 	}
@@ -80,6 +95,7 @@ public class TaskScoreboard extends TaskBase
 		super.readFromJson(json);
 		
 		scoreName = JsonHelper.GetString(json, "scoreName", "Score");
+		type = JsonHelper.GetString(json, "type", "dummy");
 		target = JsonHelper.GetNumber(json, "target", 1).intValue();
 		operation = ScoreOperation.valueOf(JsonHelper.GetString(json, "operation", "MORE_OR_EQUAL").toUpperCase());
 		operation = operation != null? operation : ScoreOperation.MORE_OR_EQUAL;

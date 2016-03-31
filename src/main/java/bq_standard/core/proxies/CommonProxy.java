@@ -20,7 +20,7 @@ public class CommonProxy
 		FMLCommonHandler.instance().bus().register(new UpdateNotification());
 		MinecraftForge.EVENT_BUS.register(new LootRegistry());
     	
-    	BQ_Standard.instance.network.registerMessage(PacketStandard.HandlerServer.class, PacketStandard.class, 1, Side.SERVER);
+    	BQ_Standard.instance.network.registerMessage(PacketStandard.HandlerServer.class, PacketStandard.class, 0, Side.SERVER);
 	}
 
 	public void registerThemes()
