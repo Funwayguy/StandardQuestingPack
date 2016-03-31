@@ -2,8 +2,8 @@ package bq_standard.client.gui.tasks;
 
 import java.awt.Color;
 import java.util.HashMap;
-import org.lwjgl.opengl.GL11;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.WorldProvider;
@@ -76,10 +76,10 @@ public class GuiTaskLocation extends GuiEmbedded
 		
 		if(task.hideInfo || task.range < 0 || screen.mc.thePlayer.dimension != task.dim)
 		{
-			GL11.glPushMatrix();
-			GL11.glScalef(2F, 2F, 2F);
+			GlStateManager.pushMatrix();
+			GlStateManager.scale(2F, 2F, 2F);
 			screen.mc.fontRendererObj.drawString(EnumChatFormatting.BOLD + "?", cx/2 - 4, cy/2 - 4 , Color.RED.getRGB());
-			GL11.glPopMatrix();
+			GlStateManager.popMatrix();
 		} else
 		{
 			RenderUtils.DrawLine(cx, cy, cx + dx, cy + dy, 4, Color.RED);
