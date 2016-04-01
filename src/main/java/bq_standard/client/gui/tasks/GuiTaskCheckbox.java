@@ -67,6 +67,8 @@ public class GuiTaskCheckbox extends GuiEmbedded
 	{
 		if(btn.enabled && btn.visible && btn.mousePressed(screen.mc, mx, my))
 		{
+			btn.enabled = false;
+			btn.displayString = TextFormatting.GREEN + "" + TextFormatting.BOLD + "\u2713";
 			NBTTagCompound tags = new NBTTagCompound();
 			tags.setInteger("ID", 2);
 			tags.setInteger("qId", qId);
