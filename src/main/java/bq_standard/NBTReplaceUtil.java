@@ -18,8 +18,6 @@ public class NBTReplaceUtil
 			return null;
 		}
 		
-		System.out.println("Replacing: " + baseTag.toString());
-		
 		if(baseTag instanceof NBTTagCompound)
 		{
 			NBTTagCompound compound = (NBTTagCompound)baseTag;

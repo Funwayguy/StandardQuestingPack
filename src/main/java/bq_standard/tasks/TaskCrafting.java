@@ -34,6 +34,49 @@ public class TaskCrafting extends AdvancedTaskBase
 	}
 	
 	@Override
+	public void Update(EntityPlayer player)
+	{
+		if(player.ticksExisted%200 == 0 && !isComplete(player.getUniqueID()))
+		{
+			Detect(player);
+		}
+	}
+	
+	@Override
+	public void Detect(EntityPlayer player)
+	{
+		// This loop is purely to resolve issues where the task didn't update correctly
+		if(isComplete(player.getUniqueID()))
+		{
+			return;
+		}
+		
+		int[] progress = userProgress.get(player.getUniqueID());
+		progress = progress == null || progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
+		
+		boolean flag = true;
+		
+		for(int i = 0; i < requiredItems.size(); i++)
+		{
+			BigItemStack rStack = requiredItems.get(i);
+			
+			if(progress[i] >= rStack.stackSize)
+			{
+				continue;
+			} else
+			{
+				flag = false;
+				break;
+			}
+		}
+		
+		if(flag)
+		{
+			this.completeUsers.add(player.getUniqueID());
+		}
+	}
+	
+	@Override
 	public void onItemCrafted(EntityPlayer player, ItemStack stack)
 	{
 		if(isComplete(player.getUniqueID()))
