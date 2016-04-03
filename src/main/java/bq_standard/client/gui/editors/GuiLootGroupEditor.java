@@ -63,7 +63,7 @@ public class GuiLootGroupEditor extends GuiQuesting implements IVolatileScreen
 		lineWeight.setMaxStringLength(Integer.MAX_VALUE);
 		 
 		this.buttonList.add(new GuiButtonQuesting(1, guiLeft + 16 + sx/4 - 50, guiTop + sizeY - 48, 100, 20, I18n.format("betterquesting.btn.new")));
-		this.buttonList.add(new GuiButtonQuesting(2, guiLeft + 16 + sx/4*3 - 75, height/2 + 20, 150, 20, I18n.format("bq_standard.btn.add_remove_drops")));
+		this.buttonList.add(new GuiButtonQuesting(2, guiLeft + 16 + sx/4*3 - 75, guiTop + sizeY/2 + 20, 150, 20, I18n.format("bq_standard.btn.add_remove_drops")));
 		
 		// Quest Line - Main
 		for(int i = 0; i < maxRows; i++)
