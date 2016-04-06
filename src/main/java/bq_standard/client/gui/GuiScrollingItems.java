@@ -170,7 +170,10 @@ public class GuiScrollingItems extends GuiBQScrolling
 					
 					ArrayList<ItemStack> tmp = new ArrayList<ItemStack>();
 					
-					item.getSubItems(item, CreativeTabs.tabAllSearch, tmp);
+					if(oreStack.getItemDamage() == OreDictionary.WILDCARD_VALUE)
+					{
+						item.getSubItems(item, CreativeTabs.tabAllSearch, tmp);
+					}
 					
 					if(tmp.size() <= 0)
 					{
@@ -180,6 +183,9 @@ public class GuiScrollingItems extends GuiBQScrolling
 						subStacks.addAll(tmp);
 					}
 				}
+			} else if(stack.getBaseStack().getItemDamage() == OreDictionary.WILDCARD_VALUE)
+			{
+				stack.getBaseStack().getItem().getSubItems(stack.getBaseStack().getItem(), CreativeTabs.tabAllSearch, subStacks);
 			}
 			
 			if(subStacks.size() <= 0)
