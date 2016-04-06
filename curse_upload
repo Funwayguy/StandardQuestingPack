@@ -11,4 +11,22 @@ echo "Uploading $FILE_NAME to Curse Forge..."
 echo
 RESPONSE=`curl -H "X-Api-Token: $CURSE_API_KEY" -X POST  -F metadata="$JSON"  -F file="@$FILE_LOCATION" https://minecraft.curseforge.com/api/projects/238857/upload-file`
 echo
-echo $RESPONSE
+FID=${RESPONSE:6}
+FID=${FID:0:${#FID}-1}
+echo "Parent file ID: $FID"
+
+JSON=`printf '{"changelog": "%s", "parentFileID": %s, "releaseType": "release"}' "$CHANGE_LOG" "$FID"`
+
+FILE_NAME=`echo "StandardExpansion-deobf-CI_MOD_VERSION.jar"`
+FILE_LOCATION=`echo "./build/libs/$FILE_NAME"`
+
+echo "Uploading $FILE_NAME to Curse Forge..."
+echo
+RESPONSE=`curl -H "X-Api-Token: $CURSE_API_KEY" -X POST  -F metadata="$JSON"  -F file="@$FILE_LOCATION" https://minecraft.curseforge.com/api/projects/238857/upload-file`
+
+FILE_NAME=`echo "StandardExpansion-CI_MOD_VERSION-sources.jar"`
+FILE_LOCATION=`echo "./build/libs/$FILE_NAME"`
+
+echo "Uploading $FILE_NAME to Curse Forge..."
+echo
+RESPONSE=`curl -H "X-Api-Token: $CURSE_API_KEY" -X POST  -F metadata="$JSON"  -F file="@$FILE_LOCATION" https://minecraft.curseforge.com/api/projects/238857/upload-file`
