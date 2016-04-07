@@ -33,6 +33,7 @@ public class RewardChoice extends RewardBase
 	@Override
 	public boolean canClaim(EntityPlayer player, NBTTagCompound choiceData)
 	{
+		selected = choiceData.hasKey("selected")? choiceData.getInteger("selected") : -1;
 		return choices.size() <= 0 || (selected >= 0 && selected < choices.size());
 	}
 
