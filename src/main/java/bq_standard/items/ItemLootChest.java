@@ -5,7 +5,6 @@ import java.util.List;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -32,7 +31,6 @@ public class ItemLootChest extends Item
 	public ItemLootChest()
 	{
 		this.setMaxStackSize(1);
-		this.setHasSubtypes(true);
 		this.setUnlocalizedName("bq_standard.loot_chest");
 		this.setCreativeTab(BetterQuesting.tabQuesting);
 	}
@@ -156,33 +154,7 @@ public class ItemLootChest extends Item
     @SideOnly(Side.CLIENT)
     public boolean hasEffect(ItemStack stack)
     {
-        return stack.getItemDamage() == 100 || stack.getItemDamage() > 101;
-    }
-
-    /**
-     * Return an item rarity from EnumRarity
-     */
-	@Override
-    public EnumRarity getRarity(ItemStack stack)
-    {
-		int dmg = stack.getItemDamage();
-		
-		if(dmg > 100)
-		{
-			return EnumRarity.COMMON;
-		} else if(dmg >= 75)
-		{
-			return EnumRarity.EPIC;
-		} else if(dmg >= 50)
-		{
-			return EnumRarity.RARE;
-		} else if(dmg >= 25)
-		{
-			return EnumRarity.UNCOMMON;
-		} else
-		{
-			return EnumRarity.COMMON;
-		}
+        return stack.getItemDamage() > 101;
     }
 
     /**
@@ -196,12 +168,15 @@ public class ItemLootChest extends Item
 		if(stack.getItemDamage() > 101)
 		{
 			list.add(I18n.translateToLocal("betterquesting.btn.edit"));
-		} else if(stack.getItemDamage() == 101)
+		} else if(QuestDatabase.editMode)
 		{
-			list.add(I18n.translateToLocalFormatted("bq_standard.tooltip.loot_chest", "???"));
-		} else
-		{
-			list.add(I18n.translateToLocalFormatted("bq_standard.tooltip.loot_chest", MathHelper.clamp_int(stack.getItemDamage(), 0, 100) + "%"));
+			if(stack.getItemDamage() == 101)
+			{
+				list.add(I18n.translateToLocalFormatted("bq_standard.tooltip.loot_chest", "???"));
+			} else
+			{
+				list.add(I18n.translateToLocalFormatted("bq_standard.tooltip.loot_chest", MathHelper.clamp_int(stack.getItemDamage(), 0, 100) + "%"));
+			}
 		}
     }
 }
