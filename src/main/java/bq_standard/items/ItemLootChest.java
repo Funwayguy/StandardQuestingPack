@@ -2,11 +2,9 @@ package bq_standard.items;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.logging.log4j.Level;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -14,6 +12,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
+import org.apache.logging.log4j.Level;
 import betterquesting.core.BetterQuesting;
 import betterquesting.quests.QuestDatabase;
 import betterquesting.utils.BigItemStack;
@@ -29,7 +28,6 @@ public class ItemLootChest extends Item
 	public ItemLootChest()
 	{
 		this.setMaxStackSize(1);
-		this.setHasSubtypes(true);
 		this.setUnlocalizedName("bq_standard.loot_chest");
 		this.setTextureName("bq_standard:loot_chest");
 		this.setCreativeTab(BetterQuesting.tabQuesting);
@@ -147,33 +145,7 @@ public class ItemLootChest extends Item
     @SideOnly(Side.CLIENT)
     public boolean hasEffect(ItemStack stack)
     {
-        return stack.getItemDamage() == 100 || stack.getItemDamage() > 101;
-    }
-
-    /**
-     * Return an item rarity from EnumRarity
-     */
-	@Override
-    public EnumRarity getRarity(ItemStack stack)
-    {
-		int dmg = stack.getItemDamage();
-		
-		if(dmg > 100)
-		{
-			return EnumRarity.common;
-		} else if(dmg >= 75)
-		{
-			return EnumRarity.epic;
-		} else if(dmg >= 50)
-		{
-			return EnumRarity.rare;
-		} else if(dmg >= 25)
-		{
-			return EnumRarity.uncommon;
-		} else
-		{
-			return EnumRarity.common;
-		}
+        return stack.getItemDamage() > 101;
     }
 
     /**
@@ -186,12 +158,15 @@ public class ItemLootChest extends Item
 		if(stack.getItemDamage() > 101)
 		{
 			list.add(StatCollector.translateToLocal("betterquesting.btn.edit"));
-		} else if(stack.getItemDamage() == 101)
+		} else if(QuestDatabase.editMode)
 		{
-			list.add(StatCollector.translateToLocalFormatted("bq_standard.tooltip.loot_chest", "???"));
-		} else
-		{
-			list.add(StatCollector.translateToLocalFormatted("bq_standard.tooltip.loot_chest", MathHelper.clamp_int(stack.getItemDamage(), 0, 100) + "%"));
+			if(stack.getItemDamage() == 101)
+			{
+				list.add(StatCollector.translateToLocalFormatted("bq_standard.tooltip.loot_chest", "???"));
+			} else
+			{
+				list.add(StatCollector.translateToLocalFormatted("bq_standard.tooltip.loot_chest", MathHelper.clamp_int(stack.getItemDamage(), 0, 100) + "%"));
+			}
 		}
     }
 }
