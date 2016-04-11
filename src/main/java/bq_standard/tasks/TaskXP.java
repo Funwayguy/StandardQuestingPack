@@ -1,14 +1,10 @@
 package bq_standard.tasks;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.UUID;
 import java.util.Map.Entry;
-import org.apache.logging.log4j.Level;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import java.util.UUID;
 import net.minecraft.entity.player.EntityPlayer;
+import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.quests.QuestDatabase;
@@ -17,6 +13,9 @@ import betterquesting.utils.JsonHelper;
 import bq_standard.XPHelper;
 import bq_standard.client.gui.tasks.GuiTaskXP;
 import bq_standard.core.BQ_Standard;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 public class TaskXP extends TaskBase
 {
@@ -60,7 +59,7 @@ public class TaskXP extends TaskBase
 		
 		if(i >= rawXP)
 		{
-			completeUsers.add(player.getUniqueID());
+			setCompletion(player.getUniqueID(), true);
 		}
 	}
 	
@@ -68,18 +67,6 @@ public class TaskXP extends TaskBase
 	public String getUnlocalisedName()
 	{
 		return "bq_standard.task.xp";
-	}
-	
-	@Override
-	public void ResetProgress(UUID uuid)
-	{
-		completeUsers.remove(uuid);
-	}
-	
-	@Override
-	public void ResetAllProgress()
-	{
-		completeUsers = new ArrayList<UUID>();
 	}
 	
 	@Override

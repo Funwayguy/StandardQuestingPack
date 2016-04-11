@@ -85,7 +85,14 @@ public class RewardChoice extends RewardBase
 		tag.setInteger("selected", selected);
 		return tag;
 	}
-
+	
+	@Override
+	@SideOnly(Side.CLIENT)
+	public void SetChoiceData(NBTTagCompound tags)
+	{
+		selected = tags.hasKey("selected")? tags.getInteger("selected") : -1;
+	}
+	
 	@Override
 	public void readFromJson(JsonObject json)
 	{

@@ -72,7 +72,7 @@ public class TaskCrafting extends AdvancedTaskBase
 		
 		if(flag)
 		{
-			this.completeUsers.add(player.getUniqueID());
+			setCompletion(player.getUniqueID(), true);
 		}
 	}
 	
@@ -113,7 +113,7 @@ public class TaskCrafting extends AdvancedTaskBase
 		
 		if(flag)
 		{
-			this.completeUsers.add(player.getUniqueID());
+			setCompletion(player.getUniqueID(), true);
 		}
 	}
 	
@@ -149,7 +149,7 @@ public class TaskCrafting extends AdvancedTaskBase
 		
 		if(flag)
 		{
-			this.completeUsers.add(player.getUniqueID());
+			setCompletion(player.getUniqueID(), true);
 		}
 	}
 	
@@ -255,14 +255,14 @@ public class TaskCrafting extends AdvancedTaskBase
 	@Override
 	public void ResetProgress(UUID uuid)
 	{
-		completeUsers.remove(uuid);
+		super.ResetProgress(uuid);
 		userProgress.remove(uuid);
 	}
 
 	@Override
 	public void ResetAllProgress()
 	{
-		completeUsers = new ArrayList<UUID>();
+		super.ResetAllProgress();
 		userProgress = new HashMap<UUID, int[]>();
 	}
 

@@ -115,7 +115,7 @@ public class TaskRetrieval extends TaskBase implements IContainerTask
 		
 		if(flag)
 		{
-			this.completeUsers.add(player.getUniqueID());
+			setCompletion(player.getUniqueID(), true);
 		}
 	}
 
@@ -217,14 +217,14 @@ public class TaskRetrieval extends TaskBase implements IContainerTask
 	@Override
 	public void ResetProgress(UUID uuid)
 	{
-		completeUsers.remove(uuid);
+		super.ResetProgress(uuid);
 		userProgress.remove(uuid);
 	}
 
 	@Override
 	public void ResetAllProgress()
 	{
-		completeUsers = new ArrayList<UUID>();
+		super.ResetAllProgress();
 		userProgress = new HashMap<UUID,int[]>();
 	}
 
@@ -336,7 +336,7 @@ public class TaskRetrieval extends TaskBase implements IContainerTask
 		
 		if(flag)
 		{
-			completeUsers.add(owner);
+			setCompletion(owner, true);
 		}
 		
 		if(stack == null || stack.stackSize <= 0)

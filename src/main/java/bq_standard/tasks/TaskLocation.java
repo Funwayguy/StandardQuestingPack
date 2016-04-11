@@ -1,7 +1,5 @@
 package bq_standard.tasks;
 
-import java.util.ArrayList;
-import java.util.UUID;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -60,14 +58,14 @@ public class TaskLocation extends TaskBase
 				
 				if(mop == null || mop.typeOfHit != RayTraceResult.Type.BLOCK)
 				{
-					this.completeUsers.add(player.getUniqueID());
+					setCompletion(player.getUniqueID(), true);
 				} else
 				{
 					return;
 				}
 			} else
 			{
-				this.completeUsers.add(player.getUniqueID());
+				setCompletion(player.getUniqueID(), true);
 			}
 		}
 	}
@@ -100,18 +98,6 @@ public class TaskLocation extends TaskBase
 		range = JsonHelper.GetNumber(json, "range", -1).intValue();
 		visible = JsonHelper.GetBoolean(json, "visible", false);
 		hideInfo = JsonHelper.GetBoolean(json, "hideInfo", false);
-	}
-
-	@Override
-	public void ResetProgress(UUID uuid)
-	{
-		completeUsers.remove(uuid);
-	}
-
-	@Override
-	public void ResetAllProgress()
-	{
-		completeUsers = new ArrayList<UUID>();
 	}
 
 	@Override

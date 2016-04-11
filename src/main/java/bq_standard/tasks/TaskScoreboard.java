@@ -1,7 +1,5 @@
 package bq_standard.tasks;
 
-import java.util.ArrayList;
-import java.util.UUID;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.scoreboard.IScoreCriteria;
@@ -74,7 +72,7 @@ public class TaskScoreboard extends TaskBase
 		
 		if(operation.checkValues(points, target))
 		{
-			this.completeUsers.add(player.getUniqueID());
+			setCompletion(player.getUniqueID(), true);
 		}
 	}
 	
@@ -138,18 +136,6 @@ public class TaskScoreboard extends TaskBase
 			
 			return false;
 		}
-	}
-
-	@Override
-	public void ResetProgress(UUID uuid)
-	{
-		completeUsers.remove(uuid);
-	}
-
-	@Override
-	public void ResetAllProgress()
-	{
-		completeUsers = new ArrayList<UUID>();
 	}
 
 	@Override

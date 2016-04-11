@@ -3,6 +3,7 @@ package bq_standard.core;
 import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -77,7 +78,7 @@ public class BQ_Standard
     @EventHandler
     public void init(FMLInitializationEvent event)
     {
-    	GameRegistry.registerItem(lootChest, "loot_chest");
+    	registerItem(lootChest, "loot_chest");
     	
     	TaskRegistry.RegisterTask(TaskRetrieval.class, "retrieval");
     	TaskRegistry.RegisterTask(TaskHunt.class, "hunt");
@@ -98,6 +99,12 @@ public class BQ_Standard
     	
     	proxy.registerRenderers();
     	proxy.registerThemes();
+    }
+    
+    public void registerItem(Item i, String name)
+    {
+    	ResourceLocation res = new ResourceLocation(MODID + ":" + name);
+    	GameRegistry.register(i.setRegistryName(res));
     }
     
     @EventHandler

@@ -63,13 +63,13 @@ public class ClientProxy extends CommonProxy
 	{
 		super.registerRenderers();
 		
-		registerItemModelSubtypes(BQ_Standard.lootChest, 0, 102, BQ_Standard.lootChest.getRegistryName());
+		registerItemModelSubtypes(BQ_Standard.lootChest, 0, 102, BQ_Standard.lootChest.getRegistryName().toString());
 	}
 	
 	@SideOnly(Side.CLIENT)
 	public static void registerBlockModel(Block block)
 	{
-		registerBlockModel(block, 0, block.getRegistryName());
+		registerBlockModel(block, 0, block.getRegistryName().toString());
 	}
 	
 	@SideOnly(Side.CLIENT)
@@ -105,7 +105,7 @@ public class ClientProxy extends CommonProxy
 	@SideOnly(Side.CLIENT)
 	public static void registerItemModel(Item item)
 	{
-		registerItemModel(item, 0, item.getRegistryName());
+		registerItemModel(item, 0, item.getRegistryName().toString());
 	}
 	
 	@SideOnly(Side.CLIENT)
