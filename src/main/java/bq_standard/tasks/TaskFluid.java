@@ -42,7 +42,7 @@ public class TaskFluid extends TaskBase implements IContainerTask
 	@Override
 	public void Update(EntityPlayer player)
 	{
-		if(!consume && player.ticksExisted%100 == 0 && !QuestDatabase.editMode) // Every ~5 seconds auto detect this quest as long as it isn't consuming items
+		if(!consume && player.ticksExisted%60 == 0 && !QuestDatabase.editMode)
 		{
 			Detect(player);
 		}
@@ -51,7 +51,7 @@ public class TaskFluid extends TaskBase implements IContainerTask
 	@Override
 	public void Detect(EntityPlayer player)
 	{
-		if(!player.isEntityAlive() || player.inventory == null || this.isComplete(player.getUniqueID()) || requiredFluids.size() <= 0)
+		if(player.inventory == null || isComplete(player.getUniqueID()))
 		{
 			return;
 		}
@@ -116,7 +116,7 @@ public class TaskFluid extends TaskBase implements IContainerTask
 		
 		if(flag)
 		{
-			this.completeUsers.add(player.getUniqueID());
+			setCompletion(player.getUniqueID(), true);
 		}
 	}
 	
@@ -260,14 +260,14 @@ public class TaskFluid extends TaskBase implements IContainerTask
 	@Override
 	public void ResetProgress(UUID uuid)
 	{
-		completeUsers.remove(uuid);
+		super.ResetProgress(uuid);
 		userProgress.remove(uuid);
 	}
 
 	@Override
 	public void ResetAllProgress()
 	{
-		completeUsers = new ArrayList<UUID>();
+		super.ResetAllProgress();
 		userProgress = new HashMap<UUID,int[]>();
 	}
 
@@ -387,7 +387,7 @@ public class TaskFluid extends TaskBase implements IContainerTask
 		
 		if(flag)
 		{
-			this.completeUsers.add(owner);
+			setCompletion(owner, true);
 		}
 		
 		return fluid;

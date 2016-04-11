@@ -1,6 +1,5 @@
 package bq_standard.tasks;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -47,6 +46,32 @@ public class TaskHunt extends AdvancedTaskBase
 	}
 	
 	@Override
+	public void Update(EntityPlayer player)
+	{
+		if(player.ticksExisted%200 == 0)
+		{
+			Detect(player);
+		}
+	}
+	
+	@Override
+	public void Detect(EntityPlayer player)
+	{
+		if(isComplete(player.getUniqueID()))
+		{
+			return;
+		}
+		
+		Integer progress = userProgress.get(player.getUniqueID());
+		progress = progress == null? 0 : progress;
+		
+		if(progress >= required)
+		{
+			setCompletion(player.getUniqueID(), true);
+		}
+	}
+	
+	@Override
 	public void onKilledByPlayer(EntityLivingBase entity, DamageSource source)
 	{
 		EntityPlayer player = (EntityPlayer)source.getEntity();
@@ -87,18 +112,7 @@ public class TaskHunt extends AdvancedTaskBase
 		
 		if(progress >= required)
 		{
-			this.completeUsers.add(player.getUniqueID());
-		}
-	}
-	
-	public void AddKill(EntityPlayer player, int count)
-	{
-		if(userProgress.containsKey(player.getUniqueID()))
-		{
-			userProgress.put(player.getUniqueID(), userProgress.get(player.getUniqueID()) + count);
-		} else
-		{
-			userProgress.put(player.getUniqueID(), count);
+			setCompletion(player.getUniqueID(), true);
 		}
 	}
 	
@@ -170,14 +184,14 @@ public class TaskHunt extends AdvancedTaskBase
 	@Override
 	public void ResetProgress(UUID uuid)
 	{
-		completeUsers.remove(uuid);
+		super.ResetProgress(uuid);
 		userProgress.remove(uuid);
 	}
 
 	@Override
 	public void ResetAllProgress()
 	{
-		completeUsers = new ArrayList<UUID>();
+		super.ResetAllProgress();
 		userProgress = new HashMap<UUID,Integer>();
 	}
 

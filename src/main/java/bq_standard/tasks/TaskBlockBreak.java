@@ -1,6 +1,5 @@
 package bq_standard.tasks;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.Map.Entry;
@@ -33,6 +32,32 @@ public class TaskBlockBreak extends AdvancedTaskBase
 	}
 	
 	@Override
+	public void Update(EntityPlayer player)
+	{
+		if(player.ticksExisted%200 == 0)
+		{
+			Detect(player);
+		}
+	}
+	
+	@Override
+	public void Detect(EntityPlayer player)
+	{
+		if(isComplete(player.getUniqueID()))
+		{
+			return;
+		}
+		
+		Integer progress = userProgress.get(player.getUniqueID());
+		progress = progress == null? 0 : progress;
+		
+		if(progress >= targetNum)
+		{
+			setCompletion(player.getUniqueID(), true);
+		}
+	}
+	
+	@Override
 	public void onBlockBreak(EntityPlayer player, Block block, int metadata, int x, int y, int z)
 	{
 		if(isComplete(player.getUniqueID()))
@@ -50,7 +75,7 @@ public class TaskBlockBreak extends AdvancedTaskBase
 			
 			if(progress >= targetNum)
 			{
-				this.completeUsers.add(player.getUniqueID());
+				setCompletion(player.getUniqueID(), true);
 			}
 		}
 	}
@@ -110,14 +135,14 @@ public class TaskBlockBreak extends AdvancedTaskBase
 	@Override
 	public void ResetProgress(UUID uuid)
 	{
-		completeUsers.remove(uuid);
+		super.ResetProgress(uuid);
 		userProgress.remove(uuid);
 	}
 
 	@Override
 	public void ResetAllProgress()
 	{
-		completeUsers = new ArrayList<UUID>();
+		super.ResetAllProgress();
 		userProgress = new HashMap<UUID, Integer>();
 	}
 
