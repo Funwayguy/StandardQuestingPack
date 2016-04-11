@@ -1,8 +1,6 @@
 package bq_standard.tasks;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
@@ -84,7 +82,7 @@ public class TaskMeeting extends TaskBase
 				continue;
 			}
 			
-			this.completeUsers.add(player.getUniqueID());
+			setCompletion(player.getUniqueID(), true);
 			return;
 		}
 	}
@@ -119,18 +117,6 @@ public class TaskMeeting extends TaskBase
 	public GuiScreen GetEditor(GuiScreen parent, JsonObject data)
 	{
 		return new GuiMeetingEditor(parent, data);
-	}
-
-	@Override
-	public void ResetProgress(UUID uuid)
-	{
-		completeUsers.remove(uuid);
-	}
-
-	@Override
-	public void ResetAllProgress()
-	{
-		completeUsers = new ArrayList<UUID>();
 	}
 
 	@Override

@@ -33,7 +33,6 @@ public class RewardChoice extends RewardBase
 	@Override
 	public boolean canClaim(EntityPlayer player, NBTTagCompound choiceData)
 	{
-		selected = choiceData.hasKey("selected")? choiceData.getInteger("selected") : -1;
 		return choices.size() <= 0 || (selected >= 0 && selected < choices.size());
 	}
 
@@ -44,8 +43,6 @@ public class RewardChoice extends RewardBase
 		{
 			return;
 		}
-		
-		selected = choiceData.hasKey("selected")? choiceData.getInteger("selected") : -1;
 		
 		if(selected < 0 || selected >= choices.size())
 		{
@@ -85,7 +82,14 @@ public class RewardChoice extends RewardBase
 		tag.setInteger("selected", selected);
 		return tag;
 	}
-
+	
+	@Override
+	@SideOnly(Side.CLIENT)
+	public void SetChoiceData(NBTTagCompound tags)
+	{
+		selected = tags.hasKey("selected")? tags.getInteger("selected") : -1;
+	}
+	
 	@Override
 	public void readFromJson(JsonObject json)
 	{

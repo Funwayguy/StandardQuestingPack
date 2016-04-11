@@ -116,7 +116,7 @@ public class TaskFluid extends TaskBase implements IContainerTask
 		
 		if(flag)
 		{
-			this.completeUsers.add(player.getUniqueID());
+			setCompletion(player.getUniqueID(), true);
 		}
 	}
 	
@@ -260,14 +260,14 @@ public class TaskFluid extends TaskBase implements IContainerTask
 	@Override
 	public void ResetProgress(UUID uuid)
 	{
-		completeUsers.remove(uuid);
+		super.ResetProgress(uuid);
 		userProgress.remove(uuid);
 	}
 
 	@Override
 	public void ResetAllProgress()
 	{
-		completeUsers = new ArrayList<UUID>();
+		super.ResetAllProgress();
 		userProgress = new HashMap<UUID,int[]>();
 	}
 
@@ -387,7 +387,7 @@ public class TaskFluid extends TaskBase implements IContainerTask
 		
 		if(flag)
 		{
-			this.completeUsers.add(owner);
+			setCompletion(owner, true);
 		}
 		
 		return fluid;
