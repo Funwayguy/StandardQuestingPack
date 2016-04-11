@@ -115,17 +115,6 @@ public class TaskHunt extends AdvancedTaskBase
 		}
 	}
 	
-	public void AddKill(EntityPlayer player, int count)
-	{
-		if(userProgress.containsKey(player.getUniqueID()))
-		{
-			userProgress.put(player.getUniqueID(), userProgress.get(player.getUniqueID()) + count);
-		} else
-		{
-			userProgress.put(player.getUniqueID(), count);
-		}
-	}
-	
 	@Override
 	public void writeToJson(JsonObject json)
 	{
