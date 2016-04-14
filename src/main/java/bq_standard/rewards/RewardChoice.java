@@ -57,7 +57,7 @@ public class RewardChoice extends RewardBase
 			return;
 		}
 		
-		BigItemStack stack = choices.get(selected);
+		BigItemStack stack = choices.get(tmp);
 		stack = stack == null? null : stack.copy();
 		
 		if(stack == null || stack.stackSize <= 0)
