@@ -21,6 +21,10 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class RewardChoice extends RewardBase
 {
+	/**
+	 * The selected reward index to be claimed.<br>
+	 * Should only ever be used client side. NEVER on server
+	 */
 	public int selected = -1;
 	public ArrayList<BigItemStack> choices = new ArrayList<BigItemStack>();
 	
@@ -33,7 +37,8 @@ public class RewardChoice extends RewardBase
 	@Override
 	public boolean canClaim(EntityPlayer player, NBTTagCompound choiceData)
 	{
-		return choices.size() <= 0 || (selected >= 0 && selected < choices.size());
+		int tmp = choiceData.hasKey("selected")? choiceData.getInteger("selected") : -1;
+		return choices.size() <= 0 || (tmp >= 0 && tmp < choices.size());
 	}
 
 	@Override
@@ -44,7 +49,9 @@ public class RewardChoice extends RewardBase
 			return;
 		}
 		
-		if(selected < 0 || selected >= choices.size())
+		int tmp = choiceData.hasKey("selected")? choiceData.getInteger("selected") : -1;
+		
+		if(tmp < 0 || tmp >= choices.size())
 		{
 			BQ_Standard.logger.log(Level.ERROR, "Choice reward was forcibly claimed with invalid choice", new IllegalStateException());
 			return;
