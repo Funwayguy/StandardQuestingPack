@@ -12,6 +12,7 @@ import net.minecraft.util.math.BlockPos;
 import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
+import betterquesting.quests.QuestDatabase;
 import betterquesting.quests.tasks.advanced.AdvancedTaskBase;
 import betterquesting.utils.JsonHelper;
 import bq_standard.client.gui.tasks.GuiTaskBlock;
@@ -37,7 +38,7 @@ public class TaskBlockBreak extends AdvancedTaskBase
 	@Override
 	public void Update(EntityPlayer player)
 	{
-		if(player.ticksExisted%200 == 0)
+		if(player.ticksExisted%200 == 0 && !QuestDatabase.editMode)
 		{
 			Detect(player);
 		}

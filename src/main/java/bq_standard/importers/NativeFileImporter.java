@@ -2,8 +2,8 @@ package bq_standard.importers;
 
 import java.io.File;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -54,16 +54,16 @@ public class NativeFileImporter extends ImporterBase implements IFileCallback
 		}
 		
 		// Store all the old data somewhere while we use the built in loaders
-		HashMap<Integer,QuestInstance> oldQuests = QuestDatabase.questDB;
-		QuestDatabase.questDB = new HashMap<Integer,QuestInstance>();
-		ArrayList<QuestLine> oldLines = QuestDatabase.questLines;
-		QuestDatabase.questLines = new ArrayList<QuestLine>();
+		ConcurrentHashMap<Integer,QuestInstance> oldQuests = QuestDatabase.questDB;
+		QuestDatabase.questDB.clear();
+		CopyOnWriteArrayList<QuestLine> oldLines = QuestDatabase.questLines;
+		QuestDatabase.questLines.clear();;
 		
 		// Use native parsing to ensure it is always up to date
 		QuestDatabase.readFromJson(json);
 		
 		QuestDatabase.questLines.addAll(oldLines);
-		HashMap<Integer,QuestInstance> tmp = oldQuests;
+		ConcurrentHashMap<Integer,QuestInstance> tmp = oldQuests;
 		oldQuests = QuestDatabase.questDB;
 		QuestDatabase.questDB = tmp;
 		

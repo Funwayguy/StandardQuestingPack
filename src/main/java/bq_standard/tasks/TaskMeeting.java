@@ -10,6 +10,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
+import betterquesting.quests.QuestDatabase;
 import betterquesting.quests.tasks.TaskBase;
 import betterquesting.utils.ItemComparison;
 import betterquesting.utils.JsonHelper;
@@ -38,19 +39,16 @@ public class TaskMeeting extends TaskBase
 	@Override
 	public void Update(EntityPlayer player)
 	{
-		if(player == null || player.worldObj.isRemote || player.ticksExisted%20 != 0)
+		if(player.ticksExisted%20 == 0 && !QuestDatabase.editMode)
 		{
-			return;
-		} else
-		{
-			this.Detect(player);
+			Detect(player);
 		}
 	}
 	
 	@Override
 	public void Detect(EntityPlayer player)
 	{
-		if(player == null || player.worldObj.isRemote)
+		if(!player.isEntityAlive() || isComplete(player.getUniqueID()))
 		{
 			return;
 		}

@@ -105,7 +105,8 @@ public class TaskScoreboard extends TaskBase
 		LESS_THAN("<"),
 		MORE_THAN(">"),
 		LESS_OR_EQUAL("<="),
-		MORE_OR_EQUAL(">=");
+		MORE_OR_EQUAL(">="),
+		NOT("=/=");
 		
 		String text = "";
 		ScoreOperation(String text)
@@ -132,6 +133,8 @@ public class TaskScoreboard extends TaskBase
 					return n1 <= n2;
 				case MORE_OR_EQUAL:
 					return n1 >= n2;
+				case NOT:
+					return n1 != n2;
 			}
 			
 			return false;

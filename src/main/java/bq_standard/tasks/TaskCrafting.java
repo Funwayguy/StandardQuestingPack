@@ -9,6 +9,7 @@ import net.minecraft.item.ItemStack;
 import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
+import betterquesting.quests.QuestDatabase;
 import betterquesting.quests.tasks.advanced.AdvancedTaskBase;
 import betterquesting.utils.BigItemStack;
 import betterquesting.utils.ItemComparison;
@@ -36,7 +37,7 @@ public class TaskCrafting extends AdvancedTaskBase
 	@Override
 	public void Update(EntityPlayer player)
 	{
-		if(player.ticksExisted%200 == 0 && !isComplete(player.getUniqueID()))
+		if(player.ticksExisted%200 == 0 && !QuestDatabase.editMode)
 		{
 			Detect(player);
 		}
