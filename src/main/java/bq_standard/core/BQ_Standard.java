@@ -28,7 +28,6 @@ import bq_standard.handlers.GuiHandler;
 import bq_standard.items.ItemLootChest;
 import bq_standard.network.StandardPacketType;
 import bq_standard.network.handlers.PktHandlerCheckbox;
-import bq_standard.network.handlers.PktHandlerLootClaim;
 import bq_standard.network.handlers.PktHandlerLootDatabase;
 import bq_standard.rewards.RewardChoice;
 import bq_standard.rewards.RewardCommand;
@@ -79,7 +78,6 @@ public class BQ_Standard
     	proxy.registerHandlers();
     	
     	PacketTypeRegistry.RegisterType(new PktHandlerLootDatabase(), StandardPacketType.LOOT_SYNC.GetLocation());
-    	PacketTypeRegistry.RegisterType(new PktHandlerLootClaim(), StandardPacketType.LOOT_CLAIM.GetLocation());
     	PacketTypeRegistry.RegisterType(new PktHandlerCheckbox(), StandardPacketType.CHECKBOX.GetLocation());
     	
     	NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
