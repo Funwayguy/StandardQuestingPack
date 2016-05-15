@@ -9,7 +9,13 @@ import net.minecraft.item.ItemStack;
 import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
+import betterquesting.party.PartyInstance;
+import betterquesting.party.PartyInstance.PartyMember;
+import betterquesting.party.PartyManager;
+import betterquesting.quests.QuestDatabase;
+import betterquesting.quests.QuestInstance;
 import betterquesting.quests.tasks.advanced.AdvancedTaskBase;
+import betterquesting.quests.tasks.advanced.IProgressionTask;
 import betterquesting.utils.BigItemStack;
 import betterquesting.utils.ItemComparison;
 import betterquesting.utils.JsonHelper;
@@ -20,7 +26,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-public class TaskCrafting extends AdvancedTaskBase
+public class TaskCrafting extends AdvancedTaskBase implements IProgressionTask<int[]>
 {
 	public ArrayList<BigItemStack> requiredItems = new ArrayList<BigItemStack>();
 	public HashMap<UUID, int[]> userProgress = new HashMap<UUID, int[]>();
@@ -34,25 +40,24 @@ public class TaskCrafting extends AdvancedTaskBase
 	}
 	
 	@Override
-	public void Update(EntityPlayer player)
+	public void Update(QuestInstance quest, EntityPlayer player)
 	{
-		if(player.ticksExisted%200 == 0 && !isComplete(player.getUniqueID()))
+		if(player.ticksExisted%100 == 0 && !QuestDatabase.editMode)
 		{
-			Detect(player);
+			Detect(quest, player);
 		}
 	}
 	
 	@Override
-	public void Detect(EntityPlayer player)
+	public void Detect(QuestInstance quest, EntityPlayer player)
 	{
-		// This loop is purely to resolve issues where the task didn't update correctly
+		// This is purely to resolve issues where the task didn't update correctly
 		if(isComplete(player.getUniqueID()))
 		{
 			return;
 		}
 		
-		int[] progress = userProgress.get(player.getUniqueID());
-		progress = progress == null || progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
+		int[] progress = !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();;
 		
 		boolean flag = true;
 		
@@ -87,8 +92,6 @@ public class TaskCrafting extends AdvancedTaskBase
 		int[] progress = userProgress.get(player.getUniqueID());
 		progress = progress == null || progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
 		
-		boolean flag = true;
-		
 		for(int i = 0; i < requiredItems.size(); i++)
 		{
 			BigItemStack rStack = requiredItems.get(i);
@@ -102,28 +105,15 @@ public class TaskCrafting extends AdvancedTaskBase
 			{
 				progress[i] += stack.stackSize;
 			}
-			
-			if(progress[i] < rStack.stackSize)
-			{
-				flag = false;
-			}
 		}
 		
-		userProgress.put(player.getUniqueID(), progress);
-		
-		if(flag)
-		{
-			setCompletion(player.getUniqueID(), true);
-		}
+		SetUserProgress(player.getUniqueID(), progress);
 	}
 	
 	@Override
 	public void onItemSmelted(EntityPlayer player, ItemStack stack)
 	{
-		int[] progress = userProgress.get(player.getUniqueID());
-		progress = progress == null || progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
-		
-		boolean flag = true;
+		int[] progress = GetUserProgress(player.getUniqueID());
 		
 		for(int i = 0; i < requiredItems.size(); i++)
 		{
@@ -138,19 +128,9 @@ public class TaskCrafting extends AdvancedTaskBase
 			{
 				progress[i] += stack.stackSize;
 			}
-			
-			if(progress[i] < rStack.stackSize)
-			{
-				flag = false;
-			}
 		}
 		
-		userProgress.put(player.getUniqueID(), progress);
-		
-		if(flag)
-		{
-			setCompletion(player.getUniqueID(), true);
-		}
+		SetUserProgress(player.getUniqueID(), progress);
 	}
 	
 	@Override
@@ -270,5 +250,69 @@ public class TaskCrafting extends AdvancedTaskBase
 	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
 		return new GuiTaskCrafting(this, (GuiQuesting)screen, posX, posY, sizeX, sizeY);
+	}
+	
+	@Override
+	public void SetUserProgress(UUID uuid, int[] progress)
+	{
+		userProgress.put(uuid, progress);
+	}
+	
+	@Override
+	public int[] GetUserProgress(UUID uuid)
+	{
+		int[] progress = userProgress.get(uuid);
+		return progress == null || progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
+	}
+
+	@Override
+	public int[] GetPartyProgress(UUID uuid)
+	{
+		int[] total = new int[requiredItems.size()];
+		
+		PartyInstance party = PartyManager.GetParty(uuid);
+		
+		if(party == null)
+		{
+			int[] progress = userProgress.get(uuid);
+			total = progress == null || progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
+		} else
+		{
+			for(PartyMember mem : party.GetMembers())
+			{
+				if(mem != null && mem.GetPrivilege() <= 0)
+				{
+					continue;
+				}
+
+				int[] progress = userProgress.get(mem.userID);
+				progress = progress == null || progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
+				
+				for(int i = 0; i <= progress.length; i++)
+				{
+					total[i] += progress[i];
+				}
+			}
+		}
+		
+		return total;
+	}
+	
+	@Override
+	public int[] GetGlobalProgress()
+	{
+		int[] total = new int[requiredItems.size()];
+		
+		for(int[] up : userProgress.values())
+		{
+			int[] progress = up == null || up.length != requiredItems.size()? new int[requiredItems.size()] : up;
+			
+			for(int i = 0; i <= progress.length; i++)
+			{
+				total[i] += progress[i];
+			}
+		}
+		
+		return total;
 	}
 }

@@ -18,7 +18,6 @@ import bq_standard.importers.NativeFileImporter;
 import bq_standard.importers.NativeUrlImporter;
 import bq_standard.importers.hqm.HQMBagImporter;
 import bq_standard.importers.hqm.HQMQuestImporter;
-import bq_standard.network.PacketStandard;
 
 public class ClientProxy extends CommonProxy
 {
@@ -32,8 +31,6 @@ public class ClientProxy extends CommonProxy
 	public void registerHandlers()
 	{
 		super.registerHandlers();
-		
-    	BQ_Standard.instance.network.registerMessage(PacketStandard.HandlerClient.class, PacketStandard.class, 0, Side.CLIENT);
     	
     	if(Loader.isModLoaded("JustEnoughItems"))
     	{

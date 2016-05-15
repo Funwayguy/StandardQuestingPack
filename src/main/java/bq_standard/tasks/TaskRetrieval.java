@@ -51,7 +51,7 @@ public class TaskRetrieval extends TaskBase implements IContainerTask
 	@Override
 	public void Detect(EntityPlayer player)
 	{
-		if(!player.isEntityAlive() || player.inventory == null || this.isComplete(player.getUniqueID()) || requiredItems.size() <= 0)
+		if(player.inventory == null || this.isComplete(player.getUniqueID()))
 		{
 			return;
 		}

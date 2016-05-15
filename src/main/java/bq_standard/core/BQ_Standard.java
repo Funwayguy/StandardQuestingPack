@@ -4,6 +4,7 @@ import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -17,13 +18,18 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.Logger;
+import betterquesting.network.PacketTypeRegistry;
 import betterquesting.quests.rewards.RewardRegistry;
 import betterquesting.quests.tasks.TaskRegistry;
 import bq_standard.commands.BQS_Commands;
 import bq_standard.core.proxies.CommonProxy;
 import bq_standard.handlers.ConfigHandler;
+import bq_standard.handlers.GuiHandler;
 import bq_standard.items.ItemLootChest;
-import bq_standard.network.GuiHandler;
+import bq_standard.network.StandardPacketType;
+import bq_standard.network.handlers.PktHandlerCheckbox;
+import bq_standard.network.handlers.PktHandlerLootClaim;
+import bq_standard.network.handlers.PktHandlerLootDatabase;
 import bq_standard.rewards.RewardChoice;
 import bq_standard.rewards.RewardCommand;
 import bq_standard.rewards.RewardItem;
@@ -72,6 +78,10 @@ public class BQ_Standard
     	
     	proxy.registerHandlers();
     	
+    	PacketTypeRegistry.RegisterType(new PktHandlerLootDatabase(), StandardPacketType.LOOT_SYNC.GetLocation());
+    	PacketTypeRegistry.RegisterType(new PktHandlerLootClaim(), StandardPacketType.LOOT_CLAIM.GetLocation());
+    	PacketTypeRegistry.RegisterType(new PktHandlerCheckbox(), StandardPacketType.CHECKBOX.GetLocation());
+    	
     	NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
     }
     
@@ -80,22 +90,22 @@ public class BQ_Standard
     {
     	GameRegistry.registerItem(lootChest, "loot_chest");
     	
-    	TaskRegistry.RegisterTask(TaskRetrieval.class, "retrieval");
-    	TaskRegistry.RegisterTask(TaskHunt.class, "hunt");
-    	TaskRegistry.RegisterTask(TaskLocation.class, "location");
-    	TaskRegistry.RegisterTask(TaskCrafting.class, "crafting");
-    	TaskRegistry.RegisterTask(TaskScoreboard.class, "scoreboard");
-    	TaskRegistry.RegisterTask(TaskFluid.class, "fluid");
-    	TaskRegistry.RegisterTask(TaskMeeting.class, "meeting");
-    	TaskRegistry.RegisterTask(TaskXP.class, "xp");
-    	TaskRegistry.RegisterTask(TaskBlockBreak.class, "block_break");
-    	TaskRegistry.RegisterTask(TaskCheckbox.class, "checkbox");
+    	TaskRegistry.RegisterTask(TaskRetrieval.class, new ResourceLocation(MODID + ":retrieval"));
+    	TaskRegistry.RegisterTask(TaskHunt.class, new ResourceLocation(MODID + ":hunt"));
+    	TaskRegistry.RegisterTask(TaskLocation.class, new ResourceLocation(MODID + ":location"));
+    	TaskRegistry.RegisterTask(TaskCrafting.class, new ResourceLocation(MODID + ":crafting"));
+    	TaskRegistry.RegisterTask(TaskScoreboard.class, new ResourceLocation(MODID + ":scoreboard"));
+    	TaskRegistry.RegisterTask(TaskFluid.class, new ResourceLocation(MODID + ":fluid"));
+    	TaskRegistry.RegisterTask(TaskMeeting.class, new ResourceLocation(MODID + ":meeting"));
+    	TaskRegistry.RegisterTask(TaskXP.class, new ResourceLocation(MODID + ":xp"));
+    	TaskRegistry.RegisterTask(TaskBlockBreak.class, new ResourceLocation(MODID + ":block_break"));
+    	TaskRegistry.RegisterTask(TaskCheckbox.class, new ResourceLocation(MODID + ":checkbox"));
     	
-    	RewardRegistry.RegisterReward(RewardItem.class, "item");
-    	RewardRegistry.RegisterReward(RewardChoice.class, "choice");
-    	RewardRegistry.RegisterReward(RewardScoreboard.class, "scoreboard");
-    	RewardRegistry.RegisterReward(RewardCommand.class, "command");
-    	RewardRegistry.RegisterReward(RewardXP.class, "xp");
+    	RewardRegistry.RegisterReward(RewardItem.class, new ResourceLocation(MODID + ":item"));
+    	RewardRegistry.RegisterReward(RewardChoice.class, new ResourceLocation(MODID + ":choice"));
+    	RewardRegistry.RegisterReward(RewardScoreboard.class, new ResourceLocation(MODID + ":scoreboard"));
+    	RewardRegistry.RegisterReward(RewardCommand.class, new ResourceLocation(MODID + ":command"));
+    	RewardRegistry.RegisterReward(RewardXP.class, new ResourceLocation(MODID + ":xp"));
     	
     	proxy.registerRenderers();
     	proxy.registerThemes();

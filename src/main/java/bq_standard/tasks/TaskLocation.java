@@ -32,18 +32,16 @@ public class TaskLocation extends TaskBase
 	@Override
 	public void Update(EntityPlayer player)
 	{
-		if(player.ticksExisted%100 != 0 && !QuestDatabase.editMode) // Only auto-detect every 5 seconds
+		if(player.ticksExisted%100 == 0 && !QuestDatabase.editMode) // Only auto-detect every 5 seconds
 		{
-			return;
+			Detect(player);
 		}
-		
-		Detect(player);
 	}
 	
 	@Override
 	public void Detect(EntityPlayer player)
 	{
-		if(isComplete(player.getUniqueID()))
+		if(!player.isEntityAlive() || isComplete(player.getUniqueID()))
 		{
 			return; // Keeps ray casting calls to a minimum
 		}

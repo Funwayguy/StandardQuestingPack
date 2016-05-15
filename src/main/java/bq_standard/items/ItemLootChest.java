@@ -16,10 +16,11 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 import betterquesting.core.BetterQuesting;
+import betterquesting.network.PacketAssembly;
 import betterquesting.quests.QuestDatabase;
 import betterquesting.utils.BigItemStack;
 import bq_standard.core.BQ_Standard;
-import bq_standard.network.PacketStandard;
+import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootRegistry;
 
@@ -122,7 +123,7 @@ public class ItemLootChest extends Item
 		
 		tags.setTag("rewards", list);
 		
-		BQ_Standard.instance.network.sendTo(new PacketStandard(tags), player);
+		PacketAssembly.SendTo(StandardPacketType.LOOT_CLAIM.GetLocation(), tags, player);
 	}
 
     /**

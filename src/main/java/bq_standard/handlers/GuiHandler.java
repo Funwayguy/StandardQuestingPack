@@ -1,4 +1,4 @@
-package bq_standard.network;
+package bq_standard.handlers;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
