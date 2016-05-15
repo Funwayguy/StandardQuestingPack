@@ -13,12 +13,14 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.client.themes.ThemeStandard;
 import betterquesting.importers.ImporterRegistry;
+import betterquesting.network.PacketTypeRegistry;
 import bq_standard.core.BQ_Standard;
 import bq_standard.importers.NativeFileImporter;
 import bq_standard.importers.NativeUrlImporter;
 import bq_standard.importers.hqm.HQMBagImporter;
 import bq_standard.importers.hqm.HQMQuestImporter;
-import bq_standard.network.PacketStandard;
+import bq_standard.network.StandardPacketType;
+import bq_standard.network.handlers.PktHandlerLootClaim;
 
 public class ClientProxy extends CommonProxy
 {
@@ -32,8 +34,6 @@ public class ClientProxy extends CommonProxy
 	public void registerHandlers()
 	{
 		super.registerHandlers();
-		
-    	BQ_Standard.instance.network.registerMessage(PacketStandard.HandlerClient.class, PacketStandard.class, 0, Side.CLIENT);
     	
     	if(Loader.isModLoaded("JustEnoughItems"))
     	{
@@ -44,6 +44,8 @@ public class ClientProxy extends CommonProxy
     	ImporterRegistry.registerImporter(HQMBagImporter.instance);
     	ImporterRegistry.registerImporter(NativeFileImporter.instance);
     	ImporterRegistry.registerImporter(NativeUrlImporter.instance);
+    	
+    	PacketTypeRegistry.RegisterType(new PktHandlerLootClaim(), StandardPacketType.LOOT_CLAIM.GetLocation());
 	}
 	
 	@Override
