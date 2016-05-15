@@ -5,11 +5,14 @@ import net.minecraft.util.ResourceLocation;
 import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.client.themes.ThemeStandard;
 import betterquesting.importers.ImporterRegistry;
+import betterquesting.network.PacketTypeRegistry;
 import bq_standard.importers.NativeFileImporter;
 import bq_standard.importers.NativeUrlImporter;
 import bq_standard.importers.hqm.HQMBagImporter;
 import bq_standard.importers.hqm.HQMQuestImporter;
 import bq_standard.nei.NEIRegister;
+import bq_standard.network.StandardPacketType;
+import bq_standard.network.handlers.PktHandlerLootClaim;
 import cpw.mods.fml.common.Loader;
 
 public class ClientProxy extends CommonProxy
@@ -34,6 +37,8 @@ public class ClientProxy extends CommonProxy
     	ImporterRegistry.registerImporter(HQMBagImporter.instance);
     	ImporterRegistry.registerImporter(NativeFileImporter.instance);
     	ImporterRegistry.registerImporter(NativeUrlImporter.instance);
+    	
+    	PacketTypeRegistry.RegisterType(new PktHandlerLootClaim(), StandardPacketType.LOOT_CLAIM.GetLocation());
 	}
 	
 	@Override
