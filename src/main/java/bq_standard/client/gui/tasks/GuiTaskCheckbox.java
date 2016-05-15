@@ -5,10 +5,10 @@ import net.minecraft.util.EnumChatFormatting;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiButtonQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
+import betterquesting.network.PacketAssembly;
 import betterquesting.quests.QuestDatabase;
 import betterquesting.quests.QuestInstance;
-import bq_standard.core.BQ_Standard;
-import bq_standard.network.PacketStandard;
+import bq_standard.network.StandardPacketType;
 import bq_standard.tasks.TaskCheckbox;
 
 public class GuiTaskCheckbox extends GuiEmbedded
@@ -73,7 +73,7 @@ public class GuiTaskCheckbox extends GuiEmbedded
 			tags.setInteger("ID", 2);
 			tags.setInteger("qId", qId);
 			tags.setInteger("tId", tId);
-			BQ_Standard.instance.network.sendToServer(new PacketStandard(tags));
+			PacketAssembly.SendToServer(StandardPacketType.CHECKBOX.GetLocation(), tags);
 		}
 	}
 }

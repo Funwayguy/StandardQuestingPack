@@ -40,7 +40,7 @@ public class GuiTaskRetrieval extends GuiEmbedded
 			
 			if(stack.oreDict.length() > 0)
 			{
-				txt = "(OreDict: " + stack.oreDict + ")"; 
+				txt += " (" + stack.oreDict + ")"; 
 			}
 			
 			txt += "\n";

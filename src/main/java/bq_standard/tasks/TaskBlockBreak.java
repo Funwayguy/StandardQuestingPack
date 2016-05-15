@@ -1,15 +1,21 @@
 package bq_standard.tasks;
 
 import java.util.HashMap;
-import java.util.UUID;
 import java.util.Map.Entry;
-import org.apache.logging.log4j.Level;
+import java.util.UUID;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
+import betterquesting.party.PartyInstance;
+import betterquesting.party.PartyInstance.PartyMember;
+import betterquesting.party.PartyManager;
+import betterquesting.quests.QuestDatabase;
+import betterquesting.quests.QuestInstance;
 import betterquesting.quests.tasks.advanced.AdvancedTaskBase;
+import betterquesting.quests.tasks.advanced.IProgressionTask;
 import betterquesting.utils.JsonHelper;
 import bq_standard.client.gui.tasks.GuiTaskBlock;
 import bq_standard.core.BQ_Standard;
@@ -17,7 +23,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class TaskBlockBreak extends AdvancedTaskBase
+public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask<Integer>
 {
 	public HashMap<UUID, Integer> userProgress = new HashMap<UUID, Integer>();
 	public Block targetBlock = Blocks.log;
@@ -32,24 +38,23 @@ public class TaskBlockBreak extends AdvancedTaskBase
 	}
 	
 	@Override
-	public void Update(EntityPlayer player)
+	public void Update(QuestInstance quest, EntityPlayer player)
 	{
-		if(player.ticksExisted%200 == 0)
+		if(player.ticksExisted%100 == 0 && !QuestDatabase.editMode)
 		{
-			Detect(player);
+			Detect(quest, player);
 		}
 	}
 	
 	@Override
-	public void Detect(EntityPlayer player)
+	public void Detect(QuestInstance quest, EntityPlayer player)
 	{
 		if(isComplete(player.getUniqueID()))
 		{
 			return;
 		}
 		
-		Integer progress = userProgress.get(player.getUniqueID());
-		progress = progress == null? 0 : progress;
+		int progress = !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();
 		
 		if(progress >= targetNum)
 		{
@@ -65,18 +70,12 @@ public class TaskBlockBreak extends AdvancedTaskBase
 			return;
 		}
 		
-		Integer progress = userProgress.get(player.getUniqueID());
-		progress = progress == null? 0 : progress;
+		int progress = GetUserProgress(player.getUniqueID());
 		
 		if(block == targetBlock && (targetMeta < 0 || metadata == targetMeta))
 		{
 			progress++;
-			userProgress.put(player.getUniqueID(), progress);
-			
-			if(progress >= targetNum)
-			{
-				setCompletion(player.getUniqueID(), true);
-			}
+			SetUserProgress(player.getUniqueID(), progress);
 		}
 	}
 	
@@ -150,5 +149,63 @@ public class TaskBlockBreak extends AdvancedTaskBase
 	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
 		return new GuiTaskBlock(this, screen, posX, posY, sizeX, sizeY);
+	}
+	
+	@Override
+	public void SetUserProgress(UUID uuid, Integer progress)
+	{
+		userProgress.put(uuid, progress);
+	}
+	
+	@Override
+	public Integer GetUserProgress(UUID uuid)
+	{
+		if(!userProgress.containsKey(uuid))
+		{
+			return 0;
+		}
+		
+		return userProgress.get(uuid);
+	}
+	
+	@Override
+	public Integer GetPartyProgress(UUID uuid)
+	{
+		int total = 0;
+		
+		PartyInstance party = PartyManager.GetParty(uuid);
+		
+		if(party == null)
+		{
+			Integer progress = userProgress.get(uuid);
+			total = progress == null? 0 : progress;
+		} else
+		{
+			for(PartyMember mem : party.GetMembers())
+			{
+				if(mem != null && mem.GetPrivilege() <= 0)
+				{
+					continue;
+				}
+				
+				Integer progress = userProgress.get(mem.userID);
+				total += progress == null? 0 : progress;
+			}
+		}
+		
+		return total;
+	}
+	
+	@Override
+	public Integer GetGlobalProgress()
+	{
+		int total = 0;
+		
+		for(Integer i : userProgress.values())
+		{
+			total += i;
+		}
+		
+		return total;
 	}
 }

@@ -16,10 +16,10 @@ import betterquesting.client.gui.misc.GuiButtonQuesting;
 import betterquesting.client.gui.misc.GuiNumberField;
 import betterquesting.client.gui.misc.IVolatileScreen;
 import betterquesting.client.themes.ThemeRegistry;
+import betterquesting.network.PacketAssembly;
 import betterquesting.utils.NBTConverter;
 import betterquesting.utils.RenderUtils;
-import bq_standard.core.BQ_Standard;
-import bq_standard.network.PacketStandard;
+import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootRegistry;
 import com.google.gson.JsonObject;
@@ -128,7 +128,7 @@ public class GuiLootGroupEditor extends GuiQuesting implements IVolatileScreen
 		NBTTagCompound tags = new NBTTagCompound();
 		tags.setInteger("ID", 1);
 		tags.setTag("Database", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
-		BQ_Standard.instance.network.sendToServer(new PacketStandard(tags));
+		PacketAssembly.SendToServer(StandardPacketType.LOOT_SYNC.GetLocation(), tags);
 	}
 	
 	@Override

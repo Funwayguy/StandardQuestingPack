@@ -8,6 +8,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
+import betterquesting.quests.QuestDatabase;
 import betterquesting.quests.tasks.TaskBase;
 import betterquesting.utils.ItemComparison;
 import betterquesting.utils.JsonHelper;
@@ -21,6 +22,8 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class TaskMeeting extends TaskBase
 {
 	public String idName = "Villager";
+	public int range = 4;
+	public int amount = 1;
 	public boolean ignoreNBT = true;
 	public boolean subtypes = true;
 	
@@ -38,9 +41,9 @@ public class TaskMeeting extends TaskBase
 	@Override
 	public void Update(EntityPlayer player)
 	{
-		if(player.ticksExisted%60 != 0)
+		if(player.ticksExisted%60 == 0 && !QuestDatabase.editMode)
 		{
-			this.Detect(player);
+			Detect(player);
 		}
 	}
 	
@@ -53,7 +56,7 @@ public class TaskMeeting extends TaskBase
 		}
 		
 		@SuppressWarnings("unchecked")
-		List<Entity> list = player.worldObj.getEntitiesWithinAABBExcludingEntity(player, player.boundingBox.expand(4D, 4D, 4D));
+		List<Entity> list = player.worldObj.getEntitiesWithinAABBExcludingEntity(player, player.boundingBox.expand(range, range, range));
 		@SuppressWarnings("unchecked")
 		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.stringToClassMapping.get(idName);
 		
@@ -61,6 +64,8 @@ public class TaskMeeting extends TaskBase
 		{
 			return;
 		}
+		
+		int n = 0;
 		
 		for(Entity entity : list)
 		{
@@ -81,8 +86,13 @@ public class TaskMeeting extends TaskBase
 				continue;
 			}
 			
-			setCompletion(player.getUniqueID(), true);
-			return;
+			n++;
+			
+			if(n >= amount)
+			{
+				setCompletion(player.getUniqueID(), true);
+				return;
+			}
 		}
 	}
 	
@@ -92,6 +102,8 @@ public class TaskMeeting extends TaskBase
 		super.writeToJson(json);
 		
 		json.addProperty("target", idName);
+		json.addProperty("range", range);
+		json.addProperty("amount", amount);
 		json.addProperty("subtypes", subtypes);
 		json.addProperty("ignoreNBT", ignoreNBT);
 		json.add("targetNBT", NBTConverter.NBTtoJSON_Compound(targetTags, new JsonObject()));
@@ -103,6 +115,8 @@ public class TaskMeeting extends TaskBase
 		super.writeToJson(json);
 		
 		idName = JsonHelper.GetString(json, "target", "Villager");
+		range = JsonHelper.GetNumber(json, "range", 4).intValue();
+		amount = JsonHelper.GetNumber(json, "amount", 1).intValue();
 		subtypes = JsonHelper.GetBoolean(json, "subtypes", true);
 		ignoreNBT = JsonHelper.GetBoolean(json, "ignoreNBT", true);
 		targetTags = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "targetNBT"), new NBTTagCompound());

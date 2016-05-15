@@ -5,15 +5,12 @@ import net.minecraft.util.ResourceLocation;
 import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.client.themes.ThemeStandard;
 import betterquesting.importers.ImporterRegistry;
-import bq_standard.core.BQ_Standard;
 import bq_standard.importers.NativeFileImporter;
 import bq_standard.importers.NativeUrlImporter;
 import bq_standard.importers.hqm.HQMBagImporter;
 import bq_standard.importers.hqm.HQMQuestImporter;
 import bq_standard.nei.NEIRegister;
-import bq_standard.network.PacketStandard;
 import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.relauncher.Side;
 
 public class ClientProxy extends CommonProxy
 {
@@ -27,8 +24,6 @@ public class ClientProxy extends CommonProxy
 	public void registerHandlers()
 	{
 		super.registerHandlers();
-		
-    	BQ_Standard.instance.network.registerMessage(PacketStandard.HandlerClient.class, PacketStandard.class, 0, Side.CLIENT);
     	
     	if(Loader.isModLoaded("NotEnoughItems"))
     	{

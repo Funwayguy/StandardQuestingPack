@@ -1,4 +1,4 @@
-package bq_standard.network;
+package bq_standard.handlers;
 
 import bq_standard.client.gui.editors.GuiLootGroupEditor;
 import net.minecraft.entity.player.EntityPlayer;

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
@@ -18,12 +19,15 @@ import betterquesting.quests.tasks.advanced.IContainerTask;
 import betterquesting.utils.BigItemStack;
 import betterquesting.utils.ItemComparison;
 import betterquesting.utils.JsonHelper;
+import bq_standard.client.gui.editors.GuiRetrievalEditor;
 import bq_standard.client.gui.tasks.GuiTaskRetrieval;
 import bq_standard.core.BQ_Standard;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class TaskRetrieval extends TaskBase implements IContainerTask
 {
@@ -346,5 +350,12 @@ public class TaskRetrieval extends TaskBase implements IContainerTask
 		{
 			input.putStack(stack);
 		}
+	}
+	
+	@Override
+	@SideOnly(Side.CLIENT)
+	public GuiScreen GetEditor(GuiScreen parent, JsonObject data)
+	{
+		return new GuiRetrievalEditor(parent, data);
 	}
 }

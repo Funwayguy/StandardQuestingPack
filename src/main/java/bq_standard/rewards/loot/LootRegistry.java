@@ -11,12 +11,13 @@ import net.minecraftforge.common.ChestGenHooks;
 import net.minecraftforge.event.world.WorldEvent;
 import org.apache.logging.log4j.Level;
 import betterquesting.core.BQ_Settings;
+import betterquesting.network.PacketAssembly;
 import betterquesting.utils.BigItemStack;
 import betterquesting.utils.JsonHelper;
 import betterquesting.utils.JsonIO;
 import betterquesting.utils.NBTConverter;
 import bq_standard.core.BQ_Standard;
-import bq_standard.network.PacketStandard;
+import bq_standard.network.StandardPacketType;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -107,7 +108,7 @@ public class LootRegistry
 		LootRegistry.writeToJson(json);
 		tags.setInteger("ID", 1);
 		tags.setTag("Database", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
-		BQ_Standard.instance.network.sendToAll(new PacketStandard(tags));
+		PacketAssembly.SendToAll(StandardPacketType.LOOT_SYNC.GetLocation(), tags);
 	}
 	
 	public static void sendDatabase(EntityPlayerMP player)
@@ -117,7 +118,7 @@ public class LootRegistry
 		LootRegistry.writeToJson(json);
 		tags.setInteger("ID", 1);
 		tags.setTag("Database", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
-		BQ_Standard.instance.network.sendTo(new PacketStandard(tags), player);
+		PacketAssembly.SendTo(StandardPacketType.LOOT_SYNC.GetLocation(), tags, player);
 	}
 	
 	public static void writeToJson(JsonObject json)

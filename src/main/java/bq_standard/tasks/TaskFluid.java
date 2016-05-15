@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.quests.QuestDatabase;
+import betterquesting.quests.QuestInstance;
 import betterquesting.quests.tasks.TaskBase;
 import betterquesting.quests.tasks.advanced.IContainerTask;
 import betterquesting.utils.JsonHelper;
@@ -40,16 +41,16 @@ public class TaskFluid extends TaskBase implements IContainerTask
 	}
 	
 	@Override
-	public void Update(EntityPlayer player)
+	public void Update(QuestInstance quest, EntityPlayer player)
 	{
 		if(!consume && player.ticksExisted%60 == 0 && !QuestDatabase.editMode)
 		{
-			Detect(player);
+			Detect(quest, player);
 		}
 	}
 
 	@Override
-	public void Detect(EntityPlayer player)
+	public void Detect(QuestInstance quest, EntityPlayer player)
 	{
 		if(player.inventory == null || isComplete(player.getUniqueID()))
 		{
