@@ -4,6 +4,7 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.util.EnumChatFormatting;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
+import betterquesting.quests.QuestInstance;
 import betterquesting.utils.BigItemStack;
 import bq_standard.client.gui.GuiScrollingItems;
 import bq_standard.tasks.TaskRetrieval;
@@ -11,9 +12,10 @@ import bq_standard.tasks.TaskRetrieval;
 public class GuiTaskRetrieval extends GuiEmbedded
 {
 	GuiScrollingItems scrollList;
+	QuestInstance quest;
 	TaskRetrieval task;
 	
-	public GuiTaskRetrieval(TaskRetrieval task, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public GuiTaskRetrieval(QuestInstance quest, TaskRetrieval task, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
 		super(screen, posX, posY, sizeX, sizeY);
 		this.task = task;
@@ -24,8 +26,7 @@ public class GuiTaskRetrieval extends GuiEmbedded
 			return;
 		}
 		
-		int[] progress = task.userProgress.get(screen.mc.thePlayer.getUniqueID());
-		progress = progress == null? new int[task.requiredItems.size()] : progress;
+		int[] progress = quest == null || !quest.globalQuest? task.GetUserProgress(screen.mc.thePlayer.getUniqueID()) : task.GetGlobalProgress();
 		
 		for(int i = 0; i < task.requiredItems.size(); i++)
 		{
@@ -40,7 +41,7 @@ public class GuiTaskRetrieval extends GuiEmbedded
 			
 			if(stack.oreDict.length() > 0)
 			{
-				txt += " (" + stack.oreDict + ")"; 
+				txt += " (" + stack.oreDict + ")";
 			}
 			
 			txt += "\n";

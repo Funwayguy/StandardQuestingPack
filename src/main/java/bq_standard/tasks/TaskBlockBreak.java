@@ -17,7 +17,7 @@ import betterquesting.quests.QuestInstance;
 import betterquesting.quests.tasks.advanced.AdvancedTaskBase;
 import betterquesting.quests.tasks.advanced.IProgressionTask;
 import betterquesting.utils.JsonHelper;
-import bq_standard.client.gui.tasks.GuiTaskBlock;
+import bq_standard.client.gui.tasks.GuiTaskBlockBreak;
 import bq_standard.core.BQ_Standard;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -40,7 +40,7 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 	@Override
 	public void Update(QuestInstance quest, EntityPlayer player)
 	{
-		if(player.ticksExisted%100 == 0 && !QuestDatabase.editMode)
+		if(player.ticksExisted%200 == 0 && !QuestDatabase.editMode)
 		{
 			Detect(quest, player);
 		}
@@ -54,7 +54,7 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 			return;
 		}
 		
-		int progress = !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();
+		int progress = quest == null || !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();
 		
 		if(progress >= targetNum)
 		{
@@ -63,7 +63,7 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 	}
 	
 	@Override
-	public void onBlockBreak(EntityPlayer player, Block block, int metadata, int x, int y, int z)
+	public void onBlockBreak(QuestInstance quest, EntityPlayer player, Block block, int metadata, int x, int y, int z)
 	{
 		if(isComplete(player.getUniqueID()))
 		{
@@ -74,9 +74,10 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 		
 		if(block == targetBlock && (targetMeta < 0 || metadata == targetMeta))
 		{
-			progress++;
-			SetUserProgress(player.getUniqueID(), progress);
+			SetUserProgress(player.getUniqueID(), progress + 1);
 		}
+		
+		Detect(quest, player);
 	}
 	
 	@Override
@@ -144,11 +145,22 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 		super.ResetAllProgress();
 		userProgress = new HashMap<UUID, Integer>();
 	}
+	
+	@Override
+	public float GetParticipation(UUID uuid)
+	{
+		if(targetNum <= 0)
+		{
+			return 1F;
+		}
+		
+		return GetUserProgress(uuid) / (float)targetNum;
+	}
 
 	@Override
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public GuiEmbedded getGui(QuestInstance quest, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
-		return new GuiTaskBlock(this, screen, posX, posY, sizeX, sizeY);
+		return new GuiTaskBlockBreak(quest, this, screen, posX, posY, sizeX, sizeY);
 	}
 	
 	@Override
@@ -160,12 +172,8 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 	@Override
 	public Integer GetUserProgress(UUID uuid)
 	{
-		if(!userProgress.containsKey(uuid))
-		{
-			return 0;
-		}
-		
-		return userProgress.get(uuid);
+		Integer i = userProgress.get(uuid);
+		return i == null? 0 : i;
 	}
 	
 	@Override
@@ -177,8 +185,7 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 		
 		if(party == null)
 		{
-			Integer progress = userProgress.get(uuid);
-			total = progress == null? 0 : progress;
+			return GetUserProgress(uuid);
 		} else
 		{
 			for(PartyMember mem : party.GetMembers())
@@ -188,8 +195,7 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 					continue;
 				}
 				
-				Integer progress = userProgress.get(mem.userID);
-				total += progress == null? 0 : progress;
+				total += GetUserProgress(mem.userID);
 			}
 		}
 		
@@ -203,7 +209,7 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 		
 		for(Integer i : userProgress.values())
 		{
-			total += i;
+			total += i == null? 0 : i;
 		}
 		
 		return total;

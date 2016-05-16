@@ -9,6 +9,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.quests.QuestDatabase;
+import betterquesting.quests.QuestInstance;
 import betterquesting.quests.tasks.TaskBase;
 import betterquesting.utils.ItemComparison;
 import betterquesting.utils.JsonHelper;
@@ -39,16 +40,16 @@ public class TaskMeeting extends TaskBase
 	}
 	
 	@Override
-	public void Update(EntityPlayer player)
+	public void Update(QuestInstance quest, EntityPlayer player)
 	{
 		if(player.ticksExisted%60 == 0 && !QuestDatabase.editMode)
 		{
-			Detect(player);
+			Detect(quest, player);
 		}
 	}
 	
 	@Override
-	public void Detect(EntityPlayer player)
+	public void Detect(QuestInstance quest, EntityPlayer player)
 	{
 		if(!player.isEntityAlive() || isComplete(player.getUniqueID()))
 		{
@@ -133,7 +134,7 @@ public class TaskMeeting extends TaskBase
 	}
 
 	@Override
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public GuiEmbedded getGui(QuestInstance quest, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
 		return new GuiTaskMeeting(this, screen, posX, posY, sizeX, sizeY);
 	}

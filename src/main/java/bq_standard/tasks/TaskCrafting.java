@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import org.apache.logging.log4j.Level;
@@ -19,12 +20,15 @@ import betterquesting.quests.tasks.advanced.IProgressionTask;
 import betterquesting.utils.BigItemStack;
 import betterquesting.utils.ItemComparison;
 import betterquesting.utils.JsonHelper;
+import bq_standard.client.gui.editors.GuiCraftingEditor;
 import bq_standard.client.gui.tasks.GuiTaskCrafting;
 import bq_standard.core.BQ_Standard;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class TaskCrafting extends AdvancedTaskBase implements IProgressionTask<int[]>
 {
@@ -42,7 +46,7 @@ public class TaskCrafting extends AdvancedTaskBase implements IProgressionTask<i
 	@Override
 	public void Update(QuestInstance quest, EntityPlayer player)
 	{
-		if(player.ticksExisted%100 == 0 && !QuestDatabase.editMode)
+		if(player.ticksExisted%200 == 0 && !QuestDatabase.editMode)
 		{
 			Detect(quest, player);
 		}
@@ -56,7 +60,7 @@ public class TaskCrafting extends AdvancedTaskBase implements IProgressionTask<i
 			return;
 		}
 		
-		int[] progress = !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();
+		int[] progress = quest == null || !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();
 		
 		boolean flag = true;
 		
@@ -81,7 +85,7 @@ public class TaskCrafting extends AdvancedTaskBase implements IProgressionTask<i
 	}
 	
 	@Override
-	public void onItemCrafted(EntityPlayer player, ItemStack stack)
+	public void onItemCrafted(QuestInstance quest, EntityPlayer player, ItemStack stack)
 	{
 		if(isComplete(player.getUniqueID()))
 		{
@@ -106,10 +110,12 @@ public class TaskCrafting extends AdvancedTaskBase implements IProgressionTask<i
 		}
 		
 		SetUserProgress(player.getUniqueID(), progress);
+		
+		Detect(quest, player);
 	}
 	
 	@Override
-	public void onItemSmelted(EntityPlayer player, ItemStack stack)
+	public void onItemSmelted(QuestInstance quest, EntityPlayer player, ItemStack stack)
 	{
 		int[] progress = GetUserProgress(player.getUniqueID());
 		
@@ -129,6 +135,8 @@ public class TaskCrafting extends AdvancedTaskBase implements IProgressionTask<i
 		}
 		
 		SetUserProgress(player.getUniqueID(), progress);
+		
+		Detect(quest, player);
 	}
 	
 	@Override
@@ -243,11 +251,38 @@ public class TaskCrafting extends AdvancedTaskBase implements IProgressionTask<i
 		super.ResetAllProgress();
 		userProgress = new HashMap<UUID, int[]>();
 	}
+	
+	@Override
+	public float GetParticipation(UUID uuid)
+	{
+		if(requiredItems.size() <= 0)
+		{
+			return 1F;
+		}
+		
+		float total = 0F;
+		
+		int[] progress = GetUserProgress(uuid);
+		for(int i = 0; i < requiredItems.size(); i++)
+		{
+			BigItemStack rStack = requiredItems.get(i);
+			total += progress[i] / (float)rStack.stackSize;
+		}
+		
+		return total / (float)requiredItems.size();
+	}
 
 	@Override
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public GuiEmbedded getGui(QuestInstance quest, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
-		return new GuiTaskCrafting(this, (GuiQuesting)screen, posX, posY, sizeX, sizeY);
+		return new GuiTaskCrafting(quest, this, screen, posX, posY, sizeX, sizeY);
+	}
+	
+	@Override
+	@SideOnly(Side.CLIENT)
+	public GuiScreen GetEditor(GuiScreen parent, JsonObject data)
+	{
+		return new GuiCraftingEditor(parent, data);
 	}
 	
 	@Override
@@ -272,8 +307,7 @@ public class TaskCrafting extends AdvancedTaskBase implements IProgressionTask<i
 		
 		if(party == null)
 		{
-			int[] progress = userProgress.get(uuid);
-			total = progress == null || progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
+			return GetUserProgress(uuid);
 		} else
 		{
 			for(PartyMember mem : party.GetMembers())
@@ -283,8 +317,7 @@ public class TaskCrafting extends AdvancedTaskBase implements IProgressionTask<i
 					continue;
 				}
 
-				int[] progress = userProgress.get(mem.userID);
-				progress = progress == null || progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
+				int[] progress = GetUserProgress(mem.userID);
 				
 				for(int i = 0; i <= progress.length; i++)
 				{
@@ -303,7 +336,12 @@ public class TaskCrafting extends AdvancedTaskBase implements IProgressionTask<i
 		
 		for(int[] up : userProgress.values())
 		{
-			int[] progress = up == null || up.length != requiredItems.size()? new int[requiredItems.size()] : up;
+			if(up == null)
+			{
+				continue;
+			}
+			
+			int[] progress = up.length != requiredItems.size()? new int[requiredItems.size()] : up;
 			
 			for(int i = 0; i <= progress.length; i++)
 			{
