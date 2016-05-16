@@ -11,6 +11,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.quests.QuestDatabase;
+import betterquesting.quests.QuestInstance;
 import betterquesting.quests.tasks.TaskBase;
 import betterquesting.utils.ItemComparison;
 import betterquesting.utils.JsonHelper;
@@ -22,6 +23,8 @@ import com.google.gson.JsonObject;
 public class TaskMeeting extends TaskBase
 {
 	public String idName = "Villager";
+	public int range = 4;
+	public int amount = 1;
 	public boolean ignoreNBT = true;
 	public boolean subtypes = true;
 	
@@ -37,29 +40,31 @@ public class TaskMeeting extends TaskBase
 	}
 	
 	@Override
-	public void Update(EntityPlayer player)
+	public void Update(QuestInstance quest, EntityPlayer player)
 	{
-		if(player.ticksExisted%20 == 0 && !QuestDatabase.editMode)
+		if(player.ticksExisted%60 == 0 && !QuestDatabase.editMode)
 		{
-			Detect(player);
+			Detect(quest, player);
 		}
 	}
 	
 	@Override
-	public void Detect(EntityPlayer player)
+	public void Detect(QuestInstance quest, EntityPlayer player)
 	{
 		if(!player.isEntityAlive() || isComplete(player.getUniqueID()))
 		{
 			return;
 		}
 		
-		List<Entity> list = player.worldObj.getEntitiesWithinAABBExcludingEntity(player, player.getEntityBoundingBox().expand(4D, 4D, 4D));
+		List<Entity> list = player.worldObj.getEntitiesWithinAABBExcludingEntity(player, player.getEntityBoundingBox().expand(range, range, range));
 		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.stringToClassMapping.get(idName);
 		
 		if(target == null)
 		{
 			return;
 		}
+		
+		int n = 0;
 		
 		for(Entity entity : list)
 		{
@@ -79,9 +84,14 @@ public class TaskMeeting extends TaskBase
 			{
 				continue;
 			}
-
-			setCompletion(player.getUniqueID(), true);
-			return;
+			
+			n++;
+			
+			if(n >= amount)
+			{
+				setCompletion(player.getUniqueID(), true);
+				return;
+			}
 		}
 	}
 	
@@ -91,6 +101,8 @@ public class TaskMeeting extends TaskBase
 		super.writeToJson(json);
 		
 		json.addProperty("target", idName);
+		json.addProperty("range", range);
+		json.addProperty("amount", amount);
 		json.addProperty("subtypes", subtypes);
 		json.addProperty("ignoreNBT", ignoreNBT);
 		json.add("targetNBT", NBTConverter.NBTtoJSON_Compound(targetTags, new JsonObject()));
@@ -102,6 +114,8 @@ public class TaskMeeting extends TaskBase
 		super.writeToJson(json);
 		
 		idName = JsonHelper.GetString(json, "target", "Villager");
+		range = JsonHelper.GetNumber(json, "range", 4).intValue();
+		amount = JsonHelper.GetNumber(json, "amount", 1).intValue();
 		subtypes = JsonHelper.GetBoolean(json, "subtypes", true);
 		ignoreNBT = JsonHelper.GetBoolean(json, "ignoreNBT", true);
 		targetTags = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "targetNBT"), new NBTTagCompound());
@@ -118,7 +132,7 @@ public class TaskMeeting extends TaskBase
 	}
 
 	@Override
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public GuiEmbedded getGui(QuestInstance quest, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
 		return new GuiTaskMeeting(this, screen, posX, posY, sizeX, sizeY);
 	}

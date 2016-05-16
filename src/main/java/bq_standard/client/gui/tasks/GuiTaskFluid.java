@@ -5,19 +5,23 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fluids.FluidStack;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
+import betterquesting.quests.QuestInstance;
 import bq_standard.client.gui.GuiScrollingFluids;
 import bq_standard.tasks.TaskFluid;
 
 public class GuiTaskFluid extends GuiEmbedded
 {
 	GuiScrollingFluids scrollList;
+	QuestInstance quest;
 	TaskFluid task;
 	int scroll = 0;
 	
-	public GuiTaskFluid(TaskFluid task, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public GuiTaskFluid(QuestInstance quest, TaskFluid task, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
 		super(screen, posX, posY, sizeX, sizeY);
 		this.task = task;
+		this.quest = quest;
+		
 		scrollList = new GuiScrollingFluids(screen, sizeX, sizeY, posY, posX);
 		
 		if(task == null)
@@ -25,8 +29,7 @@ public class GuiTaskFluid extends GuiEmbedded
 			return;
 		}
 		
-		int[] progress = task.userProgress.get(screen.mc.thePlayer.getUniqueID());
-		progress = progress == null? new int[task.requiredFluids.size()] : progress;
+		int[] progress = quest == null || !quest.globalQuest? task.GetUserProgress(screen.mc.thePlayer.getUniqueID()) : task.GetGlobalProgress();
 		
 		for(int i = 0; i < task.requiredFluids.size(); i++)
 		{

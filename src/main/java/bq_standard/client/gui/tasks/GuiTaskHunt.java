@@ -10,19 +10,22 @@ import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.client.themes.ThemeRegistry;
+import betterquesting.quests.QuestInstance;
 import betterquesting.utils.RenderUtils;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskHunt;
 
 public class GuiTaskHunt extends GuiEmbedded
 {
+	QuestInstance quest;
 	TaskHunt task;
 	Entity target;
 	
-	public GuiTaskHunt(TaskHunt task, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public GuiTaskHunt(QuestInstance quest, TaskHunt task, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
 		super(screen, posX, posY, sizeX, sizeY);
 		this.task = task;
+		this.quest = quest;
 	}
 
 	@Override
@@ -71,8 +74,7 @@ public class GuiTaskHunt extends GuiEmbedded
 			}
 		}
 		
-		Integer progress = task.userProgress.get(screen.mc.thePlayer.getUniqueID());
-		progress = progress == null? 0 : progress;
+		int progress = quest == null || !quest.globalQuest? task.GetUserProgress(screen.mc.thePlayer.getUniqueID()) : task.GetGlobalProgress();
 		String tnm = !task.ignoreNBT && target != null? target.getName() : task.idName;
 		String txt = I18n.translateToLocalFormatted("bq_standard.gui.kill", tnm) + " " + progress + "/" + task.required;
 		screen.mc.fontRendererObj.drawString(txt, posX + sizeX/2 - screen.mc.fontRendererObj.getStringWidth(txt)/2, posY, ThemeRegistry.curTheme().textColor().getRGB());

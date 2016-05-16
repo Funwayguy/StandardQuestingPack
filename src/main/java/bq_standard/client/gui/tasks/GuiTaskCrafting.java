@@ -4,6 +4,7 @@ import net.minecraft.util.text.translation.I18n;
 import net.minecraft.util.text.TextFormatting;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
+import betterquesting.quests.QuestInstance;
 import betterquesting.utils.BigItemStack;
 import bq_standard.client.gui.GuiScrollingItems;
 import bq_standard.tasks.TaskCrafting;
@@ -11,12 +12,15 @@ import bq_standard.tasks.TaskCrafting;
 public class GuiTaskCrafting extends GuiEmbedded
 {
 	GuiScrollingItems scrollList;
+	QuestInstance quest;
 	TaskCrafting task;
 	
-	public GuiTaskCrafting(TaskCrafting task, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public GuiTaskCrafting(QuestInstance quest, TaskCrafting task, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
 		super(screen, posX, posY, sizeX, sizeY);
 		this.task = task;
+		this.quest = quest;
+		
 		scrollList = new GuiScrollingItems(screen, sizeX, sizeY, posY, posX);
 		
 		if(task == null)
@@ -24,8 +28,7 @@ public class GuiTaskCrafting extends GuiEmbedded
 			return;
 		}
 		
-		int[] progress = task.userProgress.get(screen.mc.thePlayer.getUniqueID());
-		progress = progress == null? new int[task.requiredItems.size()] : progress;
+		int[] progress = quest == null || !quest.globalQuest? task.GetUserProgress(screen.mc.thePlayer.getUniqueID()) : task.GetGlobalProgress();
 		
 		for(int i = 0; i < task.requiredItems.size(); i++)
 		{
@@ -40,7 +43,7 @@ public class GuiTaskCrafting extends GuiEmbedded
 			
 			if(stack.oreDict.length() > 0)
 			{
-				txt = "(OreDict: " + stack.oreDict + ")"; 
+				txt += " (" + stack.oreDict + ")";
 			}
 			
 			txt += "\n";

@@ -56,7 +56,7 @@ public class LootRegistry
 		
 		if(total <= 0)
 		{
-			BQ_Standard.logger.log(Level.WARN, "Unable to get random loot group! Reason: Total weights <= 0");
+			BQ_Standard.logger.log(Level.WARN, "Unable to get random loot group! Reason: No registered groups/weights");
 			return null;
 		}
 		
