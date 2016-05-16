@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.quests.QuestDatabase;
+import betterquesting.quests.QuestInstance;
 import betterquesting.quests.tasks.TaskBase;
 import betterquesting.utils.JsonHelper;
 import bq_standard.client.gui.editors.GuiScoreEditor;
@@ -34,16 +35,16 @@ public class TaskScoreboard extends TaskBase
 	}
 	
 	@Override
-	public void Update(EntityPlayer player)
+	public void Update(QuestInstance quest, EntityPlayer player)
 	{
 		if(player.ticksExisted%20 == 0 && !QuestDatabase.editMode) // Auto-detect once per second
 		{
-			Detect(player);
+			Detect(quest, player);
 		}
 	}
 	
 	@Override
-	public void Detect(EntityPlayer player)
+	public void Detect(QuestInstance quest, EntityPlayer player)
 	{
 		if(isComplete(player.getUniqueID()))
 		{
@@ -143,7 +144,7 @@ public class TaskScoreboard extends TaskBase
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public GuiEmbedded getGui(QuestInstance quest, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
 		return new GuiTaskScoreboard(this, screen, posX, posY, sizeX, sizeY);
 	}

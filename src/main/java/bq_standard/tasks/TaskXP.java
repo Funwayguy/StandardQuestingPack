@@ -7,8 +7,13 @@ import net.minecraft.entity.player.EntityPlayer;
 import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
+import betterquesting.party.PartyInstance;
+import betterquesting.party.PartyManager;
+import betterquesting.party.PartyInstance.PartyMember;
 import betterquesting.quests.QuestDatabase;
+import betterquesting.quests.QuestInstance;
 import betterquesting.quests.tasks.TaskBase;
+import betterquesting.quests.tasks.advanced.IProgressionTask;
 import betterquesting.utils.JsonHelper;
 import bq_standard.XPHelper;
 import bq_standard.client.gui.tasks.GuiTaskXP;
@@ -17,7 +22,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class TaskXP extends TaskBase
+public class TaskXP extends TaskBase implements IProgressionTask<Integer>
 {
 	public HashMap<UUID, Integer> userProgress = new HashMap<UUID, Integer>();
 	public boolean levels = true;
@@ -25,39 +30,50 @@ public class TaskXP extends TaskBase
 	public boolean consume = true;
 	
 	@Override
-	public void Update(EntityPlayer player)
+	public void Update(QuestInstance quest, EntityPlayer player)
 	{
-		if(!consume && player.ticksExisted%200 == 0 && !QuestDatabase.editMode) // Auto-detect once per second
+		if(player.ticksExisted%60 == 0 && !QuestDatabase.editMode)
 		{
-			Detect(player);
+			if(!consume)
+			{
+				SetUserProgress(player.getUniqueID(), XPHelper.getPlayerXP(player));
+			}
+			
+			int rawXP = levels? XPHelper.getLevelXP(amount) : amount;
+			int totalXP = quest == null || !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();
+			if(totalXP >= rawXP)
+			{
+				setCompletion(player.getUniqueID(), true);
+			}
 		}
 	}
 	
 	@Override
-	public void Detect(EntityPlayer player)
+	public void Detect(QuestInstance quest, EntityPlayer player)
 	{
 		if(isComplete(player.getUniqueID()))
 		{
 			return;
 		}
 		
-		Integer progress = userProgress.get(player.getUniqueID());
-		progress = progress == null? 0 : progress;
-		
-		int i = progress + XPHelper.getPlayerXP(player);
+		int progress = GetUserProgress(player.getUniqueID());
+		int rawXP = levels? XPHelper.getLevelXP(amount) : amount;
+		int plrXP = XPHelper.getPlayerXP(player);
+		int remaining = rawXP - progress;
+		int cost = Math.min(remaining, plrXP);
 		
 		if(consume)
 		{
-			int remaining = amount - progress;
-			int change = Math.min(remaining, i);
-			progress += change;
-			userProgress.put(player.getUniqueID(), progress);
-			XPHelper.AddXP(player, -change);
+			progress += cost;
+			SetUserProgress(player.getUniqueID(), progress);
+			XPHelper.AddXP(player, -cost);
+		} else
+		{
+			SetUserProgress(player.getUniqueID(), plrXP);
 		}
 		
-		int rawXP = levels? XPHelper.getLevelXP(amount) : amount;
-		
-		if(i >= rawXP)
+		int totalXP = quest == null || !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();
+		if(totalXP >= rawXP)
 		{
 			setCompletion(player.getUniqueID(), true);
 		}
@@ -121,9 +137,87 @@ public class TaskXP extends TaskBase
 	}
 	
 	@Override
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public void ResetProgress(UUID uuid)
 	{
-		return new GuiTaskXP(this, screen, posX, posY, sizeX, sizeY);
+		super.ResetProgress(uuid);
+		userProgress.remove(uuid);
 	}
 	
+	@Override
+	public void ResetAllProgress()
+	{
+		super.ResetAllProgress();
+		userProgress = new HashMap<UUID, Integer>();
+	}
+	
+	@Override
+	public float GetParticipation(UUID uuid)
+	{
+		int rawXP = !levels? amount : XPHelper.getLevelXP(amount);
+		
+		if(rawXP <= 0)
+		{
+			return 1F;
+		}
+		
+		return GetUserProgress(uuid) / (float)rawXP;
+	}
+	
+	@Override
+	public GuiEmbedded getGui(QuestInstance quest, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	{
+		return new GuiTaskXP(quest, this, screen, posX, posY, sizeX, sizeY);
+	}
+	
+	@Override
+	public void SetUserProgress(UUID uuid, Integer progress)
+	{
+		userProgress.put(uuid, progress);
+	}
+	
+	@Override
+	public Integer GetUserProgress(UUID uuid)
+	{
+		Integer i = userProgress.get(uuid);
+		return i == null? 0 : i;
+	}
+
+	@Override
+	public Integer GetPartyProgress(UUID uuid)
+	{
+		int total = 0;
+		
+		PartyInstance party = PartyManager.GetParty(uuid);
+		
+		if(party == null)
+		{
+			return GetUserProgress(uuid);
+		} else
+		{
+			for(PartyMember mem : party.GetMembers())
+			{
+				if(mem != null && mem.GetPrivilege() <= 0)
+				{
+					continue;
+				}
+				
+				total += GetUserProgress(mem.userID);
+			}
+		}
+		
+		return total;
+	}
+	
+	@Override
+	public Integer GetGlobalProgress()
+	{
+		int total = 0;
+		
+		for(Integer i : userProgress.values())
+		{
+			total += i == null? 0 : 1;
+		}
+		
+		return total;
+	}
 }

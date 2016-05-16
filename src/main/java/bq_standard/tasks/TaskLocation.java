@@ -7,6 +7,7 @@ import net.minecraft.util.Vec3;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.quests.QuestDatabase;
+import betterquesting.quests.QuestInstance;
 import betterquesting.quests.tasks.TaskBase;
 import betterquesting.utils.JsonHelper;
 import bq_standard.client.gui.tasks.GuiTaskLocation;
@@ -30,16 +31,16 @@ public class TaskLocation extends TaskBase
 	}
 	
 	@Override
-	public void Update(EntityPlayer player)
+	public void Update(QuestInstance quest, EntityPlayer player)
 	{
 		if(player.ticksExisted%100 == 0 && !QuestDatabase.editMode) // Only auto-detect every 5 seconds
 		{
-			Detect(player);
+			Detect(quest, player);
 		}
 	}
 	
 	@Override
-	public void Detect(EntityPlayer player)
+	public void Detect(QuestInstance quest, EntityPlayer player)
 	{
 		if(!player.isEntityAlive() || isComplete(player.getUniqueID()))
 		{
@@ -100,7 +101,7 @@ public class TaskLocation extends TaskBase
 	}
 
 	@Override
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public GuiEmbedded getGui(QuestInstance quest, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
 		return new GuiTaskLocation(this, screen, posX, posY, sizeX, sizeY);
 	}

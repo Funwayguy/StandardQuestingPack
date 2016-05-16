@@ -15,8 +15,13 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
+import betterquesting.party.PartyInstance;
+import betterquesting.party.PartyManager;
+import betterquesting.party.PartyInstance.PartyMember;
 import betterquesting.quests.QuestDatabase;
+import betterquesting.quests.QuestInstance;
 import betterquesting.quests.tasks.advanced.AdvancedTaskBase;
+import betterquesting.quests.tasks.advanced.IProgressionTask;
 import betterquesting.utils.ItemComparison;
 import betterquesting.utils.JsonHelper;
 import betterquesting.utils.NBTConverter;
@@ -27,7 +32,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class TaskHunt extends AdvancedTaskBase
+public class TaskHunt extends AdvancedTaskBase implements IProgressionTask<Integer>
 {
 	public HashMap<UUID, Integer> userProgress = new HashMap<UUID, Integer>();
 	public String idName = "Zombie";
@@ -47,24 +52,23 @@ public class TaskHunt extends AdvancedTaskBase
 	}
 	
 	@Override
-	public void Update(EntityPlayer player)
+	public void Update(QuestInstance quest, EntityPlayer player)
 	{
 		if(player.ticksExisted%200 == 0 && !QuestDatabase.editMode)
 		{
-			Detect(player);
+			Detect(quest, player);
 		}
 	}
 	
 	@Override
-	public void Detect(EntityPlayer player)
+	public void Detect(QuestInstance quest, EntityPlayer player)
 	{
 		if(isComplete(player.getUniqueID()))
 		{
 			return;
 		}
 		
-		Integer progress = userProgress.get(player.getUniqueID());
-		progress = progress == null? 0 : progress;
+		int progress = quest == null || !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();
 		
 		if(progress >= required)
 		{
@@ -73,7 +77,7 @@ public class TaskHunt extends AdvancedTaskBase
 	}
 	
 	@Override
-	public void onKilledByPlayer(EntityLivingBase entity, DamageSource source)
+	public void onKilledByPlayer(QuestInstance quest, EntityLivingBase entity, DamageSource source)
 	{
 		EntityPlayer player = (EntityPlayer)source.getEntity();
 		
@@ -82,8 +86,7 @@ public class TaskHunt extends AdvancedTaskBase
 			return;
 		}
 		
-		Integer progress = userProgress.get(player.getUniqueID());
-		progress = progress == null? 0 : progress;
+		int progress = GetUserProgress(player.getUniqueID());
 		
 		Class<? extends Entity> subject = entity.getClass();
 		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.stringToClassMapping.get(idName);
@@ -106,14 +109,9 @@ public class TaskHunt extends AdvancedTaskBase
 			return;
 		}
 		
-		progress++;
+		SetUserProgress(player.getUniqueID(), progress + 1);
 		
-		userProgress.put(player.getUniqueID(), progress);
-		
-		if(progress >= required)
-		{
-			setCompletion(player.getUniqueID(), true);
-		}
+		Detect(quest, player);
 	}
 	
 	@Override
@@ -194,10 +192,73 @@ public class TaskHunt extends AdvancedTaskBase
 		super.ResetAllProgress();
 		userProgress = new HashMap<UUID,Integer>();
 	}
+	
+	@Override
+	public float GetParticipation(UUID uuid)
+	{
+		if(required <= 0)
+		{
+			return 1F;
+		}
+		
+		return GetUserProgress(uuid) / (float)required;
+	}
 
 	@Override
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public GuiEmbedded getGui(QuestInstance quest, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
-		return new GuiTaskHunt(this, screen, posX, posY, sizeX, sizeY);
+		return new GuiTaskHunt(quest, this, screen, posX, posY, sizeX, sizeY);
+	}
+	
+	@Override
+	public void SetUserProgress(UUID uuid, Integer progress)
+	{
+		userProgress.put(uuid, progress);
+	}
+	
+	@Override
+	public Integer GetUserProgress(UUID uuid)
+	{
+		Integer progress = userProgress.get(uuid);
+		return progress == null? 0 : progress;
+	}
+	
+	@Override
+	public Integer GetPartyProgress(UUID uuid)
+	{
+		int total = 0;
+		
+		PartyInstance party = PartyManager.GetParty(uuid);
+		
+		if(party == null)
+		{
+			return GetUserProgress(uuid);
+		} else
+		{
+			for(PartyMember mem : party.GetMembers())
+			{
+				if(mem != null && mem.GetPrivilege() <= 0)
+				{
+					continue;
+				}
+				
+				total += GetUserProgress(mem.userID);
+			}
+		}
+		
+		return total;
+	}
+	
+	@Override
+	public Integer GetGlobalProgress()
+	{
+		int total = 0;
+		
+		for(Integer i : userProgress.values())
+		{
+			total += i == null? 0 : i;
+		}
+		
+		return total;
 	}
 }

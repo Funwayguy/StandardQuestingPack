@@ -8,6 +8,7 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
+import betterquesting.quests.QuestInstance;
 import betterquesting.utils.RenderUtils;
 import bq_standard.XPHelper;
 import bq_standard.tasks.TaskXP;
@@ -15,38 +16,24 @@ import bq_standard.tasks.TaskXP;
 public class GuiTaskXP extends GuiEmbedded
 {
 	ItemStack bottle = new ItemStack(Items.experience_bottle);
+	QuestInstance quest;
 	TaskXP task;
 	
-	public GuiTaskXP(TaskXP task, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public GuiTaskXP(QuestInstance quest, TaskXP task, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
 		super(screen, posX, posY, sizeX, sizeY);
 		this.task = task;
+		this.quest = quest;
 	}
 	
 	@Override
 	public void drawGui(int mx, int my, float partialTick)
 	{
 		int barSize = Math.min(sizeX/2, 128);
-		int xp = 0;
-		int barProg = 0;
+		int xp = quest == null || !quest.globalQuest? task.GetPartyProgress(screen.mc.thePlayer.getUniqueID()) : task.GetGlobalProgress();
+		xp = !task.levels? xp : XPHelper.getXPLevel(xp);
+		int barProg = (int)(MathHelper.clamp_float(xp/(float)task.amount, 0F, 1F) * (barSize - 2));
 		int midX = sizeX/2;
-		
-		if(!task.consume)
-		{
-			if(task.levels)
-			{
-				xp = screen.mc.thePlayer.experienceLevel;
-			} else
-			{
-				xp = XPHelper.getPlayerXP(screen.mc.thePlayer);
-			}
-		} else
-		{
-			Integer progress = task.userProgress.get(screen.mc.thePlayer.getUniqueID());
-			xp = progress == null? 0 : progress;
-		}
-		
-		barProg = (int)(MathHelper.clamp_float(xp/(float)task.amount, 0F, 1F) * (barSize - 2));
 		
 		GlStateManager.pushMatrix();
 		GlStateManager.enableDepth();

@@ -15,9 +15,14 @@ import net.minecraftforge.fluids.IFluidContainerItem;
 import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
+import betterquesting.party.PartyInstance;
+import betterquesting.party.PartyManager;
+import betterquesting.party.PartyInstance.PartyMember;
 import betterquesting.quests.QuestDatabase;
+import betterquesting.quests.QuestInstance;
 import betterquesting.quests.tasks.TaskBase;
 import betterquesting.quests.tasks.advanced.IContainerTask;
+import betterquesting.quests.tasks.advanced.IProgressionTask;
 import betterquesting.utils.JsonHelper;
 import betterquesting.utils.NBTConverter;
 import bq_standard.client.gui.tasks.GuiTaskFluid;
@@ -27,7 +32,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-public class TaskFluid extends TaskBase implements IContainerTask
+public class TaskFluid extends TaskBase implements IContainerTask, IProgressionTask<int[]>
 {
 	public ArrayList<FluidStack> requiredFluids = new ArrayList<FluidStack>();
 	public HashMap<UUID, int[]> userProgress = new HashMap<UUID, int[]>();
@@ -40,26 +45,48 @@ public class TaskFluid extends TaskBase implements IContainerTask
 	}
 	
 	@Override
-	public void Update(EntityPlayer player)
+	public void Update(QuestInstance quest, EntityPlayer player)
 	{
-		if(!consume && player.ticksExisted%100 == 0 && !QuestDatabase.editMode) // Every ~5 seconds auto detect this quest as long as it isn't consuming items
+		if(player.ticksExisted%60 == 0 && !QuestDatabase.editMode)
 		{
-			Detect(player);
+			if(!consume)
+			{
+				Detect(quest, player);
+			} else
+			{
+				boolean flag = true;
+				
+				int[] totalProgress = quest == null || !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();
+				for(int j = 0; j < requiredFluids.size(); j++)
+				{
+					FluidStack rStack = requiredFluids.get(j);
+					
+					if(rStack == null || totalProgress[j] >= rStack.amount)
+					{
+						continue;
+					}
+					
+					flag = false;
+					break;
+				}
+				
+				if(flag)
+				{
+					setCompletion(player.getUniqueID(), true);
+				}
+			}
 		}
 	}
 
 	@Override
-	public void Detect(EntityPlayer player)
+	public void Detect(QuestInstance quest, EntityPlayer player)
 	{
-		if(player.inventory == null || this.isComplete(player.getUniqueID()))
+		if(player.inventory == null || isComplete(player.getUniqueID()))
 		{
 			return;
 		}
 		
-		boolean flag = true;
-		
-		int[] progress = userProgress.get(player.getUniqueID());
-		progress = progress == null || progress.length != requiredFluids.size()? new int[requiredFluids.size()] : progress;
+		int[] progress = GetUserProgress(player.getUniqueID());
 		
 		for(int i = 0; i < player.inventory.getSizeInventory(); i++)
 		{
@@ -96,22 +123,26 @@ public class TaskFluid extends TaskBase implements IContainerTask
 			}
 		}
 		
+		boolean flag = true;
+		int[] totalProgress = progress;
+		
+		if(consume)
+		{
+			SetUserProgress(player.getUniqueID(), progress);
+			totalProgress = quest == null || !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();
+		}
+		
 		for(int j = 0; j < requiredFluids.size(); j++)
 		{
 			FluidStack rStack = requiredFluids.get(j);
 			
-			if(rStack == null || progress[j] >= rStack.amount)
+			if(rStack == null || totalProgress[j] >= rStack.amount)
 			{
 				continue;
 			}
 			
 			flag = false;
 			break;
-		}
-		
-		if(consume)
-		{
-			userProgress.put(player.getUniqueID(), progress);
 		}
 		
 		if(flag)
@@ -272,9 +303,9 @@ public class TaskFluid extends TaskBase implements IContainerTask
 	}
 
 	@Override
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public GuiEmbedded getGui(QuestInstance quest, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
-		return new GuiTaskFluid(this, screen, posX, posY, sizeX, sizeY);
+		return new GuiTaskFluid(quest, this, screen, posX, posY, sizeX, sizeY);
 	}
 
 	@Override
@@ -285,8 +316,7 @@ public class TaskFluid extends TaskBase implements IContainerTask
 			return false;
 		}
 		
-		int[] progress = userProgress.get(owner);
-		progress = progress == null || progress.length != requiredFluids.size()? new int[requiredFluids.size()] : progress;
+		int[] progress = GetUserProgress(owner);
 		
 		for(int j = 0; j < requiredFluids.size(); j++)
 		{
@@ -337,8 +367,7 @@ public class TaskFluid extends TaskBase implements IContainerTask
 			return fluid;
 		}
 		
-		int[] progress = userProgress.get(owner);
-		progress = progress == null || progress.length != requiredFluids.size()? new int[requiredFluids.size()] : progress;
+		int[] progress = GetUserProgress(owner);
 		
 		for(int j = 0; j < requiredFluids.size(); j++)
 		{
@@ -367,27 +396,7 @@ public class TaskFluid extends TaskBase implements IContainerTask
 		
 		if(consume)
 		{
-			userProgress.put(owner, progress);
-		}
-		
-		boolean flag = true;
-		
-		for(int j = 0; j < requiredFluids.size(); j++)
-		{
-			FluidStack rStack = requiredFluids.get(j);
-			
-			if(rStack == null || progress[j] >= rStack.amount)
-			{
-				continue;
-			}
-			
-			flag = false;
-			break;
-		}
-		
-		if(flag)
-		{
-			setCompletion(owner, true);
+			SetUserProgress(owner, progress);
 		}
 		
 		return fluid;
@@ -428,5 +437,72 @@ public class TaskFluid extends TaskBase implements IContainerTask
 				input.decrStackSize(1);
 			}
 		}
+	}
+
+	@Override
+	public void SetUserProgress(UUID uuid, int[] progress)
+	{
+		userProgress.put(uuid, progress);
+	}
+
+	@Override
+	public int[] GetUserProgress(UUID uuid)
+	{
+		int[] progress = userProgress.get(uuid);
+		return progress == null || progress.length != requiredFluids.size()? new int[requiredFluids.size()] : progress;
+	}
+
+	@Override
+	public int[] GetPartyProgress(UUID uuid)
+	{
+		int[] total = new int[requiredFluids.size()];
+		
+		PartyInstance party = PartyManager.GetParty(uuid);
+		
+		if(party == null)
+		{
+			return GetUserProgress(uuid);
+		} else
+		{
+			for(PartyMember mem : party.GetMembers())
+			{
+				if(mem != null && mem.GetPrivilege() <= 0)
+				{
+					continue;
+				}
+
+				int[] progress = GetUserProgress(mem.userID);
+				
+				for(int i = 0; i <= progress.length; i++)
+				{
+					total[i] += progress[i];
+				}
+			}
+		}
+		
+		return total;
+	}
+
+	@Override
+	public int[] GetGlobalProgress()
+	{
+		int[] total = new int[requiredFluids.size()];
+		
+		for(int[] up : userProgress.values())
+		{
+			if(up == null)
+			{
+				continue;
+			}
+			
+			int[] progress = up.length != requiredFluids.size()? new int[requiredFluids.size()] : up;
+			
+			for(int i = 0; i <= progress.length; i++)
+			{
+				total[i] += progress[i];
+			}
+		}
+		
+		return total;
 	}
 }

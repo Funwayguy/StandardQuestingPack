@@ -4,26 +4,28 @@ import net.minecraft.client.renderer.GlStateManager;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.client.themes.ThemeRegistry;
+import betterquesting.quests.QuestInstance;
 import betterquesting.utils.BigItemStack;
 import betterquesting.utils.RenderUtils;
 import bq_standard.tasks.TaskBlockBreak;
 
-public class GuiTaskBlock extends GuiEmbedded
+public class GuiTaskBlockBreak extends GuiEmbedded
 {
+	QuestInstance quest;
 	TaskBlockBreak task;
 	
-	public GuiTaskBlock(TaskBlockBreak task, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public GuiTaskBlockBreak(QuestInstance quest, TaskBlockBreak task, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
 	{
 		super(screen, posX, posY, sizeX, sizeY);
 		this.task = task;
+		this.quest = quest;
 	}
 
 	@Override
 	public void drawGui(int mx, int my, float partialTick)
 	{
 		BigItemStack dispStack = new BigItemStack(task.targetBlock, 1, task.targetMeta);
-		Integer progress = task.userProgress.get(screen.mc.thePlayer.getUniqueID());
-		progress = progress == null? 0 : progress;
+		int progress = quest == null || !quest.globalQuest? task.GetUserProgress(screen.mc.thePlayer.getUniqueID()) : task.GetGlobalProgress();
 		
 		if(dispStack.getBaseStack() != null)
 		{
