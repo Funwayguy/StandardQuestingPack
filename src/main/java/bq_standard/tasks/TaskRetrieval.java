@@ -424,7 +424,7 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 
 				int[] progress = GetUserProgress(mem.userID);
 				
-				for(int i = 0; i <= progress.length; i++)
+				for(int i = 0; i < progress.length; i++)
 				{
 					total[i] += progress[i];
 				}
@@ -448,7 +448,7 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 			
 			int[] progress = up.length != requiredItems.size()? new int[requiredItems.size()] : up;
 			
-			for(int i = 0; i <= progress.length; i++)
+			for(int i = 0; i < progress.length; i++)
 			{
 				total[i] += progress[i];
 			}
