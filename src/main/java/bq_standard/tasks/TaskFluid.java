@@ -493,7 +493,7 @@ public class TaskFluid extends TaskBase implements IContainerTask, IProgressionT
 
 				int[] progress = GetUserProgress(mem.userID);
 				
-				for(int i = 0; i <= progress.length; i++)
+				for(int i = 0; i < progress.length; i++)
 				{
 					total[i] += progress[i];
 				}
@@ -517,7 +517,7 @@ public class TaskFluid extends TaskBase implements IContainerTask, IProgressionT
 			
 			int[] progress = up.length != requiredFluids.size()? new int[requiredFluids.size()] : up;
 			
-			for(int i = 0; i <= progress.length; i++)
+			for(int i = 0; i < progress.length; i++)
 			{
 				total[i] += progress[i];
 			}
