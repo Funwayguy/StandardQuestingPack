@@ -57,7 +57,7 @@ public class NativeFileImporter extends ImporterBase implements IFileCallback
 		ConcurrentHashMap<Integer,QuestInstance> oldQuests = QuestDatabase.questDB;
 		QuestDatabase.questDB.clear();
 		CopyOnWriteArrayList<QuestLine> oldLines = QuestDatabase.questLines;
-		QuestDatabase.questLines.clear();;
+		QuestDatabase.questLines.clear();
 		
 		// Use native parsing to ensure it is always up to date
 		QuestDatabase.readFromJson(json);
@@ -78,6 +78,9 @@ public class NativeFileImporter extends ImporterBase implements IFileCallback
 	@Override
 	public void setFiles(File... files)
 	{
+		boolean tmpHard = QuestDatabase.bqHardcore;
+		boolean tmpEdit = QuestDatabase.editMode;
+		
 		for(File selected : files)
 		{
 			if(selected == null || !selected.exists())
@@ -105,6 +108,8 @@ public class NativeFileImporter extends ImporterBase implements IFileCallback
 			}
 		}
 		
+		QuestDatabase.bqHardcore = tmpHard;
+		QuestDatabase.editMode = tmpEdit;
 		QuestDatabase.UpdateClients();
 	}
 }
