@@ -111,7 +111,7 @@ public class TaskMeeting extends TaskBase
 	@Override
 	public void readFromJson(JsonObject json)
 	{
-		super.writeToJson(json);
+		super.readFromJson(json);
 		
 		idName = JsonHelper.GetString(json, "target", "Villager");
 		range = JsonHelper.GetNumber(json, "range", 4).intValue();

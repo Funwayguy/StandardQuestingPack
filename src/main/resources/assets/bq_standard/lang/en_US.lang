@@ -19,6 +19,8 @@ bq_standard.title.edit_hunt=Edit Task Hunt
 bq_standard.title.edit_meeting=Edit Task Meeting
 bq_standard.title.edit_loot_groups=Edit Loot Groups
 bq_standard.title.edit_loot_entries=Edit Loot Entries
+bq_standard.title.edit_retrieval=Edit Retrieval
+bq_standard.ttile.edit_crafting=Edit Crafting
 
 bq_standard.btn.select_mob=Select Mob
 bq_standard.btn.add_remove_drops=Add/Remove Drops

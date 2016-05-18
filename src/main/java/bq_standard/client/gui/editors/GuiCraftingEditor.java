@@ -17,7 +17,7 @@ public class GuiCraftingEditor extends GuiQuesting implements IVolatileScreen
 	
 	public GuiCraftingEditor(GuiScreen parent, JsonObject data)
 	{
-		super(parent, "bq_standard.title.edit_retrieval");
+		super(parent, "bq_standard.title.edit_crafting");
 		this.data = data;
 	}
 	
