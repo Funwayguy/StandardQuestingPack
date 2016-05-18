@@ -140,7 +140,7 @@ public class TaskHunt extends AdvancedTaskBase implements IProgressionTask<Integ
 	@Override
 	public void readFromJson(JsonObject json)
 	{
-		super.writeToJson(json);
+		super.readFromJson(json);
 		
 		idName = JsonHelper.GetString(json, "target", "Zombie");
 		required = JsonHelper.GetNumber(json, "required", 1).intValue();
