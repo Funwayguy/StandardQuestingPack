@@ -1,9 +1,10 @@
 package bq_standard.client.gui.tasks;
 
-import net.minecraft.util.text.translation.I18n;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.translation.I18n;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
+import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.quests.QuestInstance;
 import betterquesting.utils.BigItemStack;
 import bq_standard.client.gui.GuiScrollingItems;
@@ -19,7 +20,7 @@ public class GuiTaskRetrieval extends GuiEmbedded
 	{
 		super(screen, posX, posY, sizeX, sizeY);
 		this.task = task;
-		scrollList = new GuiScrollingItems(screen, sizeX, sizeY, posY, posX);
+		scrollList = new GuiScrollingItems(screen, sizeX, sizeY - 16, posY + 16, posX);
 		
 		if(task == null)
 		{
@@ -69,6 +70,8 @@ public class GuiTaskRetrieval extends GuiEmbedded
 	@Override
 	public void drawGui(int mx, int my, float partialTick)
 	{
+		String sCon = (task.consume? TextFormatting.RED : TextFormatting.GREEN) + I18n.translateToLocalFormatted(task.consume? "gui.yes" : "gui.no");
+		screen.mc.fontRendererObj.drawString(I18n.translateToLocalFormatted("bq_standard.btn.consume", sCon), posX, posY, ThemeRegistry.curTheme().textColor().getRGB(), false);
 		scrollList.drawScreen(mx, my, partialTick);
 	}
 }
