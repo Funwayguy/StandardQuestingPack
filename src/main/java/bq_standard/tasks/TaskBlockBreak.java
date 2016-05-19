@@ -6,6 +6,8 @@ import java.util.UUID;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
@@ -16,7 +18,9 @@ import betterquesting.quests.QuestDatabase;
 import betterquesting.quests.QuestInstance;
 import betterquesting.quests.tasks.advanced.AdvancedTaskBase;
 import betterquesting.quests.tasks.advanced.IProgressionTask;
+import betterquesting.utils.ItemComparison;
 import betterquesting.utils.JsonHelper;
+import betterquesting.utils.NBTConverter;
 import bq_standard.client.gui.tasks.GuiTaskBlockBreak;
 import bq_standard.core.BQ_Standard;
 import com.google.gson.JsonArray;
@@ -27,6 +31,7 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 {
 	public HashMap<UUID, Integer> userProgress = new HashMap<UUID, Integer>();
 	public Block targetBlock = Blocks.log;
+	public NBTTagCompound targetNbt = new NBTTagCompound();
 	public int targetMeta = -1;
 	public int targetNum = 1;
 	public boolean oreDict = true;
@@ -71,8 +76,15 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 		}
 		
 		int progress = GetUserProgress(player.getUniqueID());
+		TileEntity tile = player.worldObj.getTileEntity(x, y, z);
+		NBTTagCompound tags = new NBTTagCompound();
 		
-		if(block == targetBlock && (targetMeta < 0 || metadata == targetMeta))
+		if(tile != null)
+		{
+			tile.writeToNBT(tags);
+		}
+		
+		if(block == targetBlock && (targetMeta < 0 || metadata == targetMeta) && ItemComparison.CompareNBTTag(targetNbt, tags, true))
 		{
 			SetUserProgress(player.getUniqueID(), progress + 1);
 		}
@@ -87,6 +99,7 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 		
 		json.addProperty("blockID", Block.blockRegistry.getNameForObject(targetBlock));
 		json.addProperty("blockMeta", targetMeta);
+		json.add("blockNBT", NBTConverter.NBTtoJSON_Compound(targetNbt, new JsonObject()));
 		json.addProperty("amount", targetNum);
 		
 		JsonArray progArray = new JsonArray();
@@ -108,6 +121,7 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 		targetBlock = (Block)Block.blockRegistry.getObject(JsonHelper.GetString(json, "blockID", "minecraft:log"));
 		targetBlock = targetBlock != null? targetBlock : Blocks.log;
 		targetMeta = JsonHelper.GetNumber(json, "blockMeta", -1).intValue();
+		targetNbt = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "blockNBT"), new NBTTagCompound());
 		targetNum = JsonHelper.GetNumber(json, "amount", 1).intValue();
 		
 		userProgress = new HashMap<UUID,Integer>();

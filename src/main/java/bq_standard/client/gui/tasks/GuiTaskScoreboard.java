@@ -1,5 +1,6 @@
 package bq_standard.client.gui.tasks;
 
+import java.text.DecimalFormat;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
@@ -33,9 +34,10 @@ public class GuiTaskScoreboard extends GuiEmbedded
 		Scoreboard board = screen.mc.thePlayer.getWorldScoreboard();
 		ScoreObjective scoreObj = board == null? null : board.getObjective(task.scoreName);
 		Score score = scoreObj == null? null : board.func_96529_a(screen.mc.thePlayer.getCommandSenderName(), scoreObj);
-		String value = score == null? "?" : "" + score.getScorePoints();
+		DecimalFormat df = new DecimalFormat("0.##");
+		String value = score == null? "?" : df.format(score.getScorePoints()/task.conversion) + task.suffix;
 		
-		String txt = EnumChatFormatting.BOLD + value + " " + EnumChatFormatting.RESET + task.operation.GetText() + " " + task.target;
+		String txt = EnumChatFormatting.BOLD + value + " " + EnumChatFormatting.RESET + task.operation.GetText() + " " + df.format(task.target/task.conversion) + task.suffix;
 		
 		if(score != null && task.operation.checkValues(score.getScorePoints(), task.target))
 		{

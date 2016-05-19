@@ -26,6 +26,8 @@ public class TaskScoreboard extends TaskBase
 	public String scoreName = "Score";
 	public String type = "dummy";
 	public int target = 1;
+	public float conversion = 1F;
+	public String suffix = "";
 	public ScoreOperation operation = ScoreOperation.MORE_OR_EQUAL;
 	
 	@Override
@@ -85,6 +87,8 @@ public class TaskScoreboard extends TaskBase
 		json.addProperty("scoreName", scoreName);
 		json.addProperty("type", type);
 		json.addProperty("target", target);
+		json.addProperty("unitConversion", conversion);
+		json.addProperty("unitSuffix", suffix);
 		json.addProperty("operation", operation.name());
 	}
 	
@@ -94,8 +98,11 @@ public class TaskScoreboard extends TaskBase
 		super.readFromJson(json);
 		
 		scoreName = JsonHelper.GetString(json, "scoreName", "Score");
+		scoreName.replaceAll(" ", "_");
 		type = JsonHelper.GetString(json, "type", "dummy");
 		target = JsonHelper.GetNumber(json, "target", 1).intValue();
+		conversion = JsonHelper.GetNumber(json, "unitConversion", conversion).floatValue();
+		suffix = JsonHelper.GetString(json, "unitSuffix", suffix);
 		operation = ScoreOperation.valueOf(JsonHelper.GetString(json, "operation", "MORE_OR_EQUAL").toUpperCase());
 		operation = operation != null? operation : ScoreOperation.MORE_OR_EQUAL;
 	}
