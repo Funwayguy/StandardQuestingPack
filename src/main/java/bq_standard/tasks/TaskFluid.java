@@ -38,6 +38,7 @@ public class TaskFluid extends TaskBase implements IContainerTask, IProgressionT
 	public ArrayList<FluidStack> requiredFluids = new ArrayList<FluidStack>();
 	public HashMap<UUID, int[]> userProgress = new HashMap<UUID, int[]>();
 	public boolean consume = true;
+	public boolean autoConsume = false;
 	
 	@Override
 	public String getUnlocalisedName()
@@ -50,7 +51,7 @@ public class TaskFluid extends TaskBase implements IContainerTask, IProgressionT
 	{
 		if(player.ticksExisted%60 == 0 && !QuestDatabase.editMode)
 		{
-			if(!consume)
+			if(!consume || autoConsume)
 			{
 				Detect(quest, player);
 			} else
@@ -204,6 +205,7 @@ public class TaskFluid extends TaskBase implements IContainerTask, IProgressionT
 		super.writeToJson(json);
 		
 		json.addProperty("consume", consume);
+		json.addProperty("autoConsume", autoConsume);
 		
 		JsonArray itemArray = new JsonArray();
 		for(FluidStack stack : this.requiredFluids)
@@ -234,6 +236,7 @@ public class TaskFluid extends TaskBase implements IContainerTask, IProgressionT
 		super.readFromJson(json);
 		
 		consume = JsonHelper.GetBoolean(json, "consume", true);
+		autoConsume = JsonHelper.GetBoolean(json, "autoConsume", false);
 		
 		requiredFluids = new ArrayList<FluidStack>();
 		for(JsonElement entry : JsonHelper.GetArray(json, "requiredFluids"))

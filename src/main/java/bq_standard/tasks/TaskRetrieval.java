@@ -41,6 +41,7 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 	boolean partialMatch = true;
 	boolean ignoreNBT = false;
 	public boolean consume = true;
+	public boolean autoConsume = false;
 	
 	@Override
 	public String getUnlocalisedName()
@@ -53,7 +54,7 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 	{
 		if(player.ticksExisted%200 == 0 && !QuestDatabase.editMode) // Every ~10 seconds auto detect this quest as long as it isn't consuming items
 		{
-			if(!consume)
+			if(!consume || autoConsume)
 			{
 				Detect(quest, player);
 			} else
@@ -162,6 +163,7 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 		json.addProperty("partialMatch", partialMatch);
 		json.addProperty("ignoreNBT", ignoreNBT);
 		json.addProperty("consume", consume);
+		json.addProperty("autoConsume", autoConsume);
 		
 		JsonArray itemArray = new JsonArray();
 		for(BigItemStack stack : this.requiredItems)
@@ -194,6 +196,7 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 		partialMatch = JsonHelper.GetBoolean(json, "partialMatch", partialMatch);
 		ignoreNBT = JsonHelper.GetBoolean(json, "ignoreNBT", ignoreNBT);
 		consume = JsonHelper.GetBoolean(json, "consume", true);
+		autoConsume = JsonHelper.GetBoolean(json, "autoConsume", false);
 		
 		requiredItems = new ArrayList<BigItemStack>();
 		for(JsonElement entry : JsonHelper.GetArray(json, "requiredItems"))
