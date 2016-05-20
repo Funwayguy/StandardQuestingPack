@@ -18,6 +18,7 @@ import bq_standard.items.ItemLootChest;
 import bq_standard.network.StandardPacketType;
 import bq_standard.network.handlers.PktHandlerCheckbox;
 import bq_standard.network.handlers.PktHandlerLootDatabase;
+import bq_standard.network.handlers.PktHandlerScoreboard;
 import bq_standard.rewards.RewardChoice;
 import bq_standard.rewards.RewardCommand;
 import bq_standard.rewards.RewardItem;
@@ -79,6 +80,7 @@ public class BQ_Standard
     	
     	PacketTypeRegistry.RegisterType(new PktHandlerLootDatabase(), StandardPacketType.LOOT_SYNC.GetLocation());
     	PacketTypeRegistry.RegisterType(new PktHandlerCheckbox(), StandardPacketType.CHECKBOX.GetLocation());
+    	PacketTypeRegistry.RegisterType(new PktHandlerScoreboard(), StandardPacketType.SCORE_SYNC.GetLocation());
     	
     	NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
     }

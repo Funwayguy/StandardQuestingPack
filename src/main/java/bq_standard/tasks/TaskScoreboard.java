@@ -14,6 +14,7 @@ import betterquesting.quests.QuestDatabase;
 import betterquesting.quests.QuestInstance;
 import betterquesting.quests.tasks.TaskBase;
 import betterquesting.utils.JsonHelper;
+import bq_standard.ScoreboardBQ;
 import bq_standard.client.gui.editors.GuiScoreEditor;
 import bq_standard.client.gui.tasks.GuiTaskScoreboard;
 import bq_standard.core.BQ_Standard;
@@ -72,6 +73,7 @@ public class TaskScoreboard extends TaskBase
 		
 		Score score = board.func_96529_a(player.getCommandSenderName(), scoreObj);
 		int points = score.getScorePoints();
+		ScoreboardBQ.setScore(player, scoreName, points);
 		
 		if(operation.checkValues(points, target))
 		{
