@@ -8,7 +8,8 @@ public enum StandardPacketType
 {
 	LOOT_SYNC,
 	LOOT_CLAIM,
-	CHECKBOX;
+	CHECKBOX,
+	SCORE_SYNC;
 	
 	public ResourceLocation GetLocation()
 	{

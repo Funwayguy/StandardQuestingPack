@@ -2,13 +2,11 @@ package bq_standard.client.gui.tasks;
 
 import java.text.DecimalFormat;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.scoreboard.Score;
-import net.minecraft.scoreboard.ScoreObjective;
-import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.text.TextFormatting;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.client.themes.ThemeRegistry;
+import bq_standard.ScoreboardBQ;
 import bq_standard.tasks.TaskScoreboard;
 
 public class GuiTaskScoreboard extends GuiEmbedded
@@ -30,16 +28,13 @@ public class GuiTaskScoreboard extends GuiEmbedded
 		
 		int tw1 = screen.mc.fontRendererObj.getStringWidth(TextFormatting.BOLD + task.scoreName);
 		screen.mc.fontRendererObj.drawString(TextFormatting.BOLD + task.scoreName, -tw1/2, -12, ThemeRegistry.curTheme().textColor().getRGB(), false);
-		
-		Scoreboard board = screen.mc.thePlayer.getWorldScoreboard();
-		ScoreObjective scoreObj = board == null? null : board.getObjective(task.scoreName);
-		Score score = scoreObj == null? null : board.getOrCreateScore(screen.mc.thePlayer.getName(), scoreObj);
+		int score = ScoreboardBQ.getScore(screen.mc.thePlayer.getUniqueID(), task.scoreName);
 		DecimalFormat df = new DecimalFormat("0.##");
-		String value = score == null? "?" : df.format(score.getScorePoints()/task.conversion) + task.suffix;
+		String value = df.format(score/task.conversion) + task.suffix;
 		
 		String txt = TextFormatting.BOLD + value + " " + TextFormatting.RESET + task.operation.GetText() + " " + task.target;
 		
-		if(score != null && task.operation.checkValues(score.getScorePoints(), task.target))
+		if(task.operation.checkValues(score, task.target))
 		{
 			txt = TextFormatting.GREEN + txt;
 		} else
