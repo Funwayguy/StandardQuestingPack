@@ -151,7 +151,7 @@ public class HQMQuestImporter extends ImporterBase implements IFileCallback
 				quest.itemIcon = tmp;
 			} else
 			{
-				quest.itemIcon = new BigItemStack(Items.nether_star);
+				quest.itemIcon = new BigItemStack(Items.NETHER_STAR);
 			}
 			
 			if(json.has("repeat")) // Assuming this is in Minecraft time

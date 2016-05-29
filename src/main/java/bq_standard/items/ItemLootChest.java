@@ -2,6 +2,7 @@ package bq_standard.items;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -13,7 +14,6 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -89,7 +89,7 @@ public class ItemLootChest extends Item
 	    		{
 		    		if(!player.inventory.addItemStackToInventory(s2))
 		    		{
-		    			player.dropPlayerItemWithRandomChoice(s2, false);
+		    			player.dropItem(s2, true, false);
 		    		}
 	    		}
 	    		
@@ -168,15 +168,15 @@ public class ItemLootChest extends Item
     {
 		if(stack.getItemDamage() > 101)
 		{
-			list.add(I18n.translateToLocal("betterquesting.btn.edit"));
+			list.add(I18n.format("betterquesting.btn.edit"));
 		} else if(QuestDatabase.editMode)
 		{
 			if(stack.getItemDamage() == 101)
 			{
-				list.add(I18n.translateToLocalFormatted("bq_standard.tooltip.loot_chest", "???"));
+				list.add(I18n.format("bq_standard.tooltip.loot_chest", "???"));
 			} else
 			{
-				list.add(I18n.translateToLocalFormatted("bq_standard.tooltip.loot_chest", MathHelper.clamp_int(stack.getItemDamage(), 0, 100) + "%"));
+				list.add(I18n.format("bq_standard.tooltip.loot_chest", MathHelper.clamp_int(stack.getItemDamage(), 0, 100) + "%"));
 			}
 		}
     }

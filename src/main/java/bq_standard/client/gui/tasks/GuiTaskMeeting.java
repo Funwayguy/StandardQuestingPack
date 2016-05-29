@@ -2,10 +2,10 @@ package bq_standard.client.gui.tasks;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.translation.I18n;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.client.themes.ThemeRegistry;
@@ -56,7 +56,7 @@ public class GuiTaskMeeting extends GuiEmbedded
 			GlStateManager.popMatrix();
 		} else
 		{
-			if(EntityList.stringToClassMapping.containsKey(task.idName))
+			if(EntityList.NAME_TO_CLASS.containsKey(task.idName))
 			{
 				target = EntityList.createEntityByName(task.idName, screen.mc.theWorld);
 				target.readFromNBT(task.targetTags);
@@ -64,7 +64,7 @@ public class GuiTaskMeeting extends GuiEmbedded
 		}
 		
 		String tnm = !task.ignoreNBT && target != null? target.getName() : task.idName;
-		String txt = I18n.translateToLocalFormatted("bq_standard.gui.meet", tnm);
+		String txt = I18n.format("bq_standard.gui.meet", tnm);
 		screen.mc.fontRendererObj.drawString(txt, posX + sizeX/2 - screen.mc.fontRendererObj.getStringWidth(txt)/2, posY, ThemeRegistry.curTheme().textColor().getRGB());
 	}
 	

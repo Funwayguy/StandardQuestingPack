@@ -15,7 +15,7 @@ import bq_standard.tasks.TaskXP;
 
 public class GuiTaskXP extends GuiEmbedded
 {
-	ItemStack bottle = new ItemStack(Items.experience_bottle);
+	ItemStack bottle = new ItemStack(Items.EXPERIENCE_BOTTLE);
 	QuestInstance quest;
 	TaskXP task;
 	

@@ -3,8 +3,8 @@ package bq_standard.client.gui.rewards;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.translation.I18n;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.client.themes.ThemeRegistry;
@@ -23,10 +23,10 @@ public class GuiRewardCommand extends GuiEmbedded
 	@Override
 	public void drawGui(int mx, int my, float partialTick)
 	{
-		String txt1 = I18n.translateToLocal("advMode.command");
+		String txt1 = I18n.format("advMode.command");
 		String txt2 = TextFormatting.ITALIC + (reward.hideCmd? "[HIDDEN]" : reward.command);
 		
-		screen.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
+		screen.mc.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 		TextureAtlasSprite blockSprite = screen.mc.getTextureMapBlocks().getAtlasSprite("minecraft:blocks/command_block_front");
 		blockSprite = blockSprite != null? blockSprite : screen.mc.getTextureMapBlocks().getAtlasSprite("missingno");
 		

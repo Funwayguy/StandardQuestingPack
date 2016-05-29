@@ -2,7 +2,7 @@ package bq_standard.client.gui.editors;
 
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.util.text.translation.I18n;
+import net.minecraft.client.resources.I18n;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.editors.json.GuiJsonArray;
 import betterquesting.client.gui.editors.json.GuiJsonObject;
@@ -25,8 +25,8 @@ public class GuiCraftingEditor extends GuiQuesting implements IVolatileScreen
 	public void initGui()
 	{
 		super.initGui();
-		this.buttonList.add(new GuiButtonQuesting(1, guiLeft + sizeX/2 - 100, guiTop + sizeY/2 - 20, 200, 20, I18n.translateToLocalFormatted("bq_standard.btn.edit_items")));
-		this.buttonList.add(new GuiButtonQuesting(2, guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 00, 200, 20, I18n.translateToLocalFormatted("betterquesting.btn.advanced")));
+		this.buttonList.add(new GuiButtonQuesting(1, guiLeft + sizeX/2 - 100, guiTop + sizeY/2 - 20, 200, 20, I18n.format("bq_standard.btn.edit_items")));
+		this.buttonList.add(new GuiButtonQuesting(2, guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 00, 200, 20, I18n.format("betterquesting.btn.advanced")));
 	}
 	
 	@Override

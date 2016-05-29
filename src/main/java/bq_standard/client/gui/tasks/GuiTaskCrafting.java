@@ -1,6 +1,6 @@
 package bq_standard.client.gui.tasks;
 
-import net.minecraft.util.text.translation.I18n;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
@@ -52,10 +52,10 @@ public class GuiTaskCrafting extends GuiEmbedded
 			
 			if(progress[i] >= stack.stackSize || task.isComplete(screen.mc.thePlayer.getUniqueID()))
 			{
-				txt += "\n" + TextFormatting.GREEN + I18n.translateToLocal("betterquesting.tooltip.complete");
+				txt += "\n" + TextFormatting.GREEN + I18n.format("betterquesting.tooltip.complete");
 			} else
 			{
-				txt += "\n" + TextFormatting.RED + I18n.translateToLocal("betterquesting.tooltip.incomplete");
+				txt += "\n" + TextFormatting.RED + I18n.format("betterquesting.tooltip.incomplete");
 			}
 			
 			scrollList.addEntry(stack, txt);

@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.translation.I18n;
 import betterquesting.utils.BigItemStack;
 import betterquesting.utils.RenderUtils;
 
@@ -47,7 +47,7 @@ public class GuiLootChest extends GuiScreen
 		
 		this.drawTexturedModalRect(width/2 - cw/2, height/2, 0, 0, cw, ch);
 		
-		String txt = TextFormatting.BOLD + "" + TextFormatting.UNDERLINE + I18n.translateToLocal(title);
+		String txt = TextFormatting.BOLD + "" + TextFormatting.UNDERLINE + I18n.format(title);
 		mc.fontRendererObj.drawString(txt, width/2 - mc.fontRendererObj.getStringWidth(txt)/2, height/2 + ch + 8, Color.WHITE.getRGB(), false);
 		
 		// Auto balance row size

@@ -57,7 +57,7 @@ public class TaskMeeting extends TaskBase
 		}
 		
 		List<Entity> list = player.worldObj.getEntitiesWithinAABBExcludingEntity(player, player.getEntityBoundingBox().expand(range, range, range));
-		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.stringToClassMapping.get(idName);
+		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.NAME_TO_CLASS.get(idName);
 		
 		if(target == null)
 		{

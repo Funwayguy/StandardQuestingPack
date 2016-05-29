@@ -190,7 +190,7 @@ public class TaskFluid extends TaskBase implements IContainerTask, IProgressionT
 					
 					if(!player.inventory.addItemStackToInventory(empty))
 					{
-						player.dropPlayerItemWithRandomChoice(empty, false);
+						player.dropItem(empty, true, false);
 					}
 				}
 			}

@@ -89,7 +89,7 @@ public class TaskHunt extends AdvancedTaskBase implements IProgressionTask<Integ
 		int progress = GetUserProgress(player.getUniqueID());
 		
 		Class<? extends Entity> subject = entity.getClass();
-		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.stringToClassMapping.get(idName);
+		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.NAME_TO_CLASS.get(idName);
 		
 		if(subject == null || target == null)
 		{

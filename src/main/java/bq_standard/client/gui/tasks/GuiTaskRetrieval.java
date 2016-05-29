@@ -1,7 +1,7 @@
 package bq_standard.client.gui.tasks;
 
+import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.translation.I18n;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.client.themes.ThemeRegistry;
@@ -57,10 +57,10 @@ public class GuiTaskRetrieval extends GuiEmbedded
 			
 			if(progress[i] >= stack.stackSize || task.isComplete(screen.mc.thePlayer.getUniqueID()))
 			{
-				txt += "\n" + TextFormatting.GREEN + I18n.translateToLocal("betterquesting.tooltip.complete");
+				txt += "\n" + TextFormatting.GREEN + I18n.format("betterquesting.tooltip.complete");
 			} else
 			{
-				txt += "\n" + TextFormatting.RED + I18n.translateToLocal("betterquesting.tooltip.incomplete");
+				txt += "\n" + TextFormatting.RED + I18n.format("betterquesting.tooltip.incomplete");
 			}
 			
 			scrollList.addEntry(stack, txt);
@@ -70,8 +70,8 @@ public class GuiTaskRetrieval extends GuiEmbedded
 	@Override
 	public void drawGui(int mx, int my, float partialTick)
 	{
-		String sCon = (task.consume? TextFormatting.RED : TextFormatting.GREEN) + I18n.translateToLocalFormatted(task.consume? "gui.yes" : "gui.no");
-		screen.mc.fontRendererObj.drawString(I18n.translateToLocalFormatted("bq_standard.btn.consume", sCon), posX, posY, ThemeRegistry.curTheme().textColor().getRGB(), false);
+		String sCon = (task.consume? TextFormatting.RED : TextFormatting.GREEN) + I18n.format(task.consume? "gui.yes" : "gui.no");
+		screen.mc.fontRendererObj.drawString(I18n.format("bq_standard.btn.consume", sCon), posX, posY, ThemeRegistry.curTheme().textColor().getRGB(), false);
 		scrollList.drawScreen(mx, my, partialTick);
 	}
 }

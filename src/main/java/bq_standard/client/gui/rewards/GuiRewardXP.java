@@ -1,8 +1,8 @@
 package bq_standard.client.gui.rewards;
 
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.translation.I18n;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
 import betterquesting.client.themes.ThemeRegistry;
@@ -21,7 +21,7 @@ public class GuiRewardXP extends GuiEmbedded
 	@Override
 	public void drawGui(int mx, int my, float partialTick)
 	{
-		String txt1 = I18n.translateToLocal("bq_standard.gui.experience");
+		String txt1 = I18n.format("bq_standard.gui.experience");
 		String txt2 = "" + TextFormatting.BOLD;
 		
 		if(reward.amount >= 0)

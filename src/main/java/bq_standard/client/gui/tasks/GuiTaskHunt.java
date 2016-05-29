@@ -2,10 +2,10 @@ package bq_standard.client.gui.tasks;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.translation.I18n;
 import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
@@ -61,7 +61,7 @@ public class GuiTaskHunt extends GuiEmbedded
 			GlStateManager.popMatrix();
 		} else
 		{
-			if(EntityList.stringToClassMapping.containsKey(task.idName))
+			if(EntityList.NAME_TO_CLASS.containsKey(task.idName))
 			{
 				try
 				{
@@ -76,7 +76,7 @@ public class GuiTaskHunt extends GuiEmbedded
 		
 		int progress = quest == null || !quest.globalQuest? task.GetUserProgress(screen.mc.thePlayer.getUniqueID()) : task.GetGlobalProgress();
 		String tnm = !task.ignoreNBT && target != null? target.getName() : task.idName;
-		String txt = I18n.translateToLocalFormatted("bq_standard.gui.kill", tnm) + " " + progress + "/" + task.required;
+		String txt = I18n.format("bq_standard.gui.kill", tnm) + " " + progress + "/" + task.required;
 		screen.mc.fontRendererObj.drawString(txt, posX + sizeX/2 - screen.mc.fontRendererObj.getStringWidth(txt)/2, posY, ThemeRegistry.curTheme().textColor().getRGB());
 	}
 	

@@ -73,11 +73,11 @@ public class GuiScrollingFluids extends GuiBQScrolling
 		if(!clipped)
 		{
 			GlStateManager.enableDepth();
-			parent.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
+			parent.mc.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 			
 			try
 			{
-				parent.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
+				parent.mc.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 				TextureAtlasSprite fluidTx = parent.mc.getTextureMapBlocks().getAtlasSprite(entry.stack.getFluid().getStill().toString());
 				fluidTx = fluidTx != null? fluidTx : parent.mc.getTextureMapBlocks().getAtlasSprite("missingno");
 				parent.drawTexturedModalRect(x + 1, y + 1, fluidTx, 16, 16);

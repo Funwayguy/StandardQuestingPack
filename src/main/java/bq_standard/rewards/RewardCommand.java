@@ -122,13 +122,13 @@ public class RewardCommand extends RewardBase
 		}
 
 		@Override
-		public int func_145751_f()
+		public int getCommandBlockType()
 		{
 			return 0;
 		}
 
 		@Override
-		public void func_145757_a(ByteBuf p_145757_1_)
+		public void fillInInfo(ByteBuf p_145757_1_)
 		{
 		}
 

@@ -5,12 +5,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.translation.I18n;
 import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.editors.json.GuiJsonEntitySelection;
@@ -74,8 +74,8 @@ public class GuiHuntEditor extends GuiQuesting implements IVolatileScreen
 		
 		numField = new GuiNumberField(mc.fontRendererObj, guiLeft + sizeX/2 + 1, guiTop + sizeY/2 + 1, 98, 18);
 		numField.setText("" + JsonHelper.GetNumber(data, "required", 1).intValue());
-		this.buttonList.add(new GuiButtonQuesting(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 20, 200, 20, I18n.translateToLocal("bq_standard.btn.select_mob")));
-		this.buttonList.add(new GuiButtonQuesting(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 40, 200, 20, I18n.translateToLocal("betterquesting.btn.advanced")));
+		this.buttonList.add(new GuiButtonQuesting(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 20, 200, 20, I18n.format("bq_standard.btn.select_mob")));
+		this.buttonList.add(new GuiButtonQuesting(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 40, 200, 20, I18n.format("betterquesting.btn.advanced")));
 	}
 	
 	@Override
@@ -112,7 +112,7 @@ public class GuiHuntEditor extends GuiQuesting implements IVolatileScreen
 			GlStateManager.popMatrix();
 		}
 		
-		String txt = I18n.translateToLocal("bq_standard.gui.amount") + ": ";
+		String txt = I18n.format("bq_standard.gui.amount") + ": ";
 		mc.fontRendererObj.drawString(txt, guiLeft + sizeX/2 - mc.fontRendererObj.getStringWidth(txt), guiTop + sizeY/2 + 6, ThemeRegistry.curTheme().textColor().getRGB());
 		numField.drawTextBox();
 	}

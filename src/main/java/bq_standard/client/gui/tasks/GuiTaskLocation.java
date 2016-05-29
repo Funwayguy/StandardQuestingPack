@@ -4,8 +4,8 @@ import java.awt.Color;
 import java.util.HashMap;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.WorldProvider;
 import net.minecraftforge.common.DimensionManager;
 import betterquesting.client.gui.GuiQuesting;
@@ -46,22 +46,22 @@ public class GuiTaskLocation extends GuiEmbedded
 		{
 			if(task.range >= 0)
 			{
-				screen.mc.fontRendererObj.drawString(I18n.translateToLocalFormatted("bq_standard.gui.location", "(" + task.x + ", " + task.y + ", " + task.z + ")"), posX, posY + i, ThemeRegistry.curTheme().textColor().getRGB(), false);
+				screen.mc.fontRendererObj.drawString(I18n.format("bq_standard.gui.location", "(" + task.x + ", " + task.y + ", " + task.z + ")"), posX, posY + i, ThemeRegistry.curTheme().textColor().getRGB(), false);
 				i += 12;
-				screen.mc.fontRendererObj.drawString(I18n.translateToLocalFormatted("bq_standard.gui.distance", (int)screen.mc.thePlayer.getDistance(task.x, task.y, task.z) + "m"), posX, posY + i, ThemeRegistry.curTheme().textColor().getRGB(), false);
+				screen.mc.fontRendererObj.drawString(I18n.format("bq_standard.gui.distance", (int)screen.mc.thePlayer.getDistance(task.x, task.y, task.z) + "m"), posX, posY + i, ThemeRegistry.curTheme().textColor().getRGB(), false);
 				i += 12;
 			}
 			
-			screen.mc.fontRendererObj.drawString(I18n.translateToLocalFormatted("bq_standard.gui.dimension", getDimName(task.dim)), posX, posY + i, ThemeRegistry.curTheme().textColor().getRGB(), false);
+			screen.mc.fontRendererObj.drawString(I18n.format("bq_standard.gui.dimension", getDimName(task.dim)), posX, posY + i, ThemeRegistry.curTheme().textColor().getRGB(), false);
 			i += 12;
 		}
 		
 		if(task.isComplete(screen.mc.thePlayer.getUniqueID()))
 		{
-			screen.mc.fontRendererObj.drawString(I18n.translateToLocal("bq_standard.gui.found"), posX, posY + i, Color.GREEN.getRGB(), false);
+			screen.mc.fontRendererObj.drawString(I18n.format("bq_standard.gui.found"), posX, posY + i, Color.GREEN.getRGB(), false);
 		} else
 		{
-			screen.mc.fontRendererObj.drawString(TextFormatting.BOLD + I18n.translateToLocal("bq_standard.gui.undiscovered"), posX, posY + i, Color.RED.getRGB(), true);
+			screen.mc.fontRendererObj.drawString(TextFormatting.BOLD + I18n.format("bq_standard.gui.undiscovered"), posX, posY + i, Color.RED.getRGB(), true);
 		}
 		
 		Gui.drawRect(cx - radius, cy - radius, cx + radius, cy + radius, Color.BLACK.getRGB());

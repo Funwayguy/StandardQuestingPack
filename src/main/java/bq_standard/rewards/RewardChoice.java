@@ -72,7 +72,7 @@ public class RewardChoice extends RewardBase
 			
 			if(!player.inventory.addItemStackToInventory(s))
 			{
-				player.dropPlayerItemWithRandomChoice(s, false);
+				player.dropItem(s, true, false);
 			}
 		}
 	}

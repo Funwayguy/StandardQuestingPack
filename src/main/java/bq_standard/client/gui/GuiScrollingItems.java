@@ -175,7 +175,7 @@ public class GuiScrollingItems extends GuiBQScrolling
 					
 					if(oreStack.getItemDamage() == OreDictionary.WILDCARD_VALUE)
 					{
-						item.getSubItems(item, CreativeTabs.tabAllSearch, tmp);
+						item.getSubItems(item, CreativeTabs.SEARCH, tmp);
 					}
 					
 					if(tmp.size() <= 0)
@@ -188,7 +188,7 @@ public class GuiScrollingItems extends GuiBQScrolling
 				}
 			} else if(stack.getBaseStack().getItemDamage() == OreDictionary.WILDCARD_VALUE)
 			{
-				stack.getBaseStack().getItem().getSubItems(stack.getBaseStack().getItem(), CreativeTabs.tabAllSearch, subStacks);
+				stack.getBaseStack().getItem().getSubItems(stack.getBaseStack().getItem(), CreativeTabs.SEARCH, subStacks);
 			}
 			
 			if(subStacks.size() <= 0)

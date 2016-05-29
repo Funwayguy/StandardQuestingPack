@@ -17,7 +17,7 @@ public class XPHelper
 		if(player instanceof EntityPlayerMP)
 		{
 			// Make sure the client isn't being stupid about syncing the experience bars which routinely fail
-            ((EntityPlayerMP)player).playerNetServerHandler.sendPacket(new SPacketSetExperience(player.experience, player.experienceTotal, player.experienceLevel));
+            ((EntityPlayerMP)player).connection.sendPacket(new SPacketSetExperience(player.experience, player.experienceTotal, player.experienceLevel));
 		}
 	}
 	

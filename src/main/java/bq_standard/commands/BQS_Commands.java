@@ -7,7 +7,6 @@ import betterquesting.core.BQ_Settings;
 import betterquesting.utils.JsonIO;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootRegistry;
-import net.minecraft.util.text.translation.I18n;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -80,7 +79,7 @@ public class BQS_Commands extends CommandBase
 					int idx = Integer.parseInt(args[1]);
 					LootGroup group = LootRegistry.lootGroups.remove(idx);
 					LootRegistry.updateClients();
-					sender.addChatMessage(new TextComponentString("Deleted loot group '" + I18n.translateToLocal(group.name) + "'"));
+					sender.addChatMessage(new TextComponentString("Deleted loot group '" + group.name + "'"));
 				} catch(Exception e)
 				{
 					throw new WrongUsageException(getCommandUsage(sender));
