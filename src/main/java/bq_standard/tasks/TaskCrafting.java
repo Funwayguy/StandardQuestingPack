@@ -153,21 +153,6 @@ public class TaskCrafting extends AdvancedTaskBase implements IProgressionTask<i
 			itemArray.add(JsonHelper.ItemStackToJson(stack, new JsonObject()));
 		}
 		json.add("requiredItems", itemArray);
-		
-		JsonArray progArray = new JsonArray();
-		for(Entry<UUID,int[]> entry : userProgress.entrySet())
-		{
-			JsonObject pJson = new JsonObject();
-			pJson.addProperty("uuid", entry.getKey().toString());
-			JsonArray pArray = new JsonArray();
-			for(int i : entry.getValue())
-			{
-				pArray.add(new JsonPrimitive(i));
-			}
-			pJson.add("data", pArray);
-			progArray.add(pJson);
-		}
-		json.add("userProgress", progArray);
 	}
 	
 	@Override
@@ -203,6 +188,25 @@ public class TaskCrafting extends AdvancedTaskBase implements IProgressionTask<i
 			}
 		}
 		
+		if(json.has("userProgress"))
+		{
+			jMig = json;
+		}
+	}
+	
+	JsonObject jMig = null;
+	
+	@Override
+	public void readProgressFromJson(JsonObject json)
+	{
+		super.readProgressFromJson(json);
+		
+		if(jMig != null)
+		{
+			json = jMig;
+			jMig = null;
+		}
+		
 		userProgress = new HashMap<UUID,int[]>();
 		for(JsonElement entry : JsonHelper.GetArray(json, "userProgress"))
 		{
@@ -236,6 +240,27 @@ public class TaskCrafting extends AdvancedTaskBase implements IProgressionTask<i
 			
 			userProgress.put(uuid, data);
 		}
+	}
+	
+	@Override
+	public void writeProgressToJson(JsonObject json)
+	{
+		super.writeProgressToJson(json);
+		
+		JsonArray progArray = new JsonArray();
+		for(Entry<UUID,int[]> entry : userProgress.entrySet())
+		{
+			JsonObject pJson = new JsonObject();
+			pJson.addProperty("uuid", entry.getKey().toString());
+			JsonArray pArray = new JsonArray();
+			for(int i : entry.getValue())
+			{
+				pArray.add(new JsonPrimitive(i));
+			}
+			pJson.add("data", pArray);
+			progArray.add(pJson);
+		}
+		json.add("userProgress", progArray);
 	}
 
 	@Override

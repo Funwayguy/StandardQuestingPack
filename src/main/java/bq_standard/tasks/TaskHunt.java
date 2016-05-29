@@ -124,16 +124,6 @@ public class TaskHunt extends AdvancedTaskBase implements IProgressionTask<Integ
 		json.addProperty("subtypes", subtypes);
 		json.addProperty("ignoreNBT", ignoreNBT);
 		json.add("targetNBT", NBTConverter.NBTtoJSON_Compound(targetTags, new JsonObject()));
-		
-		JsonArray progArray = new JsonArray();
-		for(Entry<UUID,Integer> entry : userProgress.entrySet())
-		{
-			JsonObject pJson = new JsonObject();
-			pJson.addProperty("uuid", entry.getKey().toString());
-			pJson.addProperty("value", entry.getValue());
-			progArray.add(pJson);
-		}
-		json.add("userProgress", progArray);
 	}
 	
 	@Override
@@ -146,6 +136,25 @@ public class TaskHunt extends AdvancedTaskBase implements IProgressionTask<Integ
 		subtypes = JsonHelper.GetBoolean(json, "subtypes", true);
 		ignoreNBT = JsonHelper.GetBoolean(json, "ignoreNBT", true);
 		targetTags = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "targetNBT"), new NBTTagCompound());
+		
+		if(json.has("userProgress"))
+		{
+			jMig = json;
+		}
+	}
+	
+	JsonObject jMig = null;
+	
+	@Override
+	public void readProgressFromJson(JsonObject json)
+	{
+		super.readProgressFromJson(json);
+		
+		if(jMig != null)
+		{
+			json = jMig;
+			jMig = null;
+		}
 		
 		userProgress = new HashMap<UUID,Integer>();
 		for(JsonElement entry : JsonHelper.GetArray(json, "userProgress"))
@@ -167,6 +176,22 @@ public class TaskHunt extends AdvancedTaskBase implements IProgressionTask<Integ
 			
 			userProgress.put(uuid, JsonHelper.GetNumber(entry.getAsJsonObject(), "value", 0).intValue());
 		}
+	}
+	
+	@Override
+	public void writeProgressToJson(JsonObject json)
+	{
+		super.writeProgressToJson(json);
+		
+		JsonArray progArray = new JsonArray();
+		for(Entry<UUID,Integer> entry : userProgress.entrySet())
+		{
+			JsonObject pJson = new JsonObject();
+			pJson.addProperty("uuid", entry.getKey().toString());
+			pJson.addProperty("value", entry.getValue());
+			progArray.add(pJson);
+		}
+		json.add("userProgress", progArray);
 	}
 	
 	/**

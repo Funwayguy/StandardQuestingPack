@@ -86,6 +86,16 @@ public class TaskXP extends TaskBase implements IProgressionTask<Integer>
 	}
 	
 	@Override
+	public void writeToJson(JsonObject json)
+	{
+		super.writeToJson(json);
+		
+		json.addProperty("amount", amount);
+		json.addProperty("isLevels", levels);
+		json.addProperty("consume", consume);
+	}
+	
+	@Override
 	public void readFromJson(JsonObject json)
 	{
 		super.readFromJson(json);
@@ -93,6 +103,25 @@ public class TaskXP extends TaskBase implements IProgressionTask<Integer>
 		amount = JsonHelper.GetNumber(json, "amount", 30).intValue();
 		levels = JsonHelper.GetBoolean(json, "isLevels", true);
 		consume = JsonHelper.GetBoolean(json, "consume", true);
+		
+		if(json.has("userProgress"))
+		{
+			jMig = json;
+		}
+	}
+	
+	JsonObject jMig = null;
+	
+	@Override
+	public void readProgressFromJson(JsonObject json)
+	{
+		super.readProgressFromJson(json);
+		
+		if(jMig != null)
+		{
+			json = jMig;
+			jMig = null;
+		}
 		
 		userProgress = new HashMap<UUID,Integer>();
 		for(JsonElement entry : JsonHelper.GetArray(json, "userProgress"))
@@ -117,13 +146,9 @@ public class TaskXP extends TaskBase implements IProgressionTask<Integer>
 	}
 	
 	@Override
-	public void writeToJson(JsonObject json)
+	public void writeProgressToJson(JsonObject json)
 	{
-		super.writeToJson(json);
-		
-		json.addProperty("amount", amount);
-		json.addProperty("isLevels", levels);
-		json.addProperty("consume", consume);
+		super.writeProgressToJson(json);
 		
 		JsonArray progArray = new JsonArray();
 		for(Entry<UUID,Integer> entry : userProgress.entrySet())
