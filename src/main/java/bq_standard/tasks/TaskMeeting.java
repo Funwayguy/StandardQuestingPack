@@ -105,7 +105,7 @@ public class TaskMeeting extends TaskBase
 		json.addProperty("amount", amount);
 		json.addProperty("subtypes", subtypes);
 		json.addProperty("ignoreNBT", ignoreNBT);
-		json.add("targetNBT", NBTConverter.NBTtoJSON_Compound(targetTags, new JsonObject()));
+		json.add("targetNBT", NBTConverter.NBTtoJSON_Compound(targetTags, new JsonObject(), true));
 	}
 	
 	@Override
@@ -118,7 +118,7 @@ public class TaskMeeting extends TaskBase
 		amount = JsonHelper.GetNumber(json, "amount", 1).intValue();
 		subtypes = JsonHelper.GetBoolean(json, "subtypes", true);
 		ignoreNBT = JsonHelper.GetBoolean(json, "ignoreNBT", true);
-		targetTags = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "targetNBT"), new NBTTagCompound());
+		targetTags = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "targetNBT"), new NBTTagCompound(), true);
 	}
 	
 	/**
