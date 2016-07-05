@@ -9,7 +9,6 @@ import net.minecraft.entity.EntityList;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.MathHelper;
-import org.apache.logging.log4j.Level;
 import org.lwjgl.opengl.GL11;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.editors.json.GuiJsonEntitySelection;
@@ -21,7 +20,6 @@ import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.utils.JsonHelper;
 import betterquesting.utils.NBTConverter;
 import betterquesting.utils.RenderUtils;
-import bq_standard.core.BQ_Standard;
 import com.google.gson.JsonObject;
 
 public class GuiHuntEditor extends GuiQuesting implements IVolatileScreen
@@ -48,7 +46,7 @@ public class GuiHuntEditor extends GuiQuesting implements IVolatileScreen
 		
 		if(lastEdit != null)
 		{
-			data.addProperty("target", JsonHelper.GetString(lastEdit, "id", "Zombie"));
+			data.addProperty("target", JsonHelper.GetString(lastEdit, "id:8", "Zombie"));
 			data.add("targetNBT", lastEdit);
 			
 			lastEdit = null;
@@ -63,13 +61,7 @@ public class GuiHuntEditor extends GuiQuesting implements IVolatileScreen
 			data.add("targetNBT", new JsonObject());
 		} else
 		{
-			try
-			{
-				entity.readFromNBT(NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(data, "targetNBT"), new NBTTagCompound()));
-			} catch(Exception e)
-			{
-				BQ_Standard.logger.log(Level.ERROR, "An error occured while loading entity in UI", e);
-			}
+			entity.readFromNBT(NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(data, "targetNBT"), new NBTTagCompound(), true));
 		}
 		
 		numField = new GuiNumberField(mc.fontRenderer, guiLeft + sizeX/2 + 1, guiTop + sizeY/2 + 1, 98, 18);
@@ -128,7 +120,7 @@ public class GuiHuntEditor extends GuiQuesting implements IVolatileScreen
 			{
 				NBTTagCompound eTags = new NBTTagCompound();
 				entity.writeToNBTOptional(eTags);
-				lastEdit = NBTConverter.NBTtoJSON_Compound(eTags, new JsonObject());
+				lastEdit = NBTConverter.NBTtoJSON_Compound(eTags, new JsonObject(), true);
 				mc.displayGuiScreen(new GuiJsonEntitySelection(this, lastEdit));
 			}
 		} else if(button.id == 2)

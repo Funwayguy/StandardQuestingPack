@@ -124,7 +124,7 @@ public class TaskHunt extends AdvancedTaskBase implements IProgressionTask<Integ
 		json.addProperty("required", required);
 		json.addProperty("subtypes", subtypes);
 		json.addProperty("ignoreNBT", ignoreNBT);
-		json.add("targetNBT", NBTConverter.NBTtoJSON_Compound(targetTags, new JsonObject()));
+		json.add("targetNBT", NBTConverter.NBTtoJSON_Compound(targetTags, new JsonObject(), true));
 	}
 	
 	@Override
@@ -136,7 +136,7 @@ public class TaskHunt extends AdvancedTaskBase implements IProgressionTask<Integ
 		required = JsonHelper.GetNumber(json, "required", 1).intValue();
 		subtypes = JsonHelper.GetBoolean(json, "subtypes", true);
 		ignoreNBT = JsonHelper.GetBoolean(json, "ignoreNBT", true);
-		targetTags = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "targetNBT"), new NBTTagCompound());
+		targetTags = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "targetNBT"), new NBTTagCompound(), true);
 		
 		if(json.has("userProgress"))
 		{

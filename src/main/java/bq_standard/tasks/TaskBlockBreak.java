@@ -99,7 +99,7 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 		
 		json.addProperty("blockID", Block.blockRegistry.getNameForObject(targetBlock));
 		json.addProperty("blockMeta", targetMeta);
-		json.add("blockNBT", NBTConverter.NBTtoJSON_Compound(targetNbt, new JsonObject()));
+		json.add("blockNBT", NBTConverter.NBTtoJSON_Compound(targetNbt, new JsonObject(), true));
 		json.addProperty("amount", targetNum);
 	}
 	
@@ -111,7 +111,7 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 		targetBlock = (Block)Block.blockRegistry.getObject(JsonHelper.GetString(json, "blockID", "minecraft:log"));
 		targetBlock = targetBlock != null? targetBlock : Blocks.log;
 		targetMeta = JsonHelper.GetNumber(json, "blockMeta", -1).intValue();
-		targetNbt = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "blockNBT"), new NBTTagCompound());
+		targetNbt = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "blockNBT"), new NBTTagCompound(), true);
 		targetNum = JsonHelper.GetNumber(json, "amount", 1).intValue();
 		
 		if(json.has("userProgress"))

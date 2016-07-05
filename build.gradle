@@ -26,9 +26,6 @@ minecraft {
 }
 
 dependencies {
-    compile files("dependencies/BetterQuesting-core.jar")
-    compile files("dependencies/CodeChickenCore.jar")
-    compile files("dependencies/NotEnoughItems.jar")
 }
 
 processResources

@@ -54,19 +54,28 @@ public class NativeFileImporter extends ImporterBase implements IFileCallback
 		}
 		
 		// Store all the old data somewhere while we use the built in loaders
-		ConcurrentHashMap<Integer,QuestInstance> oldQuests = QuestDatabase.questDB;
+		ConcurrentHashMap<Integer,QuestInstance> oldQuests = new ConcurrentHashMap<Integer,QuestInstance>();
+		oldQuests.putAll(QuestDatabase.questDB);
 		QuestDatabase.questDB.clear();
-		CopyOnWriteArrayList<QuestLine> oldLines = QuestDatabase.questLines;
+		CopyOnWriteArrayList<QuestLine> oldLines = new CopyOnWriteArrayList<QuestLine>();
+		oldLines.addAll(QuestDatabase.questLines);
 		QuestDatabase.questLines.clear();
 		
 		// Use native parsing to ensure it is always up to date
 		QuestDatabase.readFromJson(json);
 		
+		// Merge quest lines
 		QuestDatabase.questLines.addAll(oldLines);
-		ConcurrentHashMap<Integer,QuestInstance> tmp = oldQuests;
-		oldQuests = QuestDatabase.questDB;
-		QuestDatabase.questDB = tmp;
 		
+		// Swap databases in preparation for ID re-mapping
+		ConcurrentHashMap<Integer,QuestInstance> tmp = new ConcurrentHashMap<Integer,QuestInstance>();
+		tmp.putAll(oldQuests);
+		oldQuests.clear();
+		oldQuests.putAll(QuestDatabase.questDB);
+		QuestDatabase.questDB.clear();
+		tmp.putAll(tmp);
+		
+		// Re-map quest IDs
 		for(QuestInstance q : oldQuests.values())
 		{
 			int id = QuestDatabase.getUniqueID();
