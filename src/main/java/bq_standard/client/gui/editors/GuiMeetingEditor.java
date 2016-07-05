@@ -41,7 +41,7 @@ public class GuiMeetingEditor extends GuiQuesting implements IVolatileScreen
 		
 		if(lastEdit != null)
 		{
-			data.addProperty("target", JsonHelper.GetString(lastEdit, "id", "Villager"));
+			data.addProperty("target", JsonHelper.GetString(lastEdit, "id:8", "Villager"));
 			data.add("targetNBT", lastEdit);
 			
 			lastEdit = null;
@@ -56,7 +56,7 @@ public class GuiMeetingEditor extends GuiQuesting implements IVolatileScreen
 			data.add("targetNBT", new JsonObject());
 		} else
 		{
-			entity.readFromNBT(NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(data, "targetNBT"), new NBTTagCompound()));
+			entity.readFromNBT(NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(data, "targetNBT"), new NBTTagCompound(), true));
 		}
 		
 		this.buttonList.add(new GuiButtonQuesting(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 20, 200, 20, I18n.format("bq_standard.btn.select_mob")));
@@ -109,7 +109,7 @@ public class GuiMeetingEditor extends GuiQuesting implements IVolatileScreen
 			{
 				NBTTagCompound eTags = new NBTTagCompound();
 				entity.writeToNBTOptional(eTags);
-				lastEdit = NBTConverter.NBTtoJSON_Compound(eTags, new JsonObject());
+				lastEdit = NBTConverter.NBTtoJSON_Compound(eTags, new JsonObject(), true);
 				mc.displayGuiScreen(new GuiJsonEntitySelection(this, lastEdit));
 			}
 		} else if(button.id == 2)
