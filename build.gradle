@@ -23,7 +23,6 @@ minecraft {
 }
 
 dependencies {
-    compile files("dependencies/BetterQuesting-core.jar")
 }
 
 processResources
