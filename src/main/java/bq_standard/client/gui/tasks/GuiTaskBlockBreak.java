@@ -1,16 +1,17 @@
 package bq_standard.client.gui.tasks;
 
-import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.util.EnumChatFormatting;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.client.themes.ThemeRegistry;
 import betterquesting.quests.QuestInstance;
 import betterquesting.utils.BigItemStack;
-import betterquesting.utils.RenderUtils;
+import bq_standard.client.gui.GuiScrollingItems;
 import bq_standard.tasks.TaskBlockBreak;
 
 public class GuiTaskBlockBreak extends GuiEmbedded
 {
+	GuiScrollingItems scrollList;
 	QuestInstance quest;
 	TaskBlockBreak task;
 	
@@ -19,28 +20,50 @@ public class GuiTaskBlockBreak extends GuiEmbedded
 		super(screen, posX, posY, sizeX, sizeY);
 		this.task = task;
 		this.quest = quest;
+		scrollList = new GuiScrollingItems(screen, sizeX, sizeY - 16, posY + 16, posX);
+		
+		if(task == null)
+		{
+			return;
+		}
+		
+		int[] progress = quest == null || !quest.globalQuest? task.GetUserProgress(screen.mc.thePlayer.getUniqueID()) : task.GetGlobalProgress();
+		
+		for(int i = 0; i < task.blockTypes.size(); i++)
+		{
+			BigItemStack stack = task.blockTypes.get(i).getItemStack();
+			
+			if(stack == null)
+			{
+				continue;
+			}
+			
+			String txt = stack.getBaseStack().getDisplayName();
+			
+			if(stack.oreDict.length() > 0)
+			{
+				txt += " (" + stack.oreDict + ")";
+			}
+			
+			txt += "\n";
+			
+			txt = txt + progress[i] + "/" + stack.stackSize;
+			
+			if(progress[i] >= stack.stackSize || task.isComplete(screen.mc.thePlayer.getUniqueID()))
+			{
+				txt += "\n" + EnumChatFormatting.GREEN + I18n.format("betterquesting.tooltip.complete");
+			} else
+			{
+				txt += "\n" + EnumChatFormatting.RED + I18n.format("betterquesting.tooltip.incomplete");
+			}
+			
+			scrollList.addEntry(stack, txt);
+		}
 	}
 
 	@Override
 	public void drawGui(int mx, int my, float partialTick)
 	{
-		BigItemStack dispStack = new BigItemStack(task.targetBlock, 1, task.targetMeta);
-		int progress = quest == null || !quest.globalQuest? task.GetUserProgress(screen.mc.thePlayer.getUniqueID()) : task.GetGlobalProgress();
-		
-		if(dispStack.getBaseStack() != null)
-		{
-			screen.mc.renderEngine.bindTexture(ThemeRegistry.curTheme().guiTexture());
-			GlStateManager.disableDepth();
-			screen.drawTexturedModalRect(posX + sizeX/2 - 9, posY + sizeY/2 - 18, 0, 48, 18, 18);
-			GlStateManager.enableDepth();
-			RenderUtils.RenderItemStack(screen.mc, dispStack.getBaseStack(), posX + sizeX/2 - 8, posY + sizeY/2 - 17, "");
-			String txt = progress + "/" + task.targetNum;
-			screen.mc.fontRendererObj.drawString(txt, posX + sizeX/2 - screen.mc.fontRendererObj.getStringWidth(txt)/2, posY + sizeY/2 + 2, ThemeRegistry.curTheme().textColor().getRGB());
-			
-			if(mx >= posX + sizeX/2 - 8 && mx < posX + sizeX/2 + 8 && my >= posY + sizeY/2 - 17 && my < posY + sizeY/2 - 1)
-			{
-				screen.DrawTooltip(dispStack.getBaseStack().getTooltip(screen.mc.thePlayer, screen.mc.gameSettings.advancedItemTooltips), mx, my);
-			}
-		}
+		scrollList.drawScreen(mx, my, partialTick);
 	}
 }
