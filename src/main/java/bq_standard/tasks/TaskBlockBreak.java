@@ -156,7 +156,7 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 		
 		if(json.has("blockID"))
 		{
-			Block targetBlock = (Block)Block.blockRegistry.getObject(new ResourceLocation(JsonHelper.GetString(json, "blockID", "minecraft:log")));
+			Block targetBlock = (Block)Block.blockRegistry.getObject(JsonHelper.GetString(json, "blockID", "minecraft:log"));
 			targetBlock = targetBlock != null? targetBlock : Blocks.log;
 			int targetMeta = JsonHelper.GetNumber(json, "blockMeta", -1).intValue();
 			NBTTagCompound targetNbt = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "blockNBT"), new NBTTagCompound(), true);
