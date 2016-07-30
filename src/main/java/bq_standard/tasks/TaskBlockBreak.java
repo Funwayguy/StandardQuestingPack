@@ -1,5 +1,6 @@
 package bq_standard.tasks;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -7,10 +8,12 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
@@ -21,6 +24,7 @@ import betterquesting.quests.QuestDatabase;
 import betterquesting.quests.QuestInstance;
 import betterquesting.quests.tasks.advanced.AdvancedTaskBase;
 import betterquesting.quests.tasks.advanced.IProgressionTask;
+import betterquesting.utils.BigItemStack;
 import betterquesting.utils.ItemComparison;
 import betterquesting.utils.JsonHelper;
 import betterquesting.utils.NBTConverter;
@@ -29,15 +33,17 @@ import bq_standard.core.BQ_Standard;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
-public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask<Integer>
+public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask<int[]>
 {
-	public HashMap<UUID, Integer> userProgress = new HashMap<UUID, Integer>();
-	public Block targetBlock = Blocks.LOG;
-	public NBTTagCompound targetNbt = new NBTTagCompound();
-	public int targetMeta = -1;
-	public int targetNum = 1;
-	public boolean oreDict = true;
+	public HashMap<UUID, int[]> userProgress = new HashMap<UUID, int[]>();
+	public ArrayList<JsonBlockType> blockTypes = new ArrayList<JsonBlockType>();
+	
+	public TaskBlockBreak()
+	{
+		blockTypes.add(new JsonBlockType());
+	}
 	
 	@Override
 	public String getUnlocalisedName()
@@ -62,9 +68,23 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 			return;
 		}
 		
-		int progress = quest == null || !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();
+		boolean flag = false;
+		int[] progress = quest == null || !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();
 		
-		if(progress >= targetNum)
+		for(int j = 0; j < blockTypes.size(); j++)
+		{
+			JsonBlockType block = blockTypes.get(j);
+			
+			if(block == null || progress[j] >= block.n)
+			{
+				continue;
+			}
+			
+			flag = false;
+			break;
+		}
+		
+		if(flag)
 		{
 			setCompletion(player.getUniqueID(), true);
 		}
@@ -78,7 +98,7 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 			return;
 		}
 		
-		int progress = GetUserProgress(player.getUniqueID());
+		int[] progress = GetUserProgress(player.getUniqueID());
 		TileEntity tile = player.worldObj.getTileEntity(pos);
 		NBTTagCompound tags = new NBTTagCompound();
 		
@@ -87,9 +107,18 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 			tile.writeToNBT(tags);
 		}
 		
-		if(state.getBlock() == targetBlock && (targetMeta < 0 || state.getBlock().getMetaFromState(state) == targetMeta) && ItemComparison.CompareNBTTag(targetNbt, tags, true))
+		for(int i = 0; i < blockTypes.size(); i++)
 		{
-			SetUserProgress(player.getUniqueID(), progress + 1);
+			JsonBlockType block = blockTypes.get(i);
+			
+			boolean flag = block.oreDict.length() > 0 && OreDictionary.getOres(block.oreDict).contains(new ItemStack(state.getBlock(), 1, block.m < 0? OreDictionary.WILDCARD_VALUE : state.getBlock().getMetaFromState(state)));
+			
+			if((flag || (state.getBlock() == block.b && (block.m < 0 || state.getBlock().getMetaFromState(state) == block.m))) && ItemComparison.CompareNBTTag(block.tags, tags, true))
+			{
+				progress[i] += 1;
+				SetUserProgress(player.getUniqueID(), progress);
+				break;
+			}
 		}
 		
 		Detect(quest, player);
@@ -100,10 +129,13 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 	{
 		super.writeToJson(json);
 		
-		json.addProperty("blockID", Block.REGISTRY.getNameForObject(targetBlock).toString());
-		json.addProperty("blockMeta", targetMeta);
-		json.add("blockNBT", NBTConverter.NBTtoJSON_Compound(targetNbt, new JsonObject(), true));
-		json.addProperty("amount", targetNum);
+		JsonArray bAry = new JsonArray();
+		for(JsonBlockType block : blockTypes)
+		{
+			JsonObject jbt = block.writeToJson(new JsonObject());
+			bAry.add(jbt);
+		}
+		json.add("blocks", bAry);
 	}
 	
 	@Override
@@ -111,11 +143,35 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 	{
 		super.readFromJson(json);
 		
-		targetBlock = (Block)Block.REGISTRY.getObject(new ResourceLocation(JsonHelper.GetString(json, "blockID", "minecraft:log")));
-		targetBlock = targetBlock != null? targetBlock : Blocks.LOG;
-		targetMeta = JsonHelper.GetNumber(json, "blockMeta", -1).intValue();
-		targetNbt = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "blockNBT"), new NBTTagCompound(), true);
-		targetNum = JsonHelper.GetNumber(json, "amount", 1).intValue();
+		blockTypes.clear();
+		for(JsonElement element : JsonHelper.GetArray(json, "blocks"))
+		{
+			if(element == null || !element.isJsonObject())
+			{
+				continue;
+			}
+			
+			JsonBlockType block = new JsonBlockType();
+			block.readFromJson(element.getAsJsonObject());
+			blockTypes.add(block);
+		}
+		
+		if(json.has("blockID"))
+		{
+			Block targetBlock = (Block)Block.REGISTRY.getObject(new ResourceLocation(JsonHelper.GetString(json, "blockID", "minecraft:log")));
+			targetBlock = targetBlock != null? targetBlock : Blocks.LOG;
+			int targetMeta = JsonHelper.GetNumber(json, "blockMeta", -1).intValue();
+			NBTTagCompound targetNbt = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "blockNBT"), new NBTTagCompound(), true);
+			int targetNum = JsonHelper.GetNumber(json, "amount", 1).intValue();
+			
+			JsonBlockType leg = new JsonBlockType();
+			leg.b = targetBlock;
+			leg.m = targetMeta;
+			leg.tags = targetNbt;
+			leg.n = targetNum;
+			
+			blockTypes.add(leg);
+		}
 		
 		if(json.has("userProgress"))
 		{
@@ -136,7 +192,7 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 			jMig = null;
 		}
 		
-		userProgress = new HashMap<UUID,Integer>();
+		userProgress = new HashMap<UUID,int[]>();
 		for(JsonElement entry : JsonHelper.GetArray(json, "userProgress"))
 		{
 			if(entry == null || !entry.isJsonObject())
@@ -154,7 +210,20 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 				continue;
 			}
 			
-			userProgress.put(uuid, JsonHelper.GetNumber(entry.getAsJsonObject(), "value", 0).intValue());
+			int[] data = new int[blockTypes.size()];
+			JsonArray dJson = JsonHelper.GetArray(entry.getAsJsonObject(), "data");
+			for(int i = 0; i < data.length && i < dJson.size(); i++)
+			{
+				try
+				{
+					data[i] = dJson.get(i).getAsInt();
+				} catch(Exception e)
+				{
+					BQ_Standard.logger.log(Level.ERROR, "Incorrect task progress format", e);
+				}
+			}
+			
+			userProgress.put(uuid, data);
 		}
 	}
 	
@@ -164,11 +233,16 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 		super.writeProgressToJson(json);
 		
 		JsonArray progArray = new JsonArray();
-		for(Entry<UUID,Integer> entry : userProgress.entrySet())
+		for(Entry<UUID,int[]> entry : userProgress.entrySet())
 		{
 			JsonObject pJson = new JsonObject();
 			pJson.addProperty("uuid", entry.getKey().toString());
-			pJson.addProperty("value", entry.getValue());
+			JsonArray pArray = new JsonArray();
+			for(int i : entry.getValue())
+			{
+				pArray.add(new JsonPrimitive(i));
+			}
+			pJson.add("data", pArray);
 			progArray.add(pJson);
 		}
 		json.add("userProgress", progArray);
@@ -185,18 +259,27 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 	public void ResetAllProgress()
 	{
 		super.ResetAllProgress();
-		userProgress = new HashMap<UUID, Integer>();
+		userProgress = new HashMap<UUID, int[]>();
 	}
 	
 	@Override
 	public float GetParticipation(UUID uuid)
 	{
-		if(targetNum <= 0)
+		if(blockTypes.size() <= 0)
 		{
 			return 1F;
 		}
 		
-		return GetUserProgress(uuid) / (float)targetNum;
+		float total = 0F;
+		
+		int[] progress = GetUserProgress(uuid);
+		for(int i = 0; i < blockTypes.size(); i++)
+		{
+			JsonBlockType block = blockTypes.get(i);
+			total += progress[i] / (float)block.n;
+		}
+		
+		return total / (float)blockTypes.size();
 	}
 
 	@Override
@@ -206,22 +289,22 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 	}
 	
 	@Override
-	public void SetUserProgress(UUID uuid, Integer progress)
+	public void SetUserProgress(UUID uuid, int[] progress)
 	{
 		userProgress.put(uuid, progress);
 	}
 	
 	@Override
-	public Integer GetUserProgress(UUID uuid)
+	public int[] GetUserProgress(UUID uuid)
 	{
-		Integer i = userProgress.get(uuid);
-		return i == null? 0 : i;
+		int[] progress = userProgress.get(uuid);
+		return progress == null || progress.length != blockTypes.size()? new int[blockTypes.size()] : progress;
 	}
 
 	@Override
-	public Integer GetPartyProgress(UUID uuid)
+	public int[] GetPartyProgress(UUID uuid)
 	{
-		int total = 0;
+		int[] total = new int[blockTypes.size()];
 		
 		PartyInstance party = PartyManager.GetParty(uuid);
 		
@@ -236,8 +319,13 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 				{
 					continue;
 				}
+
+				int[] progress = GetUserProgress(mem.userID);
 				
-				total += GetUserProgress(mem.userID);
+				for(int i = 0; i < progress.length; i++)
+				{
+					total[i] += progress[i];
+				}
 			}
 		}
 		
@@ -245,15 +333,61 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 	}
 	
 	@Override
-	public Integer GetGlobalProgress()
+	public int[] GetGlobalProgress()
 	{
-		int total = 0;
+		int[] total = new int[blockTypes.size()];
 		
-		for(Integer i : userProgress.values())
+		for(int[] up : userProgress.values())
 		{
-			total += i == null? 0 : 1;
+			if(up == null)
+			{
+				continue;
+			}
+			
+			int[] progress = up.length != blockTypes.size()? new int[blockTypes.size()] : up;
+			
+			for(int i = 0; i < progress.length; i++)
+			{
+				total[i] += progress[i];
+			}
 		}
 		
 		return total;
+	}
+	
+	public static class JsonBlockType
+	{
+		public Block b = Blocks.LOG;
+		public int m = -1;
+		public NBTTagCompound tags = new NBTTagCompound();
+		public int n = 1;
+		public String oreDict = "";
+		
+		public JsonObject writeToJson(JsonObject json)
+		{
+			json.addProperty("blockID", b.getRegistryName().toString());
+			json.addProperty("meta", m);
+			json.add("nbt", NBTConverter.NBTtoJSON_Compound(tags, new JsonObject(), true));
+			json.addProperty("amount", n);
+			json.addProperty("oreDict", oreDict);
+			return json;
+		}
+		
+		public void readFromJson(JsonObject json)
+		{
+			b = Block.REGISTRY.getObject(new ResourceLocation(JsonHelper.GetString(json, "blockID", "minecraft:log")));
+			m = JsonHelper.GetNumber(json, "meta", -1).intValue();
+			n = n < 0? OreDictionary.WILDCARD_VALUE : n;
+			tags = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "nbt"), new NBTTagCompound(), true);
+			n = JsonHelper.GetNumber(json, "amount", 1).intValue();
+			oreDict = JsonHelper.GetString(json, "oreDict", "");
+		}
+		
+		public BigItemStack getItemStack()
+		{
+			BigItemStack stack = new BigItemStack(b, n < 0? OreDictionary.WILDCARD_VALUE : n, m);
+			stack.oreDict = oreDict;
+			return stack;
+		}
 	}
 }
