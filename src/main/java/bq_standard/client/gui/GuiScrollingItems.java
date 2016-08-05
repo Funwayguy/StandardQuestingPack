@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
+import cpw.mods.fml.common.Loader;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiBQScrolling;
 import betterquesting.client.themes.ThemeRegistry;
@@ -121,6 +122,13 @@ public class GuiScrollingItems extends GuiBQScrolling
 	@Override
 	protected void elementClicked(int arg0, boolean arg1)
 	{
+		if(Loader.isModLoaded("NotEnoughItems"))
+    	{
+			try
+			{
+				codechicken.nei.recipe.GuiCraftingRecipe.openRecipeGui("item", stacks.get(arg0).stack.getBaseStack());
+			} catch(Exception e){}
+		}
 	}
 	
 	@Override
