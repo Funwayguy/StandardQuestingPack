@@ -7,6 +7,7 @@ import java.util.UUID;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -14,6 +15,7 @@ import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.Level;
 import betterquesting.client.gui.GuiQuesting;
 import betterquesting.client.gui.misc.GuiEmbedded;
+import betterquesting.core.BetterQuesting;
 import betterquesting.party.PartyInstance;
 import betterquesting.party.PartyInstance.PartyMember;
 import betterquesting.party.PartyManager;
@@ -373,6 +375,7 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 		public void readFromJson(JsonObject json)
 		{
 			b = (Block)Block.blockRegistry.getObject(JsonHelper.GetString(json, "blockID", "minecraft:log"));
+			b = b != null? b : Blocks.log;
 			m = JsonHelper.GetNumber(json, "meta", -1).intValue();
 			n = n < 0? OreDictionary.WILDCARD_VALUE : n;
 			tags = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "nbt"), new NBTTagCompound(), true);
@@ -382,7 +385,27 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 		
 		public BigItemStack getItemStack()
 		{
-			BigItemStack stack = new BigItemStack(b, n < 0? OreDictionary.WILDCARD_VALUE : n, m);
+			BigItemStack stack = null;
+			
+			if(b == null || Item.getItemFromBlock(b) == null)
+			{
+				stack = new BigItemStack(BetterQuesting.placeholder, n, 0);
+				stack.getBaseStack().setStackDisplayName("NULL");
+				
+				if(b != null)
+				{
+					stack.getBaseStack().setStackDisplayName(b.getLocalizedName());
+					stack.GetTagCompound().setString("orig_id", Block.blockRegistry.getNameForObject(b));
+				} else
+				{
+					stack.getBaseStack().setStackDisplayName("NULL");
+					stack.GetTagCompound().setString("orig_id", "NULL");
+				}
+			} else
+			{
+				stack = new BigItemStack(b, n, m);
+			}
+			
 			stack.oreDict = oreDict;
 			return stack;
 		}
