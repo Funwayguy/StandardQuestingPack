@@ -1,34 +1,43 @@
 package bq_standard.client.gui.tasks;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StatCollector;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.client.themes.ThemeRegistry;
+import betterquesting.api.client.gui.GuiElement;
+import betterquesting.api.client.gui.IGuiEmbedded;
+import betterquesting.api.client.gui.lists.GuiScrollingItems;
+import betterquesting.api.quests.IQuest;
+import betterquesting.api.quests.properties.NativeProps;
+import betterquesting.api.utils.BigItemStack;
 import betterquesting.quests.QuestInstance;
-import betterquesting.utils.BigItemStack;
-import bq_standard.client.gui.GuiScrollingItems;
 import bq_standard.tasks.TaskRetrieval;
 
-public class GuiTaskRetrieval extends GuiEmbedded
+public class GuiTaskRetrieval extends GuiElement implements IGuiEmbedded
 {
 	GuiScrollingItems scrollList;
 	QuestInstance quest;
 	TaskRetrieval task;
+	private Minecraft mc;
 	
-	public GuiTaskRetrieval(QuestInstance quest, TaskRetrieval task, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	private int posX = 0;
+	private int posY = 0;
+	
+	public GuiTaskRetrieval(TaskRetrieval task, IQuest quest, int posX, int posY, int sizeX, int sizeY)
 	{
-		super(screen, posX, posY, sizeX, sizeY);
+		this.mc = Minecraft.getMinecraft();
 		this.task = task;
-		scrollList = new GuiScrollingItems(screen, sizeX, sizeY - 16, posY + 16, posX);
+		this.posX = posX;
+		this.posY = posY;
+		
+		scrollList = new GuiScrollingItems(mc, posX, posY + 16, sizeX, sizeY - 16);
 		
 		if(task == null)
 		{
 			return;
 		}
 		
-		int[] progress = quest == null || !quest.globalQuest? task.GetUserProgress(screen.mc.thePlayer.getUniqueID()) : task.GetGlobalProgress();
+		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getUsersProgress(mc.thePlayer.getUniqueID()) : task.getGlobalProgress();
 		
 		for(int i = 0; i < task.requiredItems.size(); i++)
 		{
@@ -56,7 +65,7 @@ public class GuiTaskRetrieval extends GuiEmbedded
 				txt = txt + stack.stackSize;
 			}
 			
-			if(progress[i] >= stack.stackSize || task.isComplete(screen.mc.thePlayer.getUniqueID()))
+			if(progress[i] >= stack.stackSize || task.isComplete(mc.thePlayer.getUniqueID()))
 			{
 				txt += "\n" + EnumChatFormatting.GREEN + I18n.format("betterquesting.tooltip.complete");
 			} else
@@ -64,15 +73,36 @@ public class GuiTaskRetrieval extends GuiEmbedded
 				txt += "\n" + EnumChatFormatting.RED + I18n.format("betterquesting.tooltip.incomplete");
 			}
 			
-			scrollList.addEntry(stack, txt);
+			scrollList.addItem(stack, txt);
 		}
 	}
 
 	@Override
-	public void drawGui(int mx, int my, float partialTick)
+	public void drawBackground(int mx, int my, float partialTick)
 	{
 		String sCon = (task.consume? EnumChatFormatting.RED : EnumChatFormatting.GREEN) + StatCollector.translateToLocalFormatted(task.consume? "gui.yes" : "gui.no");
-		screen.mc.fontRenderer.drawString(StatCollector.translateToLocalFormatted("bq_standard.btn.consume", sCon), posX, posY, ThemeRegistry.curTheme().textColor().getRGB(), false);
-		scrollList.drawScreen(mx, my, partialTick);
+		mc.fontRenderer.drawString(StatCollector.translateToLocalFormatted("bq_standard.btn.consume", sCon), posX, posY, getTextColor(), false);
+		scrollList.drawBackground(mx, my, partialTick);
+	}
+
+	@Override
+	public void drawForeground(int mx, int my, float partialTick)
+	{
+		scrollList.drawForeground(mx, my, partialTick);
+	}
+
+	@Override
+	public void onMouseClick(int mx, int my, int click)
+	{
+	}
+
+	@Override
+	public void onMouseScroll(int mx, int my, int scroll)
+	{
+	}
+
+	@Override
+	public void onKeyTyped(char c, int keyCode)
+	{
 	}
 }

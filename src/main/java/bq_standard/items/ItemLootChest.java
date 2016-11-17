@@ -13,10 +13,12 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.Level;
+import betterquesting.api.ExpansionAPI;
+import betterquesting.api.network.PreparedPayload;
+import betterquesting.api.quests.properties.NativeProps;
+import betterquesting.api.utils.BigItemStack;
 import betterquesting.core.BetterQuesting;
-import betterquesting.network.PacketAssembly;
-import betterquesting.quests.QuestDatabase;
-import betterquesting.utils.BigItemStack;
+import betterquesting.quests.QuestSettings;
 import bq_standard.core.BQ_Standard;
 import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.loot.LootGroup;
@@ -41,7 +43,7 @@ public class ItemLootChest extends Item
     {
     	if(stack.getItemDamage() >= 102)
     	{
-    		if(QuestDatabase.editMode)
+    		if(QuestSettings.INSTANCE.getProperty(NativeProps.EDIT_MODE))
     		{
     			player.openGui(BQ_Standard.instance, 0, world, (int)player.posX, (int)player.posY, (int)player.posZ);
     		}
@@ -123,7 +125,7 @@ public class ItemLootChest extends Item
 		
 		tags.setTag("rewards", list);
 		
-		PacketAssembly.SendTo(StandardPacketType.LOOT_CLAIM.GetLocation(), tags, player);
+		ExpansionAPI.getAPI().getPacketSender().sendToPlayer(new PreparedPayload(StandardPacketType.LOOT_CLAIM.GetLocation(), tags), player);
 	}
 
     /**
@@ -159,7 +161,7 @@ public class ItemLootChest extends Item
 		if(stack.getItemDamage() > 101)
 		{
 			list.add(StatCollector.translateToLocal("betterquesting.btn.edit"));
-		} else if(QuestDatabase.editMode)
+		} else if(QuestSettings.INSTANCE.getProperty(NativeProps.EDIT_MODE))
 		{
 			if(stack.getItemDamage() == 101)
 			{

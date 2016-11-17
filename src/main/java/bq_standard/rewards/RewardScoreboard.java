@@ -1,27 +1,38 @@
 package bq_standard.rewards;
 
-import org.apache.logging.log4j.Level;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.scoreboard.IScoreObjectiveCriteria;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreDummyCriteria;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.quests.rewards.RewardBase;
-import betterquesting.utils.JsonHelper;
+import net.minecraft.util.ResourceLocation;
+import org.apache.logging.log4j.Level;
+import betterquesting.api.client.gui.IGuiEmbedded;
+import betterquesting.api.enums.EnumSaveType;
+import betterquesting.api.quests.IQuest;
+import betterquesting.api.quests.rewards.IReward;
+import betterquesting.api.utils.JsonHelper;
 import bq_standard.client.gui.rewards.GuiRewardScoreboard;
 import bq_standard.core.BQ_Standard;
+import bq_standard.rewards.factory.FactoryRewardScoreboard;
 import com.google.gson.JsonObject;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
-public class RewardScoreboard extends RewardBase
+public class RewardScoreboard implements IReward
 {
 	public String score = "Reputation";
 	public String type = "dummy";
 	public boolean relative = true;
 	public int value = 1;
+	
+	@Override
+	public ResourceLocation getFactoryID()
+	{
+		return FactoryRewardScoreboard.INSTANCE.getRegistryName();
+	}
 	
 	@Override
 	public String getUnlocalisedName()
@@ -30,13 +41,13 @@ public class RewardScoreboard extends RewardBase
 	}
 	
 	@Override
-	public boolean canClaim(EntityPlayer player, NBTTagCompound choiceData)
+	public boolean canClaim(EntityPlayer player, IQuest quest)
 	{
 		return true;
 	}
 	
 	@Override
-	public void Claim(EntityPlayer player, NBTTagCompound choiceData)
+	public void claimReward(EntityPlayer player, IQuest quest)
 	{
 		Scoreboard board = player.getWorldScoreboard();
 		
@@ -78,7 +89,7 @@ public class RewardScoreboard extends RewardBase
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json)
+	public void readFromJson(JsonObject json, EnumSaveType saveType)
 	{
 		score = JsonHelper.GetString(json, "score", "Reputation");
 		type = JsonHelper.GetString(json, "type", "dummy");
@@ -87,17 +98,26 @@ public class RewardScoreboard extends RewardBase
 	}
 	
 	@Override
-	public void writeToJson(JsonObject json)
+	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
 	{
 		json.addProperty("score", score);
 		json.addProperty("type", "dummy");
 		json.addProperty("value", value);
 		json.addProperty("relative", relative);
+		return json;
 	}
 
 	@Override
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	@SideOnly(Side.CLIENT)
+	public IGuiEmbedded getRewardGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
 	{
-		return new GuiRewardScoreboard(this, screen, posX, posY, sizeX, sizeY);
+		return new GuiRewardScoreboard(this, posX, posY, sizeX, sizeY);
+	}
+	
+	@Override
+	@SideOnly(Side.CLIENT)
+	public GuiScreen getRewardEditor(GuiScreen screen, IQuest quest)
+	{
+		return null;
 	}
 }

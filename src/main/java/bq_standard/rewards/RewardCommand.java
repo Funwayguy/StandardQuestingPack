@@ -1,26 +1,35 @@
 package bq_standard.rewards;
 
 import io.netty.buffer.ByteBuf;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.command.server.CommandBlockLogic;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.quests.rewards.RewardBase;
-import betterquesting.utils.JsonHelper;
+import betterquesting.api.client.gui.IGuiEmbedded;
+import betterquesting.api.enums.EnumSaveType;
+import betterquesting.api.quests.IQuest;
+import betterquesting.api.quests.rewards.IReward;
+import betterquesting.api.utils.JsonHelper;
 import bq_standard.AdminExecute;
 import bq_standard.client.gui.rewards.GuiRewardCommand;
 import bq_standard.core.BQ_Standard;
+import bq_standard.rewards.factory.FactoryRewardCommand;
 import com.google.gson.JsonObject;
 
-public class RewardCommand extends RewardBase
+public class RewardCommand implements IReward
 {
 	public String command = "/say VAR_NAME Claimed a reward";
 	public boolean hideCmd = false;
 	public boolean viaPlayer = false;
+	
+	@Override
+	public ResourceLocation getFactoryID()
+	{
+		return FactoryRewardCommand.INSTANCE.getRegistryName();
+	}
 	
 	@Override
 	public String getUnlocalisedName()
@@ -29,13 +38,13 @@ public class RewardCommand extends RewardBase
 	}
 	
 	@Override
-	public boolean canClaim(EntityPlayer player, NBTTagCompound choiceData)
+	public boolean canClaim(EntityPlayer player, IQuest quest)
 	{
 		return true;
 	}
 	
 	@Override
-	public void Claim(EntityPlayer player, NBTTagCompound choiceData)
+	public void claimReward(EntityPlayer player, IQuest quest)
 	{
 		if(player.worldObj.isRemote)
 		{
@@ -57,7 +66,7 @@ public class RewardCommand extends RewardBase
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json)
+	public void readFromJson(JsonObject json, EnumSaveType saveType)
 	{
 		command = JsonHelper.GetString(json, "command", "/say VAR_NAME Claimed a reward");
 		hideCmd = JsonHelper.GetBoolean(json, "hideCommand", false);
@@ -65,17 +74,24 @@ public class RewardCommand extends RewardBase
 	}
 	
 	@Override
-	public void writeToJson(JsonObject json)
+	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
 	{
 		json.addProperty("command", command);
 		json.addProperty("hideCommand", hideCmd);
 		json.addProperty("viaPlayer", viaPlayer);
+		return json;
 	}
 	
 	@Override
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public IGuiEmbedded getRewardGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
 	{
-		return new GuiRewardCommand(this, screen, posX, posY, sizeX, sizeY);
+		return new GuiRewardCommand(this, posX, posY, sizeX, sizeY);
+	}
+	
+	@Override
+	public GuiScreen getRewardEditor(GuiScreen screen, IQuest quest)
+	{
+		return null;
 	}
 	
 	public static class RewardCommandSender extends CommandBlockLogic

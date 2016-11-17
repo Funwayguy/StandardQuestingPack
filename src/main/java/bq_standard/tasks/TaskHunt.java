@@ -1,5 +1,6 @@
 package bq_standard.tasks;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -10,30 +11,34 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.party.PartyInstance;
+import betterquesting.api.client.gui.IGuiEmbedded;
+import betterquesting.api.enums.EnumSaveType;
+import betterquesting.api.party.IParty;
+import betterquesting.api.quests.IQuest;
+import betterquesting.api.quests.properties.NativeProps;
+import betterquesting.api.quests.tasks.IProgression;
+import betterquesting.api.quests.tasks.ITask;
+import betterquesting.api.utils.ItemComparison;
+import betterquesting.api.utils.JsonHelper;
+import betterquesting.api.utils.NBTConverter;
 import betterquesting.party.PartyManager;
-import betterquesting.party.PartyInstance.PartyMember;
-import betterquesting.quests.QuestDatabase;
-import betterquesting.quests.QuestInstance;
-import betterquesting.quests.tasks.advanced.AdvancedTaskBase;
-import betterquesting.quests.tasks.advanced.IProgressionTask;
-import betterquesting.utils.ItemComparison;
-import betterquesting.utils.JsonHelper;
-import betterquesting.utils.NBTConverter;
+import betterquesting.quests.QuestSettings;
 import bq_standard.client.gui.editors.GuiHuntEditor;
 import bq_standard.client.gui.tasks.GuiTaskHunt;
 import bq_standard.core.BQ_Standard;
+import bq_standard.tasks.factory.FactoryTaskHunt;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class TaskHunt extends AdvancedTaskBase implements IProgressionTask<Integer>
+public class TaskHunt implements ITask, IProgression<Integer>
 {
+	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	public HashMap<UUID, Integer> userProgress = new HashMap<UUID, Integer>();
 	public String idName = "Zombie";
 	public int required = 1;
@@ -46,38 +51,58 @@ public class TaskHunt extends AdvancedTaskBase implements IProgressionTask<Integ
 	public NBTTagCompound targetTags = new NBTTagCompound();
 	
 	@Override
+	public ResourceLocation getFactoryID()
+	{
+		return FactoryTaskHunt.INSTANCE.getRegistryName();
+	}
+	
+	@Override
+	public boolean isComplete(UUID uuid)
+	{
+		return completeUsers.contains(uuid);
+	}
+	
+	@Override
+	public void setComplete(UUID uuid)
+	{
+		if(!completeUsers.contains(uuid))
+		{
+			completeUsers.add(uuid);
+		}
+	}
+	
+	@Override
 	public String getUnlocalisedName()
 	{
 		return "bq_standard.task.hunt";
 	}
 	
 	@Override
-	public void Update(QuestInstance quest, EntityPlayer player)
+	public void update(EntityPlayer player, IQuest quest)
 	{
-		if(player.ticksExisted%200 == 0 && !QuestDatabase.editMode)
+		if(player.ticksExisted%200 == 0 && !QuestSettings.INSTANCE.getProperty(NativeProps.EDIT_MODE))
 		{
-			Detect(quest, player);
+			detect(player, quest);
 		}
 	}
 	
 	@Override
-	public void Detect(QuestInstance quest, EntityPlayer player)
+	public void detect(EntityPlayer player, IQuest quest)
 	{
 		if(isComplete(player.getUniqueID()))
 		{
 			return;
 		}
 		
-		int progress = quest == null || !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();
+		int progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getUniqueID()) : getGlobalProgress();
 		
 		if(progress >= required)
 		{
-			setCompletion(player.getUniqueID(), true);
+			setComplete(player.getUniqueID());
 		}
 	}
 	
-	@Override
-	public void onKilledByPlayer(QuestInstance quest, EntityLivingBase entity, DamageSource source)
+	public void onKilledByPlayer(IQuest quest, EntityLivingBase entity, DamageSource source)
 	{
 		EntityPlayer player = (EntityPlayer)source.getEntity();
 		
@@ -86,7 +111,7 @@ public class TaskHunt extends AdvancedTaskBase implements IProgressionTask<Integ
 			return;
 		}
 		
-		int progress = GetUserProgress(player.getUniqueID());
+		int progress = getUsersProgress(player.getUniqueID());
 		
 		Class<? extends Entity> subject = entity.getClass();
 		@SuppressWarnings("unchecked")
@@ -110,51 +135,67 @@ public class TaskHunt extends AdvancedTaskBase implements IProgressionTask<Integ
 			return;
 		}
 		
-		SetUserProgress(player.getUniqueID(), progress + 1);
+		setUserProgress(player.getUniqueID(), progress + 1);
 		
-		Detect(quest, player);
+		detect(player, quest);
 	}
 	
 	@Override
-	public void writeToJson(JsonObject json)
+	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
 	{
-		super.writeToJson(json);
+		if(saveType == EnumSaveType.PROGRESS)
+		{
+			return this.writeProgressToJson(json);
+		} else if(saveType != EnumSaveType.CONFIG)
+		{
+			return json;
+		}
 		
 		json.addProperty("target", idName);
 		json.addProperty("required", required);
 		json.addProperty("subtypes", subtypes);
 		json.addProperty("ignoreNBT", ignoreNBT);
 		json.add("targetNBT", NBTConverter.NBTtoJSON_Compound(targetTags, new JsonObject(), true));
+		
+		return json;
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json)
+	public void readFromJson(JsonObject json, EnumSaveType saveType)
 	{
-		super.readFromJson(json);
+		if(saveType == EnumSaveType.PROGRESS)
+		{
+			this.readProgressFromJson(json);
+			return;
+		} else if(saveType != EnumSaveType.CONFIG)
+		{
+			return;
+		}
 		
 		idName = JsonHelper.GetString(json, "target", "Zombie");
 		required = JsonHelper.GetNumber(json, "required", 1).intValue();
 		subtypes = JsonHelper.GetBoolean(json, "subtypes", true);
 		ignoreNBT = JsonHelper.GetBoolean(json, "ignoreNBT", true);
 		targetTags = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "targetNBT"), new NBTTagCompound(), true);
-		
-		if(json.has("userProgress"))
-		{
-			jMig = json;
-		}
 	}
 	
-	JsonObject jMig = null;
-	
-	@Override
-	public void readProgressFromJson(JsonObject json)
+	private void readProgressFromJson(JsonObject json)
 	{
-		super.readProgressFromJson(json);
-		
-		if(jMig != null)
+		completeUsers = new ArrayList<UUID>();
+		for(JsonElement entry : JsonHelper.GetArray(json, "completeUsers"))
 		{
-			json = jMig;
-			jMig = null;
+			if(entry == null || !entry.isJsonPrimitive())
+			{
+				continue;
+			}
+			
+			try
+			{
+				completeUsers.add(UUID.fromString(entry.getAsString()));
+			} catch(Exception e)
+			{
+				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
+			}
 		}
 		
 		userProgress = new HashMap<UUID,Integer>();
@@ -179,10 +220,14 @@ public class TaskHunt extends AdvancedTaskBase implements IProgressionTask<Integ
 		}
 	}
 	
-	@Override
-	public void writeProgressToJson(JsonObject json)
+	private JsonObject writeProgressToJson(JsonObject json)
 	{
-		super.writeProgressToJson(json);
+		JsonArray jArray = new JsonArray();
+		for(UUID uuid : completeUsers)
+		{
+			jArray.add(new JsonPrimitive(uuid.toString()));
+		}
+		json.add("completeUsers", jArray);
 		
 		JsonArray progArray = new JsonArray();
 		for(Entry<UUID,Integer> entry : userProgress.entrySet())
@@ -193,6 +238,8 @@ public class TaskHunt extends AdvancedTaskBase implements IProgressionTask<Integ
 			progArray.add(pJson);
 		}
 		json.add("userProgress", progArray);
+		
+		return json;
 	}
 	
 	/**
@@ -200,75 +247,82 @@ public class TaskHunt extends AdvancedTaskBase implements IProgressionTask<Integ
 	 */
 	@Override
 	@SideOnly(Side.CLIENT)
-	public GuiScreen GetEditor(GuiScreen parent, JsonObject data)
+	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
 	{
-		return new GuiHuntEditor(parent, data);
+		return new GuiHuntEditor(parent, this);
 	}
 
 	@Override
-	public void ResetProgress(UUID uuid)
+	public void resetUser(UUID uuid)
 	{
-		super.ResetProgress(uuid);
+		completeUsers.remove(uuid);
 		userProgress.remove(uuid);
 	}
 
 	@Override
-	public void ResetAllProgress()
+	public void resetAll()
 	{
-		super.ResetAllProgress();
-		userProgress = new HashMap<UUID,Integer>();
+		completeUsers.clear();
+		userProgress.clear();
 	}
 	
 	@Override
-	public float GetParticipation(UUID uuid)
+	public float getParticipation(UUID uuid)
 	{
 		if(required <= 0)
 		{
 			return 1F;
 		}
 		
-		return GetUserProgress(uuid) / (float)required;
+		return getUsersProgress(uuid) / (float)required;
 	}
 
 	@Override
-	public GuiEmbedded getGui(QuestInstance quest, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	@SideOnly(Side.CLIENT)
+	public IGuiEmbedded getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
 	{
-		return new GuiTaskHunt(quest, this, screen, posX, posY, sizeX, sizeY);
+		return new GuiTaskHunt(this, quest, posX, posY, sizeX, sizeY);
 	}
 	
 	@Override
-	public void SetUserProgress(UUID uuid, Integer progress)
+	public void setUserProgress(UUID uuid, Integer progress)
 	{
 		userProgress.put(uuid, progress);
 	}
 	
 	@Override
-	public Integer GetUserProgress(UUID uuid)
+	public Integer getUsersProgress(UUID... users)
 	{
-		Integer progress = userProgress.get(uuid);
-		return progress == null? 0 : progress;
+		int i = 0;
+		
+		for(UUID uuid : users)
+		{
+			Integer n = userProgress.get(uuid);
+			i += n == null? 0 : n;
+		}
+		
+		return i;
 	}
 	
-	@Override
-	public Integer GetPartyProgress(UUID uuid)
+	public Integer getPartyProgress(UUID uuid)
 	{
 		int total = 0;
 		
-		PartyInstance party = PartyManager.GetParty(uuid);
+		IParty party = PartyManager.INSTANCE.getUserParty(uuid);
 		
 		if(party == null)
 		{
-			return GetUserProgress(uuid);
+			return getUsersProgress(uuid);
 		} else
 		{
-			for(PartyMember mem : party.GetMembers())
+			for(UUID mem : party.getMembers())
 			{
-				if(mem != null && mem.GetPrivilege() <= 0)
+				if(mem != null && party.getStatus(mem).ordinal() <= 0)
 				{
 					continue;
 				}
 				
-				total += GetUserProgress(mem.userID);
+				total += getUsersProgress(mem);
 			}
 		}
 		
@@ -276,7 +330,7 @@ public class TaskHunt extends AdvancedTaskBase implements IProgressionTask<Integ
 	}
 	
 	@Override
-	public Integer GetGlobalProgress()
+	public Integer getGlobalProgress()
 	{
 		int total = 0;
 		

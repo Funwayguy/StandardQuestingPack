@@ -3,16 +3,17 @@ package bq_standard;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
-import betterquesting.network.PacketAssembly;
-import betterquesting.utils.JsonHelper;
-import betterquesting.utils.NBTConverter;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTTagCompound;
+import betterquesting.api.ExpansionAPI;
+import betterquesting.api.network.PreparedPayload;
+import betterquesting.api.utils.JsonHelper;
+import betterquesting.api.utils.NBTConverter;
 import bq_standard.network.StandardPacketType;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
 
 public class ScoreboardBQ
 {
@@ -55,7 +56,7 @@ public class ScoreboardBQ
 		JsonObject json = new JsonObject();
 		writeJson(json);
 		tags.setTag("data", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
-		PacketAssembly.SendTo(StandardPacketType.SCORE_SYNC.GetLocation(), tags, player);
+		ExpansionAPI.getAPI().getPacketSender().sendToPlayer(new PreparedPayload(StandardPacketType.SCORE_SYNC.GetLocation(), tags), player);
 	}
 	
 	public static void readJson(JsonObject json)

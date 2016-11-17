@@ -1,5 +1,7 @@
 package bq_standard.tasks;
 
+import java.util.ArrayList;
+import java.util.UUID;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.scoreboard.IScoreObjectiveCriteria;
@@ -7,23 +9,30 @@ import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreDummyCriteria;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.quests.QuestDatabase;
-import betterquesting.quests.QuestInstance;
-import betterquesting.quests.tasks.TaskBase;
-import betterquesting.utils.JsonHelper;
+import betterquesting.api.client.gui.IGuiEmbedded;
+import betterquesting.api.enums.EnumSaveType;
+import betterquesting.api.quests.IQuest;
+import betterquesting.api.quests.properties.NativeProps;
+import betterquesting.api.quests.tasks.ITask;
+import betterquesting.api.utils.JsonHelper;
+import betterquesting.quests.QuestSettings;
 import bq_standard.ScoreboardBQ;
 import bq_standard.client.gui.editors.GuiScoreEditor;
 import bq_standard.client.gui.tasks.GuiTaskScoreboard;
 import bq_standard.core.BQ_Standard;
+import bq_standard.tasks.factory.FactoryTaskScoreboard;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class TaskScoreboard extends TaskBase
+public class TaskScoreboard implements ITask
 {
+	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	public String scoreName = "Score";
 	public String type = "dummy";
 	public int target = 1;
@@ -32,22 +41,55 @@ public class TaskScoreboard extends TaskBase
 	public ScoreOperation operation = ScoreOperation.MORE_OR_EQUAL;
 	
 	@Override
+	public ResourceLocation getFactoryID()
+	{
+		return FactoryTaskScoreboard.INSTANCE.getRegistryName();
+	}
+	
+	@Override
 	public String getUnlocalisedName()
 	{
 		return "bq_standard.task.scoreboard";
 	}
 	
 	@Override
-	public void Update(QuestInstance quest, EntityPlayer player)
+	public boolean isComplete(UUID uuid)
 	{
-		if(player.ticksExisted%20 == 0 && !QuestDatabase.editMode) // Auto-detect once per second
+		return completeUsers.contains(uuid);
+	}
+	
+	@Override
+	public void setComplete(UUID uuid)
+	{
+		if(!completeUsers.contains(uuid))
 		{
-			Detect(quest, player);
+			completeUsers.add(uuid);
+		}
+	}
+
+	@Override
+	public void resetUser(UUID uuid)
+	{
+		completeUsers.remove(uuid);
+	}
+
+	@Override
+	public void resetAll()
+	{
+		completeUsers.clear();
+	}
+	
+	@Override
+	public void update(EntityPlayer player, IQuest quest)
+	{
+		if(player.ticksExisted%20 == 0 && !QuestSettings.INSTANCE.getProperty(NativeProps.EDIT_MODE)) // Auto-detect once per second
+		{
+			detect(player, quest);
 		}
 	}
 	
 	@Override
-	public void Detect(QuestInstance quest, EntityPlayer player)
+	public void detect(EntityPlayer player, IQuest quest)
 	{
 		if(isComplete(player.getUniqueID()))
 		{
@@ -77,14 +119,20 @@ public class TaskScoreboard extends TaskBase
 		
 		if(operation.checkValues(points, target))
 		{
-			setCompletion(player.getUniqueID(), true);
+			setComplete(player.getUniqueID());
 		}
 	}
 	
 	@Override
-	public void writeToJson(JsonObject json)
+	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
 	{
-		super.writeToJson(json);
+		if(saveType == EnumSaveType.PROGRESS)
+		{
+			return this.writeProgressToJson(json);
+		} else if(saveType != EnumSaveType.CONFIG)
+		{
+			return json;
+		}
 		
 		json.addProperty("scoreName", scoreName);
 		json.addProperty("type", type);
@@ -92,12 +140,21 @@ public class TaskScoreboard extends TaskBase
 		json.addProperty("unitConversion", conversion);
 		json.addProperty("unitSuffix", suffix);
 		json.addProperty("operation", operation.name());
+		
+		return json;
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json)
+	public void readFromJson(JsonObject json, EnumSaveType saveType)
 	{
-		super.readFromJson(json);
+		if(saveType == EnumSaveType.PROGRESS)
+		{
+			this.readProgressFromJson(json);
+			return;
+		} else if(saveType != EnumSaveType.CONFIG)
+		{
+			return;
+		}
 		
 		scoreName = JsonHelper.GetString(json, "scoreName", "Score");
 		scoreName.replaceAll(" ", "_");
@@ -107,6 +164,38 @@ public class TaskScoreboard extends TaskBase
 		suffix = JsonHelper.GetString(json, "unitSuffix", suffix);
 		operation = ScoreOperation.valueOf(JsonHelper.GetString(json, "operation", "MORE_OR_EQUAL").toUpperCase());
 		operation = operation != null? operation : ScoreOperation.MORE_OR_EQUAL;
+	}
+
+	private JsonObject writeProgressToJson(JsonObject json)
+	{
+		JsonArray jArray = new JsonArray();
+		for(UUID uuid : completeUsers)
+		{
+			jArray.add(new JsonPrimitive(uuid.toString()));
+		}
+		json.add("completeUsers", jArray);
+		
+		return json;
+	}
+
+	private void readProgressFromJson(JsonObject json)
+	{
+		completeUsers = new ArrayList<UUID>();
+		for(JsonElement entry : JsonHelper.GetArray(json, "completeUsers"))
+		{
+			if(entry == null || !entry.isJsonPrimitive())
+			{
+				continue;
+			}
+			
+			try
+			{
+				completeUsers.add(UUID.fromString(entry.getAsString()));
+			} catch(Exception e)
+			{
+				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
+			}
+		}
 	}
 	
 	public static enum ScoreOperation
@@ -153,15 +242,15 @@ public class TaskScoreboard extends TaskBase
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public GuiEmbedded getGui(QuestInstance quest, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public IGuiEmbedded getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
 	{
-		return new GuiTaskScoreboard(this, screen, posX, posY, sizeX, sizeY);
+		return new GuiTaskScoreboard(this, posX, posY, sizeX, sizeY);
 	}
 	
 	@Override
 	@SideOnly(Side.CLIENT)
-	public GuiScreen GetEditor(GuiScreen parent, JsonObject data)
+	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
 	{
-		return new GuiScoreEditor(parent, data);
+		return new GuiScoreEditor(parent, this);
 	}
 }

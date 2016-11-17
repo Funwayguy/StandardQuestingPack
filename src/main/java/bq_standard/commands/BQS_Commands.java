@@ -2,11 +2,6 @@ package bq_standard.commands;
 
 import java.io.File;
 import java.util.ArrayList;
-import com.google.gson.JsonObject;
-import betterquesting.core.BQ_Settings;
-import betterquesting.utils.JsonIO;
-import bq_standard.rewards.loot.LootGroup;
-import bq_standard.rewards.loot.LootRegistry;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -14,6 +9,11 @@ import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
+import betterquesting.api.utils.JsonHelper;
+import betterquesting.core.BQ_Settings;
+import bq_standard.rewards.loot.LootGroup;
+import bq_standard.rewards.loot.LootRegistry;
+import com.google.gson.JsonObject;
 
 public class BQS_Commands extends CommandBase
 {
@@ -44,7 +44,7 @@ public class BQS_Commands extends CommandBase
 			{
 				JsonObject jsonQ = new JsonObject();
 				LootRegistry.writeToJson(jsonQ);
-				JsonIO.WriteToFile(new File(MinecraftServer.getServer().getFile("config/betterquesting/"), "DefaultLoot.json"), jsonQ);
+				JsonHelper.WriteToFile(new File(MinecraftServer.getServer().getFile("config/betterquesting/"), "DefaultLoot.json"), jsonQ);
 				sender.addChatMessage(new ChatComponentText("Loot database set as global default"));
 			} else if(args[1].equalsIgnoreCase("load"))
 			{
@@ -53,7 +53,7 @@ public class BQS_Commands extends CommandBase
 				
 				if(f1.exists())
 				{
-					j1 = JsonIO.ReadFromFile(f1);
+					j1 = JsonHelper.ReadFromFile(f1);
 					LootRegistry.readFromJson(j1);
 					LootRegistry.updateClients();
 					sender.addChatMessage(new ChatComponentText("Reloaded default loot database"));

@@ -3,7 +3,7 @@ package bq_standard;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
-import betterquesting.utils.JsonHelper;
+import betterquesting.api.utils.JsonHelper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

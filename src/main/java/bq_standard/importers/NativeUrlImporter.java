@@ -1,17 +1,18 @@
 package bq_standard.importers;
 
+import net.minecraft.client.gui.GuiScreen;
 import org.apache.logging.log4j.Level;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.importers.ImporterBase;
-import betterquesting.quests.QuestDatabase;
+import betterquesting.api.ExpansionAPI;
+import betterquesting.api.client.io.IQuestIO;
+import betterquesting.api.network.PreparedPayload;
+import betterquesting.database.QuestDatabase;
 import bq_standard.client.gui.UpdateNotification;
 import bq_standard.client.gui.importers.GuiNativeUrlImporter;
 import bq_standard.core.BQ_Standard;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
-public class NativeUrlImporter extends ImporterBase
+public class NativeUrlImporter implements IQuestIO
 {
 	public static NativeUrlImporter instance = new NativeUrlImporter();
 	
@@ -22,9 +23,15 @@ public class NativeUrlImporter extends ImporterBase
 	}
 	
 	@Override
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public String getUnlocalisedDescrition()
 	{
-		return new GuiNativeUrlImporter(screen, posX, posY, sizeX, sizeY);
+		return "bq_standard.importer.nat_url.desc";
+	}
+	
+	@Override
+	public GuiScreen openGui(GuiScreen screen)
+	{
+		return null;//new GuiNativeUrlImporter(screen, posX, posY, sizeX, sizeY);
 	}
 	
 	public static boolean startImport(String url)
@@ -34,14 +41,10 @@ public class NativeUrlImporter extends ImporterBase
 			String rawJson = UpdateNotification.getNotification(url, true);
 			JsonObject json = new Gson().fromJson(rawJson, JsonObject.class);
 			
-			boolean tmpHard = QuestDatabase.bqHardcore;
-			boolean tmpEdit = QuestDatabase.editMode;
-			
 			NativeFileImporter.ImportQuestLine(json);
 			
-			QuestDatabase.bqHardcore = tmpHard;
-			QuestDatabase.editMode = tmpEdit;
-			QuestDatabase.UpdateClients();
+			PreparedPayload pp = QuestDatabase.INSTANCE.getSyncPacket();
+			ExpansionAPI.getAPI().getPacketSender().sendToServer(pp);
 			
 			return true;
 		} catch(Exception e)

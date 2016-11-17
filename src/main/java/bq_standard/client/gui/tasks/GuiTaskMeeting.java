@@ -6,25 +6,34 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.util.MathHelper;
 import org.lwjgl.opengl.GL11;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.client.themes.ThemeRegistry;
-import betterquesting.utils.RenderUtils;
+import betterquesting.api.client.gui.GuiElement;
+import betterquesting.api.client.gui.IGuiEmbedded;
+import betterquesting.api.utils.RenderUtils;
 import bq_standard.tasks.TaskMeeting;
 
-public class GuiTaskMeeting extends GuiEmbedded
+public class GuiTaskMeeting extends GuiElement implements IGuiEmbedded
 {
 	TaskMeeting task;
 	Entity target;
+	private Minecraft mc;
 	
-	public GuiTaskMeeting(TaskMeeting task, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	private int posX = 0;
+	private int posY = 0;
+	private int sizeX = 0;
+	private int sizeY = 0;
+	
+	public GuiTaskMeeting(TaskMeeting task, int posX, int posY, int sizeX, int sizeY)
 	{
-		super(screen, posX, posY, sizeX, sizeY);
+		this.mc = Minecraft.getMinecraft();
 		this.task = task;
+		this.posX = posX;
+		this.posY = posY;
+		this.sizeX = sizeX;
+		this.sizeY = sizeY;
 	}
 
 	@Override
-	public void drawGui(int mx, int my, float partialTick)
+	public void drawBackground(int mx, int my, float partialTick)
 	{
 		if(target != null)
 		{
@@ -58,14 +67,34 @@ public class GuiTaskMeeting extends GuiEmbedded
 		{
 			if(EntityList.stringToClassMapping.containsKey(task.idName))
 			{
-				target = EntityList.createEntityByName(task.idName, screen.mc.theWorld);
+				target = EntityList.createEntityByName(task.idName, mc.theWorld);
 				target.readFromNBT(task.targetTags);
 			}
 		}
 		
 		String tnm = !task.ignoreNBT && target != null? target.getCommandSenderName() : task.idName;
 		String txt = I18n.format("bq_standard.gui.meet", tnm) + " x" + task.amount;
-		screen.mc.fontRenderer.drawString(txt, posX + sizeX/2 - screen.mc.fontRenderer.getStringWidth(txt)/2, posY, ThemeRegistry.curTheme().textColor().getRGB());
+		mc.fontRenderer.drawString(txt, posX + sizeX/2 - mc.fontRenderer.getStringWidth(txt)/2, posY, getTextColor());
+	}
+
+	@Override
+	public void drawForeground(int mx, int my, float partialTick)
+	{
+	}
+
+	@Override
+	public void onMouseClick(int mx, int my, int click)
+	{
+	}
+
+	@Override
+	public void onMouseScroll(int mx, int my, int scroll)
+	{
+	}
+
+	@Override
+	public void onKeyTyped(char c, int keyCode)
+	{
 	}
 	
 }

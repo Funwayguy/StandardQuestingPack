@@ -1,16 +1,18 @@
 package bq_standard.network.handlers;
 
-import com.google.gson.JsonObject;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
-import betterquesting.network.handlers.PktHandler;
-import betterquesting.utils.NBTConverter;
+import net.minecraft.util.ResourceLocation;
+import betterquesting.api.network.IPacketHandler;
+import betterquesting.api.utils.NBTConverter;
 import bq_standard.ScoreboardBQ;
+import bq_standard.network.StandardPacketType;
+import com.google.gson.JsonObject;
 
-public class PktHandlerScoreboard extends PktHandler
+public class PktHandlerScoreboard implements IPacketHandler
 {
 	@Override
-	public void handleServer(EntityPlayerMP sender, NBTTagCompound data)
+	public void handleServer(NBTTagCompound data, EntityPlayerMP sender)
 	{
 	}
 	
@@ -18,5 +20,11 @@ public class PktHandlerScoreboard extends PktHandler
 	public void handleClient(NBTTagCompound data)
 	{
 		ScoreboardBQ.readJson(NBTConverter.NBTtoJSON_Compound(data.getCompoundTag("data"), new JsonObject()));
+	}
+
+	@Override
+	public ResourceLocation getRegistryName()
+	{
+		return StandardPacketType.SCORE_SYNC.GetLocation();
 	}
 }

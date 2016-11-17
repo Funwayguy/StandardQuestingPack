@@ -3,15 +3,15 @@ package bq_standard.client.gui.editors;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.StatCollector;
-import betterquesting.client.gui.GuiQuesting;
+import betterquesting.api.client.gui.GuiScreenThemed;
+import betterquesting.api.client.gui.controls.GuiButtonThemed;
+import betterquesting.api.client.gui.misc.IVolatileScreen;
+import betterquesting.api.utils.JsonHelper;
 import betterquesting.client.gui.editors.json.GuiJsonArray;
 import betterquesting.client.gui.editors.json.GuiJsonObject;
-import betterquesting.client.gui.misc.GuiButtonQuesting;
-import betterquesting.client.gui.misc.IVolatileScreen;
-import betterquesting.utils.JsonHelper;
 import com.google.gson.JsonObject;
 
-public class GuiCraftingEditor extends GuiQuesting implements IVolatileScreen
+public class GuiCraftingEditor extends GuiScreenThemed implements IVolatileScreen
 {
 	JsonObject data = new JsonObject();
 	
@@ -26,8 +26,8 @@ public class GuiCraftingEditor extends GuiQuesting implements IVolatileScreen
 	public void initGui()
 	{
 		super.initGui();
-		this.buttonList.add(new GuiButtonQuesting(1, guiLeft + sizeX/2 - 100, guiTop + sizeY/2 - 20, 200, 20, StatCollector.translateToLocalFormatted("bq_standard.btn.edit_items")));
-		this.buttonList.add(new GuiButtonQuesting(2, guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 00, 200, 20, StatCollector.translateToLocalFormatted("betterquesting.btn.advanced")));
+		this.buttonList.add(new GuiButtonThemed(1, guiLeft + sizeX/2 - 100, guiTop + sizeY/2 - 20, 200, 20, StatCollector.translateToLocalFormatted("bq_standard.btn.edit_items")));
+		this.buttonList.add(new GuiButtonThemed(2, guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 00, 200, 20, StatCollector.translateToLocalFormatted("betterquesting.btn.advanced")));
 	}
 	
 	@Override
@@ -43,10 +43,10 @@ public class GuiCraftingEditor extends GuiQuesting implements IVolatileScreen
 		
 		if(button.id == 1) // Item listing
 		{
-			mc.displayGuiScreen(new GuiJsonArray(this, JsonHelper.GetArray(data, "requiredItems")));
+			mc.displayGuiScreen(new GuiJsonArray(this, JsonHelper.GetArray(data, "requiredItems"), null));
 		} else if(button.id == 2) // Advanced edit
 		{
-			mc.displayGuiScreen(new GuiJsonObject(this, data));
+			mc.displayGuiScreen(new GuiJsonObject(this, data, null));
 		}
 	}
 }

@@ -8,12 +8,13 @@ import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
-import betterquesting.quests.QuestDatabase;
-import betterquesting.quests.QuestInstance;
-import betterquesting.quests.QuestLine;
-import betterquesting.quests.rewards.RewardBase;
-import betterquesting.utils.BigItemStack;
-import betterquesting.utils.ItemComparison;
+import betterquesting.api.quests.IQuest;
+import betterquesting.api.quests.IQuestLine;
+import betterquesting.api.quests.rewards.IReward;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.ItemComparison;
+import betterquesting.database.QuestDatabase;
+import betterquesting.database.QuestLineDatabase;
 import bq_standard.rewards.RewardChoice;
 import bq_standard.rewards.RewardItem;
 import codechicken.nei.PositionedStack;
@@ -163,9 +164,9 @@ public class NEIRewardHandler implements ICraftingHandler
 			ItemStack stack = (ItemStack)o;
 			
 			qloop:
-			for(QuestInstance q : QuestDatabase.questDB.values())
+			for(IQuest q : QuestDatabase.INSTANCE.getAllValues())
 			{
-				for(RewardBase r : q.rewards)
+				for(IReward r : q.getRewards().getAllValues())
 				{
 					if(r instanceof RewardItem)
 					{
@@ -211,16 +212,17 @@ public class NEIRewardHandler implements ICraftingHandler
 		String quest;
 		String reward;
 		
-		public RewardInfo(BigItemStack stack, QuestInstance quest, RewardBase reward)
+		public RewardInfo(BigItemStack stack, IQuest quest, IReward reward)
 		{
 			this.stack = stack;
-			this.quest = I18n.format(quest.name);
-			this.reward = reward.getDisplayName();
+			this.quest = I18n.format(quest.getUnlocalisedName());
+			this.reward = I18n.format(reward.getUnlocalisedName());
 			
+			int qID = QuestDatabase.INSTANCE.getKey(quest);
 			boolean flag = false;
-			for(QuestLine ql : QuestDatabase.questLines)
+			for(IQuestLine ql : QuestLineDatabase.INSTANCE.getAllValues())
 			{
-				if(ql.getQuests().contains(quest))
+				if(ql.getAllKeys().contains(qID))
 				{
 					flag = true;
 					break;

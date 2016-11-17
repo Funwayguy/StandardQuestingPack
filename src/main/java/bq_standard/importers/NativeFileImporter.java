@@ -5,14 +5,15 @@ import java.io.FileReader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import org.apache.logging.log4j.Level;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.editors.explorer.FileExtentionFilter;
-import betterquesting.client.gui.editors.explorer.GuiFileExplorer;
-import betterquesting.client.gui.editors.explorer.IFileCallback;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.importers.ImporterBase;
-import betterquesting.quests.QuestDatabase;
+import betterquesting.api.ExpansionAPI;
+import betterquesting.api.client.IFileCallback;
+import betterquesting.api.client.io.IQuestIO;
+import betterquesting.api.network.PreparedPayload;
+import betterquesting.api.utils.FileExtentionFilter;
+import betterquesting.client.gui.misc.GuiFileExplorer;
+import betterquesting.database.QuestDatabase;
 import betterquesting.quests.QuestInstance;
 import betterquesting.quests.QuestLine;
 import bq_standard.client.gui.importers.GuiNativeFileImporter;
@@ -23,7 +24,7 @@ import com.google.gson.JsonObject;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class NativeFileImporter extends ImporterBase implements IFileCallback
+public class NativeFileImporter implements IQuestIO, IFileCallback
 {
 	public static NativeFileImporter instance = new NativeFileImporter();
 	
@@ -34,9 +35,15 @@ public class NativeFileImporter extends ImporterBase implements IFileCallback
 	}
 	
 	@Override
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public String getUnlocalisedDescrition()
 	{
-		return new GuiNativeFileImporter(screen, posX, posY, sizeX, sizeY);
+		return "bq_standard.importer.nat_file.desc";
+	}
+	
+	@Override
+	public GuiScreen openGui(GuiScreen screen)
+	{
+		return null;//new GuiNativeFileImporter(screen, posX, posY, sizeX, sizeY);
 	}
 	
 	@SideOnly(Side.CLIENT)
@@ -52,7 +59,7 @@ public class NativeFileImporter extends ImporterBase implements IFileCallback
 		{
 			return;
 		}
-		
+		/*
 		// Store all the old data somewhere while we use the built in loaders
 		ConcurrentHashMap<Integer,QuestInstance> oldQuests = new ConcurrentHashMap<Integer,QuestInstance>();
 		oldQuests.putAll(QuestDatabase.questDB);
@@ -82,14 +89,12 @@ public class NativeFileImporter extends ImporterBase implements IFileCallback
 			q.questID = id;
 			QuestDatabase.questDB.put(id, q);
 		}
+		*/
 	}
 
 	@Override
 	public void setFiles(File... files)
 	{
-		boolean tmpHard = QuestDatabase.bqHardcore;
-		boolean tmpEdit = QuestDatabase.editMode;
-		
 		for(File selected : files)
 		{
 			if(selected == null || !selected.exists())
@@ -117,8 +122,7 @@ public class NativeFileImporter extends ImporterBase implements IFileCallback
 			}
 		}
 		
-		QuestDatabase.bqHardcore = tmpHard;
-		QuestDatabase.editMode = tmpEdit;
-		QuestDatabase.UpdateClients();
+		PreparedPayload pp = QuestDatabase.INSTANCE.getSyncPacket();
+		ExpansionAPI.getAPI().getPacketSender().sendToServer(pp);
 	}
 }

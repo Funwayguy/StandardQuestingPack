@@ -5,17 +5,19 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
-import betterquesting.network.handlers.PktHandler;
-import betterquesting.utils.NBTConverter;
+import betterquesting.api.network.IPacketHandler;
+import betterquesting.api.utils.NBTConverter;
 import bq_standard.core.BQ_Standard;
+import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.loot.LootRegistry;
 import com.google.gson.JsonObject;
 
-public class PktHandlerLootDatabase extends PktHandler
+public class PktHandlerLootDatabase implements IPacketHandler
 {
 	@Override
-	public void handleServer(EntityPlayerMP sender, NBTTagCompound data)
+	public void handleServer(NBTTagCompound data, EntityPlayerMP sender)
 	{
 		if(!MinecraftServer.getServer().getConfigurationManager().func_152596_g(sender.getGameProfile()))
 		{
@@ -34,5 +36,11 @@ public class PktHandlerLootDatabase extends PktHandler
 	public void handleClient(NBTTagCompound data)
 	{
 		LootRegistry.readFromJson(NBTConverter.NBTtoJSON_Compound(data.getCompoundTag("Database"), new JsonObject()));
+	}
+
+	@Override
+	public ResourceLocation getRegistryName()
+	{
+		return StandardPacketType.LOOT_SYNC.GetLocation();
 	}
 }

@@ -9,8 +9,8 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
-import betterquesting.utils.BigItemStack;
-import betterquesting.utils.RenderUtils;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.RenderUtils;
 
 public class GuiLootChest extends GuiScreen
 {
