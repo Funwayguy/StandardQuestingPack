@@ -78,12 +78,12 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(isComplete(player.getUniqueID()))
+		if(isComplete(player.getGameProfile().getId()))
 		{
 			return;
 		}
 		
-		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getUniqueID()) : getGlobalProgress();
+		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getGameProfile().getId()) : getGlobalProgress();
 		
 		boolean flag = true;
 		
@@ -103,18 +103,18 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 		
 		if(flag)
 		{
-			setComplete(player.getUniqueID());
+			setComplete(player.getGameProfile().getId());
 		}
 	}
 	
 	public void onItemCrafted(IQuest quest, EntityPlayer player, ItemStack stack)
 	{
-		if(isComplete(player.getUniqueID()))
+		if(isComplete(player.getGameProfile().getId()))
 		{
 			return;
 		}
 		
-		int[] progress = getUsersProgress(player.getUniqueID());
+		int[] progress = getUsersProgress(player.getGameProfile().getId());
 		
 		for(int i = 0; i < requiredItems.size(); i++)
 		{
@@ -131,14 +131,14 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 			}
 		}
 		
-		setUserProgress(player.getUniqueID(), progress);
+		setUserProgress(player.getGameProfile().getId(), progress);
 		
 		detect(player, quest);
 	}
 	
 	public void onItemSmelted(IQuest quest, EntityPlayer player, ItemStack stack)
 	{
-		int[] progress = getUsersProgress(player.getUniqueID());
+		int[] progress = getUsersProgress(player.getGameProfile().getId());
 		
 		for(int i = 0; i < requiredItems.size(); i++)
 		{
@@ -155,7 +155,7 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 			}
 		}
 		
-		setUserProgress(player.getUniqueID(), progress);
+		setUserProgress(player.getGameProfile().getId(), progress);
 		
 		detect(player, quest);
 	}

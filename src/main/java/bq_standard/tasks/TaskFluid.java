@@ -83,7 +83,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 			{
 				boolean flag = true;
 				
-				int[] totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getUniqueID()) : getGlobalProgress();
+				int[] totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getGameProfile().getId()) : getGlobalProgress();
 				for(int j = 0; j < requiredFluids.size(); j++)
 				{
 					FluidStack rStack = requiredFluids.get(j);
@@ -99,7 +99,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 				
 				if(flag)
 				{
-					setComplete(player.getUniqueID());
+					setComplete(player.getGameProfile().getId());
 				}
 			}
 		}
@@ -108,12 +108,12 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(player.inventory == null || isComplete(player.getUniqueID()))
+		if(player.inventory == null || isComplete(player.getGameProfile().getId()))
 		{
 			return;
 		}
 		
-		int[] progress = getUsersProgress(player.getUniqueID());
+		int[] progress = getUsersProgress(player.getGameProfile().getId());
 		
 		for(int i = 0; i < player.inventory.getSizeInventory(); i++)
 		{
@@ -155,8 +155,8 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		
 		if(consume)
 		{
-			setUserProgress(player.getUniqueID(), progress);
-			totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getUniqueID()) : getGlobalProgress();
+			setUserProgress(player.getGameProfile().getId(), progress);
+			totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getGameProfile().getId()) : getGlobalProgress();
 		}
 		
 		for(int j = 0; j < requiredFluids.size(); j++)
@@ -174,7 +174,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		
 		if(flag)
 		{
-			setComplete(player.getUniqueID());
+			setComplete(player.getGameProfile().getId());
 		}
 	}
 	

@@ -89,13 +89,13 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(isComplete(player.getUniqueID()))
+		if(isComplete(player.getGameProfile().getId()))
 		{
 			return;
 		}
 		
-		boolean flag = false;
-		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getUniqueID()) : getGlobalProgress();
+		boolean flag = true;
+		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getGameProfile().getId()) : getGlobalProgress();
 		
 		for(int j = 0; j < blockTypes.size(); j++)
 		{
@@ -112,18 +112,18 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		
 		if(flag)
 		{
-			setComplete(player.getUniqueID());
+			setComplete(player.getGameProfile().getId());
 		}
 	}
 	
 	public void onBlockBreak(IQuest quest, EntityPlayer player, Block b, int metadata, int x, int y, int z)
 	{
-		if(isComplete(player.getUniqueID()))
+		if(isComplete(player.getGameProfile().getId()))
 		{
 			return;
 		}
 		
-		int[] progress = getUsersProgress(player.getUniqueID());
+		int[] progress = getUsersProgress(player.getGameProfile().getId());
 		TileEntity tile = player.worldObj.getTileEntity(x, y, z);
 		NBTTagCompound tags = new NBTTagCompound();
 		
@@ -141,7 +141,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 			if((flag || (b == block.b && (block.m < 0 || metadata == block.m))) && ItemComparison.CompareNBTTag(block.tags, tags, true))
 			{
 				progress[i] += 1;
-				setUserProgress(player.getUniqueID(), progress);
+				setUserProgress(player.getGameProfile().getId(), progress);
 				break;
 			}
 		}

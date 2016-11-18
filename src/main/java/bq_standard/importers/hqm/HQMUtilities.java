@@ -10,9 +10,10 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.Level;
-import betterquesting.core.BetterQuesting;
-import betterquesting.utils.BigItemStack;
-import betterquesting.utils.JsonHelper;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.JsonHelper;
+import betterquesting.api.utils.placeholders.FluidPlaceholder;
+import betterquesting.api.utils.placeholders.ItemPlaceholder;
 import bq_standard.core.BQ_Standard;
 import bq_standard.importers.hqm.converters.items.HQMItem;
 import bq_standard.importers.hqm.converters.items.HQMItemBag;
@@ -67,7 +68,7 @@ public class HQMUtilities
 			return hqm.convertItem(damage, amount, tags);
 		} else if(item == null)
 		{
-			item = BetterQuesting.placeholder;
+			item = ItemPlaceholder.placeholder;
 			NBTTagCompound tmp = new NBTTagCompound();
 			if(tags != null)
 			{
@@ -136,7 +137,7 @@ public class HQMUtilities
 			return hqm.convertItem(damage, amount, tags);
 		} else if(item == null)
 		{
-			item = BetterQuesting.placeholder;
+			item = ItemPlaceholder.placeholder;
 			NBTTagCompound tmp = new NBTTagCompound();
 			if(tags != null)
 			{
@@ -176,7 +177,7 @@ public class HQMUtilities
 		{
 			NBTTagCompound tags = new NBTTagCompound();
 			tags.setString("orig_id", name);
-			FluidStack stack = new FluidStack(BetterQuesting.fluidPlaceholder, amount);
+			FluidStack stack = new FluidStack(FluidPlaceholder.fluidPlaceholder, amount);
 			stack.tag = tags;
 			return stack;
 		}

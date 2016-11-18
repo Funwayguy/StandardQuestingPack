@@ -31,7 +31,7 @@ public class GuiTaskFluid implements IGuiEmbedded
 			return;
 		}
 		
-		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getUsersProgress(mc.thePlayer.getUniqueID()) : task.getGlobalProgress();
+		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getUsersProgress(mc.thePlayer.getGameProfile().getId()) : task.getGlobalProgress();
 		
 		for(int i = 0; i < task.requiredFluids.size(); i++)
 		{
@@ -45,7 +45,7 @@ public class GuiTaskFluid implements IGuiEmbedded
 			String txt = stack.getLocalizedName() + "\n";
 			txt = txt + progress[i] + "/" + stack.amount + "mB";
 			
-			if(progress[i] >= stack.amount || task.isComplete(mc.thePlayer.getUniqueID()))
+			if(progress[i] >= stack.amount || task.isComplete(mc.thePlayer.getGameProfile().getId()))
 			{
 				txt += "\n" + EnumChatFormatting.GREEN + I18n.format("betterquesting.tooltip.complete");
 			} else

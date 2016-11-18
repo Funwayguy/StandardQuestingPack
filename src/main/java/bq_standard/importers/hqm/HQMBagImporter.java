@@ -3,15 +3,13 @@ package bq_standard.importers.hqm;
 import java.io.File;
 import java.io.FileReader;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import org.apache.logging.log4j.Level;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.editors.explorer.FileExtentionFilter;
-import betterquesting.client.gui.editors.explorer.GuiFileExplorer;
-import betterquesting.client.gui.editors.explorer.IFileCallback;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.importers.ImporterBase;
-import betterquesting.utils.JsonHelper;
-import bq_standard.client.gui.importers.GuiHQMBagImporter;
+import betterquesting.api.client.IFileCallback;
+import betterquesting.api.client.io.IQuestIO;
+import betterquesting.api.utils.FileExtentionFilter;
+import betterquesting.api.utils.JsonHelper;
+import betterquesting.client.gui.misc.GuiFileExplorer;
 import bq_standard.core.BQ_Standard;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootGroup.LootEntry;
@@ -22,7 +20,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class HQMBagImporter extends ImporterBase implements IFileCallback
+public class HQMBagImporter implements IQuestIO, IFileCallback
 {
 	public static HQMBagImporter instance = new HQMBagImporter();
 	
@@ -30,6 +28,12 @@ public class HQMBagImporter extends ImporterBase implements IFileCallback
 	public String getUnlocalisedName()
 	{
 		return "bq_standard.importer.hqm_bag.name";
+	}
+	
+	@Override
+	public String getUnlocalisedDescrition()
+	{
+		return "bq_standard.importer.hqm_bag.desc";
 	}
 	
 	public static void StartImport()
@@ -102,9 +106,9 @@ public class HQMBagImporter extends ImporterBase implements IFileCallback
 	}
 	
 	@Override
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public GuiScreen openGui(GuiScreen screen)
 	{
-		return new GuiHQMBagImporter(screen, posX, posY, sizeX, sizeY);
+		return null;//new GuiHQMBagImporter(screen, posX, posY, sizeX, sizeY);
 	}
 
 	@Override

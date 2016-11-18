@@ -85,7 +85,7 @@ public class NativeFileImporter implements IQuestIO, IFileCallback
 		// Re-map quest IDs
 		for(QuestInstance q : oldQuests.values())
 		{
-			int id = QuestDatabase.getUniqueID();
+			int id = QuestDatabase.getGameProfile().getId();
 			q.questID = id;
 			QuestDatabase.questDB.put(id, q);
 		}

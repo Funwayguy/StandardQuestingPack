@@ -1,8 +1,8 @@
 package bq_standard.importers.hqm.converters.tasks;
 
 import java.util.ArrayList;
-import betterquesting.quests.tasks.TaskBase;
-import betterquesting.utils.JsonHelper;
+import betterquesting.api.quests.tasks.ITask;
+import betterquesting.api.utils.JsonHelper;
 import bq_standard.tasks.TaskLocation;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -10,9 +10,9 @@ import com.google.gson.JsonObject;
 public class HQMTaskLocation extends HQMTask
 {
 	@Override
-	public ArrayList<TaskBase> Convert(JsonObject json)
+	public ArrayList<ITask> Convert(JsonObject json)
 	{
-		ArrayList<TaskBase> tList = new ArrayList<TaskBase>();
+		ArrayList<ITask> tList = new ArrayList<ITask>();
 		
 		for(JsonElement element : JsonHelper.GetArray(json, "locations"))
 		{

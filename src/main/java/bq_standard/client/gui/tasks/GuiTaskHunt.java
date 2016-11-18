@@ -84,7 +84,7 @@ public class GuiTaskHunt extends GuiElement implements IGuiEmbedded
 			}
 		}
 		
-		int progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getUsersProgress(mc.thePlayer.getUniqueID()) : task.getGlobalProgress();
+		int progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getUsersProgress(mc.thePlayer.getGameProfile().getId()) : task.getGlobalProgress();
 		String tnm = !task.ignoreNBT && target != null? target.getCommandSenderName() : task.idName;
 		String txt = I18n.format("bq_standard.gui.kill", tnm) + " " + progress + "/" + task.required;
 		mc.fontRenderer.drawString(txt, posX + sizeX/2 - mc.fontRenderer.getStringWidth(txt)/2, posY, getTextColor());

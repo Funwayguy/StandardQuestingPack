@@ -1,8 +1,8 @@
 package bq_standard.importers.hqm.converters.items;
 
 import net.minecraft.nbt.NBTTagCompound;
+import betterquesting.api.utils.BigItemStack;
 import betterquesting.core.BetterQuesting;
-import betterquesting.utils.BigItemStack;
 
 public class HQMItemHeart extends HQMItem
 {

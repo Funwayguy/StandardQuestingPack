@@ -1,7 +1,7 @@
 package bq_standard.importers.hqm.converters.rewards;
 
 import java.util.ArrayList;
-import betterquesting.quests.rewards.RewardBase;
+import betterquesting.api.quests.rewards.IReward;
 import bq_standard.importers.hqm.HQMUtilities;
 import bq_standard.rewards.RewardChoice;
 import com.google.gson.JsonElement;
@@ -9,9 +9,9 @@ import com.google.gson.JsonElement;
 public class HQMRewardChoice extends HQMReward
 {
 	@Override
-	public ArrayList<RewardBase> Convert(JsonElement json)
+	public ArrayList<IReward> Convert(JsonElement json)
 	{
-		ArrayList<RewardBase> rList = new ArrayList<RewardBase>();
+		ArrayList<IReward> rList = new ArrayList<IReward>();
 		
 		if(json == null || !json.isJsonArray())
 		{

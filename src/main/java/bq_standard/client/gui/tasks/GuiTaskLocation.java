@@ -66,7 +66,7 @@ public class GuiTaskLocation extends GuiElement implements IGuiEmbedded
 			i += 12;
 		}
 		
-		if(task.isComplete(mc.thePlayer.getUniqueID()))
+		if(task.isComplete(mc.thePlayer.getGameProfile().getId()))
 		{
 			mc.fontRenderer.drawString(I18n.format("bq_standard.gui.found"), posX, posY + i, Color.GREEN.getRGB(), false);
 		} else

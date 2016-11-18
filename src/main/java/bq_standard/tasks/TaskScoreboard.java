@@ -91,7 +91,7 @@ public class TaskScoreboard implements ITask
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(isComplete(player.getUniqueID()))
+		if(isComplete(player.getGameProfile().getId()))
 		{
 			return;
 		}
@@ -119,7 +119,7 @@ public class TaskScoreboard implements ITask
 		
 		if(operation.checkValues(points, target))
 		{
-			setComplete(player.getUniqueID());
+			setComplete(player.getGameProfile().getId());
 		}
 	}
 	

@@ -89,16 +89,16 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(isComplete(player.getUniqueID()))
+		if(isComplete(player.getGameProfile().getId()))
 		{
 			return;
 		}
 		
-		int progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getUniqueID()) : getGlobalProgress();
+		int progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getGameProfile().getId()) : getGlobalProgress();
 		
 		if(progress >= required)
 		{
-			setComplete(player.getUniqueID());
+			setComplete(player.getGameProfile().getId());
 		}
 	}
 	
@@ -106,12 +106,12 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	{
 		EntityPlayer player = (EntityPlayer)source.getEntity();
 		
-		if(player == null || entity == null || this.isComplete(player.getUniqueID()))
+		if(player == null || entity == null || this.isComplete(player.getGameProfile().getId()))
 		{
 			return;
 		}
 		
-		int progress = getUsersProgress(player.getUniqueID());
+		int progress = getUsersProgress(player.getGameProfile().getId());
 		
 		Class<? extends Entity> subject = entity.getClass();
 		@SuppressWarnings("unchecked")
@@ -135,7 +135,7 @@ public class TaskHunt implements ITask, IProgression<Integer>
 			return;
 		}
 		
-		setUserProgress(player.getUniqueID(), progress + 1);
+		setUserProgress(player.getGameProfile().getId(), progress + 1);
 		
 		detect(player, quest);
 	}

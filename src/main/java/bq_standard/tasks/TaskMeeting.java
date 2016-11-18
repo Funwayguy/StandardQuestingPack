@@ -96,7 +96,7 @@ public class TaskMeeting implements ITask
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(!player.isEntityAlive() || isComplete(player.getUniqueID()))
+		if(!player.isEntityAlive() || isComplete(player.getGameProfile().getId()))
 		{
 			return;
 		}
@@ -136,7 +136,7 @@ public class TaskMeeting implements ITask
 			
 			if(n >= amount)
 			{
-				setComplete(player.getUniqueID());
+				setComplete(player.getGameProfile().getId());
 				return;
 			}
 		}

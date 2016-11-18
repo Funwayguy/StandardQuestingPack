@@ -81,7 +81,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 			{
 				boolean flag = true;
 				
-				int[] totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getUniqueID()) : getGlobalProgress();
+				int[] totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getGameProfile().getId()) : getGlobalProgress();
 				for(int j = 0; j < requiredItems.size(); j++)
 				{
 					BigItemStack rStack = requiredItems.get(j);
@@ -97,7 +97,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 				
 				if(flag)
 				{
-					setComplete(player.getUniqueID());
+					setComplete(player.getGameProfile().getId());
 				}
 			}
 		}
@@ -106,12 +106,12 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(player.inventory == null || isComplete(player.getUniqueID()))
+		if(player.inventory == null || isComplete(player.getGameProfile().getId()))
 		{
 			return;
 		}
 		
-		int[] progress = this.getUsersProgress(player.getUniqueID());
+		int[] progress = this.getUsersProgress(player.getGameProfile().getId());
 		
 		for(int i = 0; i < player.inventory.getSizeInventory(); i++)
 		{
@@ -152,8 +152,8 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 		
 		if(consume)
 		{
-			setUserProgress(player.getUniqueID(), progress);
-			totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getUniqueID()) : getGlobalProgress();
+			setUserProgress(player.getGameProfile().getId(), progress);
+			totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getGameProfile().getId()) : getGlobalProgress();
 		}
 		
 		for(int j = 0; j < requiredItems.size(); j++)
@@ -171,7 +171,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 		
 		if(flag)
 		{
-			setComplete(player.getUniqueID());
+			setComplete(player.getGameProfile().getId());
 		}
 	}
 

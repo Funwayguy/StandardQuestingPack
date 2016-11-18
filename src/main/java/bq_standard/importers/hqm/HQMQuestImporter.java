@@ -6,22 +6,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.init.Items;
 import org.apache.logging.log4j.Level;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.editors.explorer.FileExtentionFilter;
-import betterquesting.client.gui.editors.explorer.GuiFileExplorer;
-import betterquesting.client.gui.editors.explorer.IFileCallback;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.importers.ImporterBase;
-import betterquesting.quests.QuestDatabase;
+import betterquesting.api.ExpansionAPI;
+import betterquesting.api.client.IFileCallback;
+import betterquesting.api.client.io.IQuestIO;
+import betterquesting.api.network.PreparedPayload;
+import betterquesting.api.quests.IQuest;
+import betterquesting.api.quests.IQuestLine;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.FileExtentionFilter;
+import betterquesting.api.utils.JsonHelper;
+import betterquesting.client.gui.misc.GuiFileExplorer;
+import betterquesting.database.QuestDatabase;
 import betterquesting.quests.QuestInstance;
 import betterquesting.quests.QuestLine;
-import betterquesting.quests.QuestLine.QuestLineEntry;
-import betterquesting.quests.rewards.RewardBase;
-import betterquesting.quests.tasks.TaskBase;
-import betterquesting.utils.BigItemStack;
-import betterquesting.utils.JsonHelper;
+import betterquesting.quests.QuestLineEntry;
 import bq_standard.client.gui.importers.GuiHQMQuestImporter;
 import bq_standard.core.BQ_Standard;
 import bq_standard.importers.hqm.converters.rewards.HQMReward;
@@ -41,7 +42,7 @@ import com.google.gson.JsonObject;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class HQMQuestImporter extends ImporterBase implements IFileCallback
+public class HQMQuestImporter implements IQuestIO, IFileCallback
 {
 	public static HQMQuestImporter instance = new HQMQuestImporter();
 	
@@ -51,7 +52,7 @@ public class HQMQuestImporter extends ImporterBase implements IFileCallback
 	@SideOnly(Side.CLIENT)
 	public static void StartImport()
 	{
-		idMap = new HashMap<String,QuestInstance>(); // Reset ID map in preparation
+		idMap = new HashMap<String, IQuest>(); // Reset ID map in preparation
 		Minecraft mc = Minecraft.getMinecraft();
 		mc.displayGuiScreen(new GuiFileExplorer(mc.currentScreen, instance, new File("."), new FileExtentionFilter(".json")));
 	}
@@ -85,16 +86,16 @@ public class HQMQuestImporter extends ImporterBase implements IFileCallback
 		}
 	}
 	
-	public static HashMap<String, QuestInstance> idMap = new HashMap<String, QuestInstance>(); // Use this to remap old IDs to new ones
+	public static HashMap<String, IQuest> idMap = new HashMap<String, IQuest>(); // Use this to remap old IDs to new ones
 	
-	public static QuestInstance GetNewQuest(String oldID)
+	public static IQuest GetNewQuest(String oldID)
 	{
 		if(idMap.containsKey(oldID))
 		{
 			return idMap.get(oldID);
 		} else
 		{
-			QuestInstance quest = new QuestInstance(QuestDatabase.getUniqueID(), true);
+			IQuest quest = new QuestInstance();
 			idMap.put(oldID, quest);
 			return quest;
 		}
@@ -102,9 +103,9 @@ public class HQMQuestImporter extends ImporterBase implements IFileCallback
 	
 	public static void ImportQuestLine(JsonObject json)
 	{
-		BQ_Standard.logger.log(Level.INFO, "Beginning import...");
+		/*BQ_Standard.logger.log(Level.INFO, "Beginning import...");
 		
-		QuestLine questLine = new QuestLine();
+		IQuestLine questLine = new QuestLine();
 		questLine.name = JsonHelper.GetString(json, "name", "HQM Quest Line");
 		questLine.description = JsonHelper.GetString(json, "description", "No description");
 		
@@ -140,7 +141,7 @@ public class HQMQuestImporter extends ImporterBase implements IFileCallback
 			}
 			
 			loadedQuests.add(idName);
-			QuestInstance quest = GetNewQuest(idName);
+			IQuest quest = GetNewQuest(idName);
 			
 			quest.name = name;
 			quest.description = JsonHelper.GetString(jQuest, "description", "No Description");
@@ -238,7 +239,7 @@ public class HQMQuestImporter extends ImporterBase implements IFileCallback
 			}
 		}
 		
-		QuestDatabase.questLines.add(questLine);
+		QuestDatabase.questLines.add(questLine);*/
 	}
 	
 	static
@@ -262,9 +263,15 @@ public class HQMQuestImporter extends ImporterBase implements IFileCallback
 	}
 
 	@Override
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public String getUnlocalisedDescrition()
 	{
-		return new GuiHQMQuestImporter(screen, posX, posY, sizeX, sizeY);
+		return "bq_standard.importer.hqm_quest.desc";
+	}
+
+	@Override
+	public GuiScreen openGui(GuiScreen screen)
+	{
+		return null;//new GuiHQMQuestImporter(screen, posX, posY, sizeX, sizeY);
 	}
 
 	@Override
@@ -297,6 +304,7 @@ public class HQMQuestImporter extends ImporterBase implements IFileCallback
 			}
 		}
 		
-		QuestDatabase.UpdateClients();
+		PreparedPayload pp = QuestDatabase.INSTANCE.getSyncPacket();
+		ExpansionAPI.getAPI().getPacketSender().sendToServer(pp);
 	}
 }

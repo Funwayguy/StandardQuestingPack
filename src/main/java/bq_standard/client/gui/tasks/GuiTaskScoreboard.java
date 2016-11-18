@@ -38,7 +38,7 @@ public class GuiTaskScoreboard extends GuiElement implements IGuiEmbedded
 		
 		int tw1 = mc.fontRenderer.getStringWidth(EnumChatFormatting.BOLD + task.scoreName);
 		mc.fontRenderer.drawString(EnumChatFormatting.BOLD + task.scoreName, -tw1/2, -12, getTextColor(), false);
-		int score = ScoreboardBQ.getScore(mc.thePlayer.getUniqueID(), task.scoreName);
+		int score = ScoreboardBQ.getScore(mc.thePlayer.getGameProfile().getId(), task.scoreName);
 		DecimalFormat df = new DecimalFormat("0.##");
 		String value = df.format(score/task.conversion) + task.suffix;
 		

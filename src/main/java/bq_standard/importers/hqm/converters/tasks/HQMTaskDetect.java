@@ -1,8 +1,8 @@
 package bq_standard.importers.hqm.converters.tasks;
 
 import java.util.ArrayList;
-import betterquesting.quests.tasks.TaskBase;
-import betterquesting.utils.JsonHelper;
+import betterquesting.api.quests.tasks.ITask;
+import betterquesting.api.utils.JsonHelper;
 import bq_standard.importers.hqm.HQMUtilities;
 import bq_standard.tasks.TaskFluid;
 import bq_standard.tasks.TaskRetrieval;
@@ -19,9 +19,9 @@ public class HQMTaskDetect extends HQMTask
 	}
 	
 	@Override
-	public ArrayList<TaskBase> Convert(JsonObject json)
+	public ArrayList<ITask> Convert(JsonObject json)
 	{
-		ArrayList<TaskBase> tList = new ArrayList<TaskBase>();
+		ArrayList<ITask> tList = new ArrayList<ITask>();
 		TaskRetrieval retTask = new TaskRetrieval();
 		TaskFluid fluTask = new TaskFluid();
 		

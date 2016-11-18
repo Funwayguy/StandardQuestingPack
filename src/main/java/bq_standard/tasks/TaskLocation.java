@@ -87,7 +87,7 @@ public class TaskLocation implements ITask
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(!player.isEntityAlive() || isComplete(player.getUniqueID()))
+		if(!player.isEntityAlive() || isComplete(player.getGameProfile().getId()))
 		{
 			return; // Keeps ray casting calls to a minimum
 		}
@@ -103,14 +103,14 @@ public class TaskLocation implements ITask
 				
 				if(mop == null || mop.typeOfHit != MovingObjectType.BLOCK)
 				{
-					setComplete(player.getUniqueID());
+					setComplete(player.getGameProfile().getId());
 				} else
 				{
 					return;
 				}
 			} else
 			{
-				setComplete(player.getUniqueID());
+				setComplete(player.getGameProfile().getId());
 			}
 		}
 	}

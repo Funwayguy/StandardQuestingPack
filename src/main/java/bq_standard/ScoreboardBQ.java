@@ -42,7 +42,7 @@ public class ScoreboardBQ
 			objectives.put(scoreName, score);
 		}
 		
-		score.setScore(player.getUniqueID(), value);
+		score.setScore(player.getGameProfile().getId(), value);
 		
 		if(player instanceof EntityPlayerMP)
 		{

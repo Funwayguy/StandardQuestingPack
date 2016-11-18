@@ -105,7 +105,7 @@ public class RewardChoice implements IReward
 			if(s.getTagCompound() != null)
 			{
 				s.setTagCompound(NBTReplaceUtil.replaceStrings(s.getTagCompound(), "VAR_NAME", player.getCommandSenderName()));
-				s.setTagCompound(NBTReplaceUtil.replaceStrings(s.getTagCompound(), "VAR_UUID", player.getUniqueID().toString()));
+				s.setTagCompound(NBTReplaceUtil.replaceStrings(s.getTagCompound(), "VAR_UUID", player.getGameProfile().getId().toString()));
 			}
 			
 			if(!player.inventory.addItemStackToInventory(s))

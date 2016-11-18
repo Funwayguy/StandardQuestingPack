@@ -49,7 +49,7 @@ public class GuiTaskBlockBreak extends GuiElement implements IGuiEmbedded
 			
 			txt = txt + progress[i] + "/" + stack.stackSize;
 			
-			if(progress[i] >= stack.stackSize || task.isComplete(mc.thePlayer.getUniqueID()))
+			if(progress[i] >= stack.stackSize || task.isComplete(mc.thePlayer.getGameProfile().getId()))
 			{
 				txt += "\n" + EnumChatFormatting.GREEN + I18n.format("betterquesting.tooltip.complete");
 			} else

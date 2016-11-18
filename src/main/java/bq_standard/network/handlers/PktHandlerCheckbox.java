@@ -25,7 +25,7 @@ public class PktHandlerCheckbox implements IPacketHandler
 				
 				if(task instanceof TaskCheckbox)
 				{
-					task.setComplete(sender.getUniqueID());
+					task.setComplete(sender.getGameProfile().getId());
 				}
 			} catch(Exception e)
 			{

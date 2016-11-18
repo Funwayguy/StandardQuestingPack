@@ -52,7 +52,7 @@ public class RewardCommand implements IReward
 		}
 		
 		String tmp = command.replaceAll("VAR_NAME", player.getCommandSenderName());
-		tmp = tmp.replaceAll("VAR_UUID", player.getUniqueID().toString());
+		tmp = tmp.replaceAll("VAR_UUID", player.getGameProfile().getId().toString());
 		
 		if(viaPlayer)
 		{

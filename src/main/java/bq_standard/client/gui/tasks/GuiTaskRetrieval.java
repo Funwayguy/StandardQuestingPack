@@ -37,7 +37,7 @@ public class GuiTaskRetrieval extends GuiElement implements IGuiEmbedded
 			return;
 		}
 		
-		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getUsersProgress(mc.thePlayer.getUniqueID()) : task.getGlobalProgress();
+		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getUsersProgress(mc.thePlayer.getGameProfile().getId()) : task.getGlobalProgress();
 		
 		for(int i = 0; i < task.requiredItems.size(); i++)
 		{
@@ -65,7 +65,7 @@ public class GuiTaskRetrieval extends GuiElement implements IGuiEmbedded
 				txt = txt + stack.stackSize;
 			}
 			
-			if(progress[i] >= stack.stackSize || task.isComplete(mc.thePlayer.getUniqueID()))
+			if(progress[i] >= stack.stackSize || task.isComplete(mc.thePlayer.getGameProfile().getId()))
 			{
 				txt += "\n" + EnumChatFormatting.GREEN + I18n.format("betterquesting.tooltip.complete");
 			} else

@@ -63,14 +63,14 @@ public class TaskXP implements ITask, IProgression<Integer>
 		{
 			if(!consume)
 			{
-				setUserProgress(player.getUniqueID(), XPHelper.getPlayerXP(player));
+				setUserProgress(player.getGameProfile().getId(), XPHelper.getPlayerXP(player));
 			}
 			
 			int rawXP = levels? XPHelper.getLevelXP(amount) : amount;
-			int totalXP = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getUniqueID()) : getGlobalProgress();
+			int totalXP = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getGameProfile().getId()) : getGlobalProgress();
 			if(totalXP >= rawXP)
 			{
-				setComplete(player.getUniqueID());
+				setComplete(player.getGameProfile().getId());
 			}
 		}
 	}
@@ -78,12 +78,12 @@ public class TaskXP implements ITask, IProgression<Integer>
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(isComplete(player.getUniqueID()))
+		if(isComplete(player.getGameProfile().getId()))
 		{
 			return;
 		}
 		
-		int progress = getUsersProgress(player.getUniqueID());
+		int progress = getUsersProgress(player.getGameProfile().getId());
 		int rawXP = levels? XPHelper.getLevelXP(amount) : amount;
 		int plrXP = XPHelper.getPlayerXP(player);
 		int remaining = rawXP - progress;
@@ -92,17 +92,17 @@ public class TaskXP implements ITask, IProgression<Integer>
 		if(consume)
 		{
 			progress += cost;
-			setUserProgress(player.getUniqueID(), progress);
+			setUserProgress(player.getGameProfile().getId(), progress);
 			XPHelper.AddXP(player, -cost);
 		} else
 		{
-			setUserProgress(player.getUniqueID(), plrXP);
+			setUserProgress(player.getGameProfile().getId(), plrXP);
 		}
 		
-		int totalXP = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getUniqueID()) : getGlobalProgress();
+		int totalXP = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getGameProfile().getId()) : getGlobalProgress();
 		if(totalXP >= rawXP)
 		{
-			setComplete(player.getUniqueID());
+			setComplete(player.getGameProfile().getId());
 		}
 	}
 	
