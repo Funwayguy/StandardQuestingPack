@@ -145,7 +145,7 @@ public class GuiScrollingItemsSmall extends GuiScrollingBase<GuiScrollingItemsSm
 		@SuppressWarnings("unchecked")
 		public void drawForeground(int mx, int my, int px, int py, int width)
 		{
-			if(stack != null && isWithin(mx, my, px + 2, py + 2, 32, 32))
+			if(stack != null && isWithin(mx, my, px + 1, py + 1, 16, 16))
 			{
 				ItemStack tmpStack = subStacks.get((int)(Minecraft.getSystemTime()/1000)%subStacks.size()).copy();
 				tmpStack.setTagCompound(stack.GetTagCompound());

@@ -15,6 +15,7 @@ import bq_standard.handlers.ConfigHandler;
 import bq_standard.handlers.GuiHandler;
 import bq_standard.items.ItemLootChest;
 import bq_standard.network.handlers.PktHandlerCheckbox;
+import bq_standard.network.handlers.PktHandlerChoice;
 import bq_standard.network.handlers.PktHandlerLootDatabase;
 import bq_standard.network.handlers.PktHandlerScoreboard;
 import bq_standard.rewards.factory.FactoryRewardChoice;
@@ -128,6 +129,7 @@ public class BQ_Standard implements IQuestingExpansion
 		api.getPacketRegistry().registerHandler(new PktHandlerLootDatabase());
 		api.getPacketRegistry().registerHandler(new PktHandlerCheckbox());
 		api.getPacketRegistry().registerHandler(new PktHandlerScoreboard());
+		api.getPacketRegistry().registerHandler(new PktHandlerChoice());
 	}
 	
 	@Override

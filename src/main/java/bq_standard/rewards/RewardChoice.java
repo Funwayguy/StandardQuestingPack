@@ -154,7 +154,7 @@ public class RewardChoice implements IReward
 	@SideOnly(Side.CLIENT)
 	public IGuiEmbedded getRewardGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
 	{
-		return new GuiRewardChoice(this, posX, posY, sizeX, sizeY);
+		return new GuiRewardChoice(this, quest, posX, posY, sizeX, sizeY);
 	}
 	
 	@Override

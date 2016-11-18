@@ -1,13 +1,17 @@
 package bq_standard.client.gui.rewards;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.util.MathHelper;
+import net.minecraft.nbt.NBTTagCompound;
 import org.lwjgl.opengl.GL11;
+import betterquesting.api.ExpansionAPI;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.IGuiEmbedded;
+import betterquesting.api.network.PreparedPayload;
+import betterquesting.api.quests.IQuest;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.RenderUtils;
+import bq_standard.client.gui.GuiScrollingItemsSmall;
+import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.RewardChoice;
 
 public class GuiRewardChoice extends GuiElement implements IGuiEmbedded
@@ -15,108 +19,75 @@ public class GuiRewardChoice extends GuiElement implements IGuiEmbedded
 	private RewardChoice reward;
 	private Minecraft mc;
 	
+	private GuiScrollingItemsSmall itemScroll;
 	private int posX = 0;
 	private int posY = 0;
-	private int sizeX = 0;
-	private int scroll = 0;
+	private int sizeY = 0;
 	
-	public GuiRewardChoice(RewardChoice reward, int posX, int posY, int sizeX, int sizeY)
+	private int qID = -1;
+	private int rID = -1;
+	
+	public GuiRewardChoice(RewardChoice reward, IQuest quest, int posX, int posY, int sizeX, int sizeY)
 	{
 		this.mc = Minecraft.getMinecraft();
 		this.reward = reward;
-		
 		this.posX = posX;
 		this.posY = posY;
-		this.sizeX = sizeX;
+		this.sizeY = sizeY;
+		
+		this.qID = ExpansionAPI.getAPI().getQuestDB().getKey(quest);
+		this.rID = quest.getRewards().getKey(reward);
+		
+		this.itemScroll = new GuiScrollingItemsSmall(mc, posX + 40, posY, sizeX - 40, sizeY);
+		
+		for(BigItemStack stack : reward.choices)
+		{
+			this.itemScroll.addItem(new BigItemStack(stack.getBaseStack()), stack.stackSize + " " + stack.getBaseStack().getDisplayName());
+		}
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void drawBackground(int mx, int my, float partialTick)
 	{
-		int rowLMax = (sizeX - 40)/18;
-		int rowL = Math.min(reward.choices.size(), rowLMax);
+		int sel = reward.getSelecton(mc.thePlayer.getGameProfile().getId());
 		
-		if(rowLMax < reward.choices.size())
-		{
-			scroll = MathHelper.clamp_int(scroll, 0, reward.choices.size() - rowLMax);
-			//RenderUtils.DrawFakeButton(screen, posX, posY, 20, 20, "<", screen.isWithin(mx, my, posX, posY, 20, 20, false)? 2 : 1);
-			//RenderUtils.DrawFakeButton(screen, posX + 20 + 18*rowL, posY, 20, 20, ">", screen.isWithin(mx, my, posX + 20 + 18*rowL, posY, 20, 20, false)? 2 : 1);
-		} else
-		{
-			scroll = 0;
-		}
-		
-		BigItemStack ttStack = null; // Reset
-		
-		for(int i = 0; i < rowL; i++)
-		{
-			BigItemStack stack = reward.choices.get(i + scroll);
-			mc.renderEngine.bindTexture(currentTheme().getGuiTexture());
-			GL11.glDisable(GL11.GL_DEPTH_TEST);
-			drawTexturedModalRect(posX + (i * 18) + 20, posY + 1, 0, 48, 18, 18);
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
-			RenderUtils.RenderItemStack(mc, stack.getBaseStack(), posX + (i * 18) + 21, posY + 2, stack != null && stack.stackSize > 1? "" + stack.stackSize : "");
-			
-			if(isWithin(mx, my, posX + (i * 18) + 20, posY + 1, 16, 16))
-			{
-				ttStack = stack;
-			}
-		}
-		
-		mc.fontRenderer.drawString(I18n.format("betterquesting.gui.selection"), posX, posY + 32, getTextColor(), false);
-		GL11.glColor4f(1F, 1F, 1F, 1F);
-		mc.renderEngine.bindTexture(currentTheme().getGuiTexture());
-		GL11.glDisable(GL11.GL_DEPTH_TEST);
-		drawTexturedModalRect(posX + 50, posY + 28, 0, 48, 18, 18);
+		GL11.glPushMatrix();
+		GL11.glTranslatef(posX, posY + sizeY/2 - 18, 0);
+		GL11.glScalef(2F, 2F, 1F);
+		this.mc.renderEngine.bindTexture(currentTheme().getGuiTexture());
+		this.drawTexturedModalRect(0, 0, 0, 48, 18, 18);
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		
-		int sel = reward.getSelecton(mc.thePlayer.getGameProfile().getId());
-		BigItemStack stack = (sel >= 0 && sel < reward.choices.size())? reward.choices.get(sel) : null;
-		
-		if(stack != null)
+		if(sel >= 0)
 		{
-			RenderUtils.RenderItemStack(mc, stack.getBaseStack(), posX + 51, posY + 29, stack != null && stack.stackSize > 1? "" + stack.stackSize : "");
-			
-			if(isWithin(mx, my, posX + 51, posY + 29, 16, 16))
-			{
-				ttStack = stack;
-			}
+			BigItemStack selStack = reward.choices.get(sel);
+			RenderUtils.RenderItemStack(mc, selStack.getBaseStack(), 1, 1, selStack.stackSize > 0? "" + selStack.stackSize : "");
 		}
 		
-		if(ttStack != null)
-		{
-			drawTooltip(ttStack.getBaseStack().getTooltip(mc.thePlayer, mc.gameSettings.advancedItemTooltips), mx, my, mc.fontRenderer);
-		}
+		GL11.glDisable(GL11.GL_DEPTH_TEST);
+		GL11.glPopMatrix();
+		
+		itemScroll.drawBackground(mx, my, partialTick);
 	}
 	
 	@Override
 	public void drawForeground(int mx, int my, float partialTick)
 	{
-		
+		itemScroll.drawForeground(mx, my, partialTick);
 	}
 	
 	@Override
 	public void onMouseClick(int mx, int my, int button)
 	{
-		if(button != 0)
-		{
-			return;
-		}
+		int idx = itemScroll.getEntryUnderMouse(mx, my);
 		
-		int rowLMax = (sizeX - 40)/18;
-		int rowL = Math.min(reward.choices.size(), rowLMax);
-		
-		if(isWithin(mx, my, posX + 20, posY + 2, rowL * 18, 18))
+		if(idx >= 0)
 		{
-			int i = (mx - posX - 20)/18;
-			reward.setSelection(mc.thePlayer.getGameProfile().getId(), i + scroll);
-		} else if(isWithin(mx, my, posX, posY, 20, 20))
-		{
-			scroll = MathHelper.clamp_int(scroll - 1, 0, reward.choices.size() - rowLMax);
-		} else if(isWithin(mx, my, posX + 20 + 18*rowL, posY, 20, 20))
-		{
-			scroll = MathHelper.clamp_int(scroll + 1, 0, reward.choices.size() - rowLMax);
+			NBTTagCompound retTags = new NBTTagCompound();
+			retTags.setInteger("questID", qID);
+			retTags.setInteger("rewardID", rID);
+			retTags.setInteger("selection", idx);
+			ExpansionAPI.getAPI().getPacketSender().sendToServer(new PreparedPayload(StandardPacketType.CHOICE.GetLocation(), retTags));
 		}
 	}
 
