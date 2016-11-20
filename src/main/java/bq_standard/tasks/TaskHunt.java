@@ -13,6 +13,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
+import betterquesting.api.ExpansionAPI;
 import betterquesting.api.client.gui.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.party.IParty;
@@ -89,16 +90,16 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(isComplete(player.getGameProfile().getId()))
+		if(isComplete(ExpansionAPI.getAPI().getNameCache().getQuestingID(player)))
 		{
 			return;
 		}
 		
-		int progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getGameProfile().getId()) : getGlobalProgress();
+		int progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(ExpansionAPI.getAPI().getNameCache().getQuestingID(player)) : getGlobalProgress();
 		
 		if(progress >= required)
 		{
-			setComplete(player.getGameProfile().getId());
+			setComplete(ExpansionAPI.getAPI().getNameCache().getQuestingID(player));
 		}
 	}
 	
@@ -106,12 +107,14 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	{
 		EntityPlayer player = (EntityPlayer)source.getEntity();
 		
-		if(player == null || entity == null || this.isComplete(player.getGameProfile().getId()))
+		UUID playerID = ExpansionAPI.getAPI().getNameCache().getQuestingID(player);
+		
+		if(player == null || entity == null || this.isComplete(playerID))
 		{
 			return;
 		}
 		
-		int progress = getUsersProgress(player.getGameProfile().getId());
+		int progress = getUsersProgress(playerID);
 		
 		Class<? extends Entity> subject = entity.getClass();
 		@SuppressWarnings("unchecked")
@@ -135,7 +138,7 @@ public class TaskHunt implements ITask, IProgression<Integer>
 			return;
 		}
 		
-		setUserProgress(player.getGameProfile().getId(), progress + 1);
+		setUserProgress(playerID, progress + 1);
 		
 		detect(player, quest);
 	}

@@ -13,6 +13,7 @@ import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidContainerItem;
 import org.apache.logging.log4j.Level;
+import betterquesting.api.ExpansionAPI;
 import betterquesting.api.client.gui.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.party.IParty;
@@ -83,7 +84,8 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 			{
 				boolean flag = true;
 				
-				int[] totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getGameProfile().getId()) : getGlobalProgress();
+				int[] totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(ExpansionAPI.getAPI().getNameCache().getQuestingID(player)) : getGlobalProgress();
+				
 				for(int j = 0; j < requiredFluids.size(); j++)
 				{
 					FluidStack rStack = requiredFluids.get(j);
@@ -99,7 +101,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 				
 				if(flag)
 				{
-					setComplete(player.getGameProfile().getId());
+					setComplete(ExpansionAPI.getAPI().getNameCache().getQuestingID(player));
 				}
 			}
 		}
@@ -108,12 +110,14 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(player.inventory == null || isComplete(player.getGameProfile().getId()))
+		UUID playerID = ExpansionAPI.getAPI().getNameCache().getQuestingID(player);
+		
+		if(player.inventory == null || isComplete(playerID))
 		{
 			return;
 		}
 		
-		int[] progress = getUsersProgress(player.getGameProfile().getId());
+		int[] progress = getUsersProgress(playerID);
 		
 		for(int i = 0; i < player.inventory.getSizeInventory(); i++)
 		{
@@ -155,8 +159,8 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		
 		if(consume)
 		{
-			setUserProgress(player.getGameProfile().getId(), progress);
-			totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getGameProfile().getId()) : getGlobalProgress();
+			setUserProgress(ExpansionAPI.getAPI().getNameCache().getQuestingID(player), progress);
+			totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		}
 		
 		for(int j = 0; j < requiredFluids.size(); j++)
@@ -174,7 +178,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		
 		if(flag)
 		{
-			setComplete(player.getGameProfile().getId());
+			setComplete(playerID);
 		}
 	}
 	

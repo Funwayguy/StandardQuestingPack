@@ -15,6 +15,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.Level;
+import betterquesting.api.ExpansionAPI;
 import betterquesting.api.client.gui.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.party.IParty;
@@ -89,13 +90,15 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(isComplete(player.getGameProfile().getId()))
+		UUID playerID = ExpansionAPI.getAPI().getNameCache().getQuestingID(player);
+		
+		if(isComplete(playerID))
 		{
 			return;
 		}
 		
 		boolean flag = true;
-		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getGameProfile().getId()) : getGlobalProgress();
+		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		
 		for(int j = 0; j < blockTypes.size(); j++)
 		{
@@ -112,18 +115,20 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		
 		if(flag)
 		{
-			setComplete(player.getGameProfile().getId());
+			setComplete(playerID);
 		}
 	}
 	
 	public void onBlockBreak(IQuest quest, EntityPlayer player, Block b, int metadata, int x, int y, int z)
 	{
-		if(isComplete(player.getGameProfile().getId()))
+		UUID playerID = ExpansionAPI.getAPI().getNameCache().getQuestingID(player);
+		
+		if(isComplete(playerID))
 		{
 			return;
 		}
 		
-		int[] progress = getUsersProgress(player.getGameProfile().getId());
+		int[] progress = getUsersProgress(playerID);
 		TileEntity tile = player.worldObj.getTileEntity(x, y, z);
 		NBTTagCompound tags = new NBTTagCompound();
 		
@@ -141,7 +146,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 			if((flag || (b == block.b && (block.m < 0 || metadata == block.m))) && ItemComparison.CompareNBTTag(block.tags, tags, true))
 			{
 				progress[i] += 1;
-				setUserProgress(player.getGameProfile().getId(), progress);
+				setUserProgress(playerID, progress);
 				break;
 			}
 		}

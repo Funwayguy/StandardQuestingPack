@@ -3,6 +3,7 @@ package bq_standard.network.handlers;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
+import betterquesting.api.ExpansionAPI;
 import betterquesting.api.network.IPacketHandler;
 import betterquesting.api.quests.tasks.ITask;
 import betterquesting.database.QuestDatabase;
@@ -25,7 +26,7 @@ public class PktHandlerCheckbox implements IPacketHandler
 				
 				if(task instanceof TaskCheckbox)
 				{
-					task.setComplete(sender.getGameProfile().getId());
+					task.setComplete(ExpansionAPI.getAPI().getNameCache().getQuestingID(sender));
 				}
 			} catch(Exception e)
 			{

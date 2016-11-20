@@ -39,7 +39,7 @@ public class EventHandler
 			actStack = CraftingManager.getInstance().findMatchingRecipe((InventoryCrafting)event.craftMatrix, event.player.worldObj);
 		}
 		
-		for(Entry<TaskCrafting,IQuest> entry : getActiveTasks(TaskCrafting.class, event.player.getGameProfile().getId()).entrySet())
+		for(Entry<TaskCrafting,IQuest> entry : getActiveTasks(TaskCrafting.class, ExpansionAPI.getAPI().getNameCache().getQuestingID(event.player)).entrySet())
 		{
 			entry.getKey().onItemCrafted(entry.getValue(), event.player, actStack);
 		}
@@ -53,7 +53,7 @@ public class EventHandler
 			return;
 		}
 		
-		for(Entry<TaskCrafting,IQuest> entry : getActiveTasks(TaskCrafting.class, event.player.getGameProfile().getId()).entrySet())
+		for(Entry<TaskCrafting,IQuest> entry : getActiveTasks(TaskCrafting.class, ExpansionAPI.getAPI().getNameCache().getQuestingID(event.player)).entrySet())
 		{
 			entry.getKey().onItemSmelted(entry.getValue(), event.player, event.smelting.copy());
 		}
@@ -69,7 +69,7 @@ public class EventHandler
 		
 		EntityPlayer player = (EntityPlayer)event.source.getEntity();
 		
-		for(Entry<TaskHunt,IQuest> entry : getActiveTasks(TaskHunt.class, player.getGameProfile().getId()).entrySet())
+		for(Entry<TaskHunt,IQuest> entry : getActiveTasks(TaskHunt.class, ExpansionAPI.getAPI().getNameCache().getQuestingID(player)).entrySet())
 		{
 			entry.getKey().onKilledByPlayer(entry.getValue(), event.entityLiving, event.source);;
 		}
@@ -83,7 +83,7 @@ public class EventHandler
 			return;
 		}
 		
-		for(Entry<TaskBlockBreak,IQuest> entry : getActiveTasks(TaskBlockBreak.class, event.getPlayer().getGameProfile().getId()).entrySet())
+		for(Entry<TaskBlockBreak,IQuest> entry : getActiveTasks(TaskBlockBreak.class, ExpansionAPI.getAPI().getNameCache().getQuestingID(event.getPlayer())).entrySet())
 		{
 			entry.getKey().onBlockBreak(entry.getValue(), event.getPlayer(), event.block, event.blockMetadata, event.x, event.y, event.z);
 		}

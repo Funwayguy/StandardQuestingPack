@@ -10,6 +10,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
+import betterquesting.api.ExpansionAPI;
 import betterquesting.api.client.gui.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.quests.IQuest;
@@ -96,7 +97,9 @@ public class TaskMeeting implements ITask
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(!player.isEntityAlive() || isComplete(player.getGameProfile().getId()))
+		UUID playerID = ExpansionAPI.getAPI().getNameCache().getQuestingID(player);
+		
+		if(!player.isEntityAlive() || isComplete(playerID))
 		{
 			return;
 		}
@@ -136,7 +139,7 @@ public class TaskMeeting implements ITask
 			
 			if(n >= amount)
 			{
-				setComplete(player.getGameProfile().getId());
+				setComplete(playerID);
 				return;
 			}
 		}

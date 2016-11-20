@@ -7,6 +7,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
 import org.lwjgl.opengl.GL11;
+import betterquesting.api.ExpansionAPI;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.IGuiEmbedded;
 import betterquesting.api.quests.IQuest;
@@ -42,7 +43,7 @@ public class GuiTaskXP extends GuiElement implements IGuiEmbedded
 	public void drawBackground(int mx, int my, float partialTick)
 	{
 		int barSize = Math.min(sizeX/2, 128);
-		int xp = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getPartyProgress(mc.thePlayer.getGameProfile().getId()) : task.getGlobalProgress();
+		int xp = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getPartyProgress(ExpansionAPI.getAPI().getNameCache().getQuestingID(mc.thePlayer)) : task.getGlobalProgress();
 		xp = !task.levels? xp : XPHelper.getXPLevel(xp);
 		int barProg = (int)(MathHelper.clamp_float(xp/(float)task.amount, 0F, 1F) * (barSize - 2));
 		int midX = sizeX/2;

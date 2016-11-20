@@ -11,6 +11,7 @@ import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
+import betterquesting.api.ExpansionAPI;
 import betterquesting.api.client.gui.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.quests.IQuest;
@@ -91,7 +92,7 @@ public class TaskScoreboard implements ITask
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(isComplete(player.getGameProfile().getId()))
+		if(isComplete(ExpansionAPI.getAPI().getNameCache().getQuestingID(player)))
 		{
 			return;
 		}
@@ -119,7 +120,7 @@ public class TaskScoreboard implements ITask
 		
 		if(operation.checkValues(points, target))
 		{
-			setComplete(player.getGameProfile().getId());
+			setComplete(ExpansionAPI.getAPI().getNameCache().getQuestingID(player));
 		}
 	}
 	

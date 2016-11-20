@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.fluids.FluidStack;
+import betterquesting.api.ExpansionAPI;
 import betterquesting.api.client.gui.IGuiEmbedded;
 import betterquesting.api.client.gui.lists.GuiScrollingFluids;
 import betterquesting.api.quests.IQuest;
@@ -31,7 +32,7 @@ public class GuiTaskFluid implements IGuiEmbedded
 			return;
 		}
 		
-		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getUsersProgress(mc.thePlayer.getGameProfile().getId()) : task.getGlobalProgress();
+		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getUsersProgress(ExpansionAPI.getAPI().getNameCache().getQuestingID(mc.thePlayer)) : task.getGlobalProgress();
 		
 		for(int i = 0; i < task.requiredFluids.size(); i++)
 		{
@@ -45,7 +46,7 @@ public class GuiTaskFluid implements IGuiEmbedded
 			String txt = stack.getLocalizedName() + "\n";
 			txt = txt + progress[i] + "/" + stack.amount + "mB";
 			
-			if(progress[i] >= stack.amount || task.isComplete(mc.thePlayer.getGameProfile().getId()))
+			if(progress[i] >= stack.amount || task.isComplete(ExpansionAPI.getAPI().getNameCache().getQuestingID(mc.thePlayer)))
 			{
 				txt += "\n" + EnumChatFormatting.GREEN + I18n.format("betterquesting.tooltip.complete");
 			} else

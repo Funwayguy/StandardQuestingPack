@@ -7,6 +7,7 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
+import betterquesting.api.ExpansionAPI;
 import betterquesting.api.network.IPacketHandler;
 import betterquesting.api.utils.NBTConverter;
 import bq_standard.core.BQ_Standard;
@@ -21,7 +22,7 @@ public class PktHandlerLootDatabase implements IPacketHandler
 	{
 		if(!MinecraftServer.getServer().getConfigurationManager().func_152596_g(sender.getGameProfile()))
 		{
-			BQ_Standard.logger.log(Level.WARN, "Player " + sender.getCommandSenderName() + " (UUID:" + sender.getGameProfile().getId() + ") tried to edit loot chests without OP permissions!");
+			BQ_Standard.logger.log(Level.WARN, "Player " + sender.getCommandSenderName() + " (UUID:" + ExpansionAPI.getAPI().getNameCache().getQuestingID(sender) + ") tried to edit loot chests without OP permissions!");
 			sender.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.RED + "You need to be OP to edit loot!"));
 			return; // Player is not operator. Do nothing
 		}

@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.EnumChatFormatting;
 import org.lwjgl.opengl.GL11;
+import betterquesting.api.ExpansionAPI;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.IGuiEmbedded;
 import bq_standard.ScoreboardBQ;
@@ -38,7 +39,7 @@ public class GuiTaskScoreboard extends GuiElement implements IGuiEmbedded
 		
 		int tw1 = mc.fontRenderer.getStringWidth(EnumChatFormatting.BOLD + task.scoreName);
 		mc.fontRenderer.drawString(EnumChatFormatting.BOLD + task.scoreName, -tw1/2, -12, getTextColor(), false);
-		int score = ScoreboardBQ.getScore(mc.thePlayer.getGameProfile().getId(), task.scoreName);
+		int score = ScoreboardBQ.getScore(ExpansionAPI.getAPI().getNameCache().getQuestingID(mc.thePlayer), task.scoreName);
 		DecimalFormat df = new DecimalFormat("0.##");
 		String value = df.format(score/task.conversion) + task.suffix;
 		

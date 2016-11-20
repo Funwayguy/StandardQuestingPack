@@ -24,7 +24,7 @@ public class GuiTaskCheckbox extends GuiElement implements IGuiEmbedded
 	{
 		this.mc = Minecraft.getMinecraft();
 		
-		if(task != null && task.isComplete(mc.thePlayer.getGameProfile().getId()))
+		if(task != null && task.isComplete(ExpansionAPI.getAPI().getNameCache().getQuestingID(mc.thePlayer)))
 		{
 			btn = new GuiButtonThemed(0, posX + sizeX/2 - 20, posY + sizeY/2 - 20, 40, 40, EnumChatFormatting.GREEN + "" + EnumChatFormatting.BOLD + "\u2713");
 			btn.enabled = false;

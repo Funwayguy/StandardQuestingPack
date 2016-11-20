@@ -6,6 +6,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
+import betterquesting.api.ExpansionAPI;
 import betterquesting.api.client.gui.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.quests.IQuest;
@@ -54,7 +55,7 @@ public class RewardItem implements IReward
 				if(s.getTagCompound() != null)
 				{
 					s.setTagCompound(NBTReplaceUtil.replaceStrings(s.getTagCompound(), "VAR_NAME", player.getCommandSenderName()));
-					s.setTagCompound(NBTReplaceUtil.replaceStrings(s.getTagCompound(), "VAR_UUID", player.getGameProfile().getId().toString()));
+					s.setTagCompound(NBTReplaceUtil.replaceStrings(s.getTagCompound(), "VAR_UUID", ExpansionAPI.getAPI().getNameCache().getQuestingID(player).toString()));
 				}
 				
 				if(!player.inventory.addItemStackToInventory(s))

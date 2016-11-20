@@ -8,6 +8,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
+import betterquesting.api.ExpansionAPI;
 import betterquesting.api.client.gui.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.party.IParty;
@@ -59,18 +60,20 @@ public class TaskXP implements ITask, IProgression<Integer>
 	@Override
 	public void update(EntityPlayer player, IQuest quest)
 	{
+		UUID playerID = ExpansionAPI.getAPI().getNameCache().getQuestingID(player);
+		
 		if(player.ticksExisted%60 == 0 && !QuestSettings.INSTANCE.getProperty(NativeProps.EDIT_MODE))
 		{
 			if(!consume)
 			{
-				setUserProgress(player.getGameProfile().getId(), XPHelper.getPlayerXP(player));
+				setUserProgress(playerID, XPHelper.getPlayerXP(player));
 			}
 			
 			int rawXP = levels? XPHelper.getLevelXP(amount) : amount;
-			int totalXP = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getGameProfile().getId()) : getGlobalProgress();
+			int totalXP = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 			if(totalXP >= rawXP)
 			{
-				setComplete(player.getGameProfile().getId());
+				setComplete(playerID);
 			}
 		}
 	}
@@ -78,12 +81,14 @@ public class TaskXP implements ITask, IProgression<Integer>
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(isComplete(player.getGameProfile().getId()))
+		UUID playerID = ExpansionAPI.getAPI().getNameCache().getQuestingID(player);
+		
+		if(isComplete(playerID))
 		{
 			return;
 		}
 		
-		int progress = getUsersProgress(player.getGameProfile().getId());
+		int progress = getUsersProgress(playerID);
 		int rawXP = levels? XPHelper.getLevelXP(amount) : amount;
 		int plrXP = XPHelper.getPlayerXP(player);
 		int remaining = rawXP - progress;
@@ -92,17 +97,17 @@ public class TaskXP implements ITask, IProgression<Integer>
 		if(consume)
 		{
 			progress += cost;
-			setUserProgress(player.getGameProfile().getId(), progress);
+			setUserProgress(playerID, progress);
 			XPHelper.AddXP(player, -cost);
 		} else
 		{
-			setUserProgress(player.getGameProfile().getId(), plrXP);
+			setUserProgress(playerID, plrXP);
 		}
 		
-		int totalXP = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getGameProfile().getId()) : getGlobalProgress();
+		int totalXP = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		if(totalXP >= rawXP)
 		{
-			setComplete(player.getGameProfile().getId());
+			setComplete(playerID);
 		}
 	}
 	

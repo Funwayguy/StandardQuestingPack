@@ -49,7 +49,7 @@ public class GuiRewardChoice extends GuiElement implements IGuiEmbedded
 	@Override
 	public void drawBackground(int mx, int my, float partialTick)
 	{
-		int sel = reward.getSelecton(mc.thePlayer.getGameProfile().getId());
+		int sel = reward.getSelecton(ExpansionAPI.getAPI().getNameCache().getQuestingID(mc.thePlayer));
 		
 		GL11.glPushMatrix();
 		GL11.glTranslatef(posX, posY + sizeY/2 - 18, 0);

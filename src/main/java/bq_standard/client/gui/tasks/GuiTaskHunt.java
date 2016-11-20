@@ -7,6 +7,7 @@ import net.minecraft.entity.EntityList;
 import net.minecraft.util.MathHelper;
 import org.apache.logging.log4j.Level;
 import org.lwjgl.opengl.GL11;
+import betterquesting.api.ExpansionAPI;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.IGuiEmbedded;
 import betterquesting.api.quests.IQuest;
@@ -84,7 +85,7 @@ public class GuiTaskHunt extends GuiElement implements IGuiEmbedded
 			}
 		}
 		
-		int progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getUsersProgress(mc.thePlayer.getGameProfile().getId()) : task.getGlobalProgress();
+		int progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getUsersProgress(ExpansionAPI.getAPI().getNameCache().getQuestingID(mc.thePlayer)) : task.getGlobalProgress();
 		String tnm = !task.ignoreNBT && target != null? target.getCommandSenderName() : task.idName;
 		String txt = I18n.format("bq_standard.gui.kill", tnm) + " " + progress + "/" + task.required;
 		mc.fontRenderer.drawString(txt, posX + sizeX/2 - mc.fontRenderer.getStringWidth(txt)/2, posY, getTextColor());

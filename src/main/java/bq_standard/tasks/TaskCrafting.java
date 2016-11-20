@@ -9,6 +9,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
+import betterquesting.api.ExpansionAPI;
 import betterquesting.api.client.gui.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.party.IParty;
@@ -78,12 +79,14 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(isComplete(player.getGameProfile().getId()))
+		UUID playerID = ExpansionAPI.getAPI().getNameCache().getQuestingID(player);
+		
+		if(isComplete(playerID))
 		{
 			return;
 		}
 		
-		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(player.getGameProfile().getId()) : getGlobalProgress();
+		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		
 		boolean flag = true;
 		
@@ -103,18 +106,20 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 		
 		if(flag)
 		{
-			setComplete(player.getGameProfile().getId());
+			setComplete(playerID);
 		}
 	}
 	
 	public void onItemCrafted(IQuest quest, EntityPlayer player, ItemStack stack)
 	{
-		if(isComplete(player.getGameProfile().getId()))
+		UUID playerID = ExpansionAPI.getAPI().getNameCache().getQuestingID(player);
+		
+		if(isComplete(playerID))
 		{
 			return;
 		}
 		
-		int[] progress = getUsersProgress(player.getGameProfile().getId());
+		int[] progress = getUsersProgress(playerID);
 		
 		for(int i = 0; i < requiredItems.size(); i++)
 		{
@@ -131,14 +136,16 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 			}
 		}
 		
-		setUserProgress(player.getGameProfile().getId(), progress);
+		setUserProgress(ExpansionAPI.getAPI().getNameCache().getQuestingID(player), progress);
 		
 		detect(player, quest);
 	}
 	
 	public void onItemSmelted(IQuest quest, EntityPlayer player, ItemStack stack)
 	{
-		int[] progress = getUsersProgress(player.getGameProfile().getId());
+		UUID playerID = ExpansionAPI.getAPI().getNameCache().getQuestingID(player);
+		
+		int[] progress = getUsersProgress(playerID);
 		
 		for(int i = 0; i < requiredItems.size(); i++)
 		{
@@ -155,7 +162,7 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 			}
 		}
 		
-		setUserProgress(player.getGameProfile().getId(), progress);
+		setUserProgress(playerID, progress);
 		
 		detect(player, quest);
 	}

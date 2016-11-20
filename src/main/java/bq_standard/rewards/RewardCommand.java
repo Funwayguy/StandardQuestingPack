@@ -8,6 +8,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import betterquesting.api.ExpansionAPI;
 import betterquesting.api.client.gui.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.quests.IQuest;
@@ -52,7 +53,7 @@ public class RewardCommand implements IReward
 		}
 		
 		String tmp = command.replaceAll("VAR_NAME", player.getCommandSenderName());
-		tmp = tmp.replaceAll("VAR_UUID", player.getGameProfile().getId().toString());
+		tmp = tmp.replaceAll("VAR_UUID", ExpansionAPI.getAPI().getNameCache().getQuestingID(player).toString());
 		
 		if(viaPlayer)
 		{

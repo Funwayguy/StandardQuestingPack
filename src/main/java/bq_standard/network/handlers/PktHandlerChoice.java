@@ -47,7 +47,7 @@ public class PktHandlerChoice implements IPacketHandler
 		if(reward != null && reward instanceof RewardChoice)
 		{
 			RewardChoice rChoice = (RewardChoice)reward;
-			rChoice.setSelection(sender.getGameProfile().getId(), sel);
+			rChoice.setSelection(ExpansionAPI.getAPI().getNameCache().getQuestingID(sender), sel);
 			
 			NBTTagCompound retTags = new NBTTagCompound();
 			retTags.setInteger("questID", qID);
@@ -78,7 +78,7 @@ public class PktHandlerChoice implements IPacketHandler
 		if(reward != null && reward instanceof RewardChoice)
 		{
 			RewardChoice rChoice = (RewardChoice)reward;
-			rChoice.setSelection(player.getGameProfile().getId(), sel);
+			rChoice.setSelection(ExpansionAPI.getAPI().getNameCache().getQuestingID(player), sel);
 		}
 	}
 }
