@@ -11,12 +11,13 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
-import betterquesting.api.ExpansionAPI;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiScreenThemed;
 import betterquesting.api.client.gui.controls.GuiButtonThemed;
 import betterquesting.api.client.gui.controls.GuiNumberField;
 import betterquesting.api.client.gui.misc.IVolatileScreen;
-import betterquesting.api.network.PreparedPayload;
+import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.utils.NBTConverter;
 import betterquesting.api.utils.RenderUtils;
 import bq_standard.network.StandardPacketType;
@@ -128,7 +129,7 @@ public class GuiLootGroupEditor extends GuiScreenThemed implements IVolatileScre
 		NBTTagCompound tags = new NBTTagCompound();
 		tags.setInteger("ID", 1);
 		tags.setTag("Database", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
-		ExpansionAPI.getAPI().getPacketSender().sendToServer(new PreparedPayload(StandardPacketType.LOOT_SYNC.GetLocation(), tags));
+		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags));
 	}
 	
 	@Override

@@ -1,15 +1,14 @@
 package bq_standard.importers.hqm;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileReader;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.client.IFileCallback;
-import betterquesting.api.client.io.IQuestIO;
-import betterquesting.api.utils.FileExtentionFilter;
+import betterquesting.api.importer.IImporter;
+import betterquesting.api.questing.IQuestDatabase;
+import betterquesting.api.questing.IQuestLineDatabase;
+import betterquesting.api.utils.FileExtensionFilter;
 import betterquesting.api.utils.JsonHelper;
-import betterquesting.client.gui.misc.GuiFileExplorer;
 import bq_standard.core.BQ_Standard;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootGroup.LootEntry;
@@ -20,7 +19,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class HQMBagImporter implements IQuestIO, IFileCallback
+public class HQMBagImporter implements IImporter
 {
 	public static HQMBagImporter instance = new HQMBagImporter();
 	
@@ -31,15 +30,15 @@ public class HQMBagImporter implements IQuestIO, IFileCallback
 	}
 	
 	@Override
-	public String getUnlocalisedDescrition()
+	public String getUnlocalisedDescription()
 	{
 		return "bq_standard.importer.hqm_bag.desc";
 	}
 	
-	public static void StartImport()
+	@Override
+	public FileFilter getFileFilter()
 	{
-		Minecraft mc = Minecraft.getMinecraft();
-		mc.displayGuiScreen(new GuiFileExplorer(mc.currentScreen, instance, new File("."), new FileExtentionFilter(".json")));
+		return new FileExtensionFilter(".json");
 	}
 	
 	public static void ImportJsonBags(JsonArray json)
@@ -104,15 +103,9 @@ public class HQMBagImporter implements IQuestIO, IFileCallback
 			LootRegistry.registerGroup(group);
 		}
 	}
-	
-	@Override
-	public GuiScreen openGui(GuiScreen screen)
-	{
-		return null;//new GuiHQMBagImporter(screen, posX, posY, sizeX, sizeY);
-	}
 
 	@Override
-	public void setFiles(File... files)
+	public void loadFiles(IQuestDatabase questDB, IQuestLineDatabase lineDB, File[] files)
 	{
 		for(File selected : files)
 		{

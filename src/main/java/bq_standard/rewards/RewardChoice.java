@@ -8,11 +8,12 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.ExpansionAPI;
-import betterquesting.api.client.gui.IGuiEmbedded;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.quests.IQuest;
-import betterquesting.api.quests.rewards.IReward;
+import betterquesting.api.jdoc.IJsonDoc;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.JsonHelper;
 import bq_standard.NBTReplaceUtil;
@@ -64,19 +65,19 @@ public class RewardChoice implements IReward
 	@Override
 	public boolean canClaim(EntityPlayer player, IQuest quest)
 	{
-		if(!selected.containsKey(ExpansionAPI.getAPI().getNameCache().getQuestingID(player)))
+		if(!selected.containsKey(QuestingAPI.getQuestingUUID(player)))
 		{
 			return false;
 		}
 		
-		int tmp = selected.get(ExpansionAPI.getAPI().getNameCache().getQuestingID(player));
+		int tmp = selected.get(QuestingAPI.getQuestingUUID(player));
 		return choices.size() <= 0 || (tmp >= 0 && tmp < choices.size());
 	}
 
 	@Override
 	public void claimReward(EntityPlayer player, IQuest quest)
 	{
-		UUID playerID = ExpansionAPI.getAPI().getNameCache().getQuestingID(player);
+		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
 		if(choices.size() <= 0)
 		{
@@ -108,7 +109,7 @@ public class RewardChoice implements IReward
 			if(s.getTagCompound() != null)
 			{
 				s.setTagCompound(NBTReplaceUtil.replaceStrings(s.getTagCompound(), "VAR_NAME", player.getCommandSenderName()));
-				s.setTagCompound(NBTReplaceUtil.replaceStrings(s.getTagCompound(), "VAR_UUID", ExpansionAPI.getAPI().getNameCache().getQuestingID(player).toString()));
+				s.setTagCompound(NBTReplaceUtil.replaceStrings(s.getTagCompound(), "VAR_UUID", QuestingAPI.getQuestingUUID(player).toString()));
 			}
 			
 			if(!player.inventory.addItemStackToInventory(s))
@@ -163,6 +164,12 @@ public class RewardChoice implements IReward
 	@Override
 	@SideOnly(Side.CLIENT)
 	public GuiScreen getRewardEditor(GuiScreen screen, IQuest quest)
+	{
+		return null;
+	}
+
+	@Override
+	public IJsonDoc getDocumentation()
 	{
 		return null;
 	}

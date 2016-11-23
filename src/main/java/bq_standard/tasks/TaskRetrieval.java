@@ -9,20 +9,20 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.ExpansionAPI;
-import betterquesting.api.client.gui.IGuiEmbedded;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.party.IParty;
-import betterquesting.api.quests.IQuest;
-import betterquesting.api.quests.properties.NativeProps;
-import betterquesting.api.quests.tasks.IItemTask;
-import betterquesting.api.quests.tasks.IProgression;
-import betterquesting.api.quests.tasks.ITask;
+import betterquesting.api.jdoc.IJsonDoc;
+import betterquesting.api.properties.NativeProps;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.party.IParty;
+import betterquesting.api.questing.tasks.IItemTask;
+import betterquesting.api.questing.tasks.IProgression;
+import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api.utils.JsonHelper;
-import betterquesting.party.PartyManager;
-import betterquesting.quests.QuestSettings;
 import bq_standard.client.gui.tasks.GuiTaskRetrieval;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskRetrieval;
@@ -73,7 +73,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 	@Override
 	public void update(EntityPlayer player, IQuest quest)
 	{
-		if(player.ticksExisted%60 == 0 && !QuestSettings.INSTANCE.getProperty(NativeProps.EDIT_MODE))
+		if(player.ticksExisted%60 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
 		{
 			if(!consume || autoConsume)
 			{
@@ -82,7 +82,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 			{
 				boolean flag = true;
 				
-				int[] totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(ExpansionAPI.getAPI().getNameCache().getQuestingID(player)) : getGlobalProgress();
+				int[] totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(QuestingAPI.getQuestingUUID(player)) : getGlobalProgress();
 				for(int j = 0; j < requiredItems.size(); j++)
 				{
 					BigItemStack rStack = requiredItems.get(j);
@@ -98,7 +98,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 				
 				if(flag)
 				{
-					setComplete(ExpansionAPI.getAPI().getNameCache().getQuestingID(player));
+					setComplete(QuestingAPI.getQuestingUUID(player));
 				}
 			}
 		}
@@ -107,7 +107,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		UUID playerID = ExpansionAPI.getAPI().getNameCache().getQuestingID(player);
+		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
 		if(player.inventory == null || isComplete(playerID))
 		{
@@ -482,7 +482,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 	{
 		int[] total = new int[requiredItems.size()];
 		
-		IParty party = PartyManager.INSTANCE.getUserParty(uuid);
+		IParty party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getUserParty(uuid);
 		
 		if(party == null)
 		{
@@ -529,5 +529,11 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 		}
 		
 		return total;
+	}
+
+	@Override
+	public IJsonDoc getDocumentation()
+	{
+		return null;
 	}
 }

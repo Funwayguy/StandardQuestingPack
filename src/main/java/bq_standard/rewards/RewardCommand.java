@@ -8,11 +8,12 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import betterquesting.api.ExpansionAPI;
-import betterquesting.api.client.gui.IGuiEmbedded;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.quests.IQuest;
-import betterquesting.api.quests.rewards.IReward;
+import betterquesting.api.jdoc.IJsonDoc;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api.utils.JsonHelper;
 import bq_standard.AdminExecute;
 import bq_standard.client.gui.rewards.GuiRewardCommand;
@@ -53,7 +54,7 @@ public class RewardCommand implements IReward
 		}
 		
 		String tmp = command.replaceAll("VAR_NAME", player.getCommandSenderName());
-		tmp = tmp.replaceAll("VAR_UUID", ExpansionAPI.getAPI().getNameCache().getQuestingID(player).toString());
+		tmp = tmp.replaceAll("VAR_UUID", QuestingAPI.getQuestingUUID(player).toString());
 		
 		if(viaPlayer)
 		{
@@ -135,5 +136,11 @@ public class RewardCommand implements IReward
 	    {
 	        return BQ_Standard.NAME;
 	    }
+	}
+
+	@Override
+	public IJsonDoc getDocumentation()
+	{
+		return null;
 	}
 }

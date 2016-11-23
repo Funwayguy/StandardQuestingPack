@@ -4,12 +4,12 @@ import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.EnumChatFormatting;
-import betterquesting.api.ExpansionAPI;
+import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiElement;
-import betterquesting.api.client.gui.IGuiEmbedded;
 import betterquesting.api.client.gui.lists.GuiScrollingItems;
-import betterquesting.api.quests.IQuest;
-import betterquesting.api.quests.properties.NativeProps;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import betterquesting.api.properties.NativeProps;
+import betterquesting.api.questing.IQuest;
 import betterquesting.api.utils.BigItemStack;
 import bq_standard.tasks.TaskBlockBreak;
 
@@ -29,7 +29,7 @@ public class GuiTaskBlockBreak extends GuiElement implements IGuiEmbedded
 			return;
 		}
 		
-		UUID playerID = ExpansionAPI.getAPI().getNameCache().getQuestingID(mc.thePlayer);
+		UUID playerID = QuestingAPI.getQuestingUUID(mc.thePlayer);
 		
 		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getUsersProgress(playerID) : task.getGlobalProgress();
 		

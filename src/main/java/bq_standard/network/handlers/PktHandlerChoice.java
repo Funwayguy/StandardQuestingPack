@@ -5,11 +5,12 @@ import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import betterquesting.api.ExpansionAPI;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.network.IPacketHandler;
-import betterquesting.api.network.PreparedPayload;
-import betterquesting.api.quests.IQuest;
-import betterquesting.api.quests.rewards.IReward;
+import betterquesting.api.network.QuestingPacket;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.rewards.IReward;
 import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.RewardChoice;
 import cpw.mods.fml.relauncher.Side;
@@ -41,19 +42,19 @@ public class PktHandlerChoice implements IPacketHandler
 			return;
 		}
 		
-		IQuest quest = ExpansionAPI.getAPI().getQuestDB().getValue(qID);
+		IQuest quest = QuestingAPI.getAPI(ApiReference.QUEST_DB).getValue(qID);
 		IReward reward = quest == null? null : quest.getRewards().getValue(rID);
 		
 		if(reward != null && reward instanceof RewardChoice)
 		{
 			RewardChoice rChoice = (RewardChoice)reward;
-			rChoice.setSelection(ExpansionAPI.getAPI().getNameCache().getQuestingID(sender), sel);
+			rChoice.setSelection(QuestingAPI.getQuestingUUID(sender), sel);
 			
 			NBTTagCompound retTags = new NBTTagCompound();
 			retTags.setInteger("questID", qID);
 			retTags.setInteger("rewardID", rID);
 			retTags.setInteger("selection", sel);
-			ExpansionAPI.getAPI().getPacketSender().sendToPlayer(new PreparedPayload(StandardPacketType.CHOICE.GetLocation(), retTags), sender);
+			QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToPlayer(new QuestingPacket(StandardPacketType.CHOICE.GetLocation(), retTags), sender);
 		}
 	}
 	
@@ -72,13 +73,13 @@ public class PktHandlerChoice implements IPacketHandler
 			return;
 		}
 		
-		IQuest quest = ExpansionAPI.getAPI().getQuestDB().getValue(qID);
+		IQuest quest = QuestingAPI.getAPI(ApiReference.QUEST_DB).getValue(qID);
 		IReward reward = quest == null? null : quest.getRewards().getValue(rID);
 		
 		if(reward != null && reward instanceof RewardChoice)
 		{
 			RewardChoice rChoice = (RewardChoice)reward;
-			rChoice.setSelection(ExpansionAPI.getAPI().getNameCache().getQuestingID(player), sel);
+			rChoice.setSelection(QuestingAPI.getQuestingUUID(player), sel);
 		}
 	}
 }

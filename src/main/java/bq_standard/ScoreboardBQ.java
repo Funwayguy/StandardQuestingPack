@@ -6,8 +6,9 @@ import java.util.UUID;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
-import betterquesting.api.ExpansionAPI;
-import betterquesting.api.network.PreparedPayload;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api.utils.NBTConverter;
 import bq_standard.network.StandardPacketType;
@@ -42,7 +43,7 @@ public class ScoreboardBQ
 			objectives.put(scoreName, score);
 		}
 		
-		score.setScore(ExpansionAPI.getAPI().getNameCache().getQuestingID(player), value);
+		score.setScore(QuestingAPI.getQuestingUUID(player), value);
 		
 		if(player instanceof EntityPlayerMP)
 		{
@@ -56,7 +57,7 @@ public class ScoreboardBQ
 		JsonObject json = new JsonObject();
 		writeJson(json);
 		tags.setTag("data", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
-		ExpansionAPI.getAPI().getPacketSender().sendToPlayer(new PreparedPayload(StandardPacketType.SCORE_SYNC.GetLocation(), tags), player);
+		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToPlayer(new QuestingPacket(StandardPacketType.SCORE_SYNC.GetLocation(), tags), player);
 	}
 	
 	public static void readJson(JsonObject json)

@@ -7,7 +7,7 @@ import net.minecraft.entity.EntityList;
 import net.minecraft.util.MathHelper;
 import org.lwjgl.opengl.GL11;
 import betterquesting.api.client.gui.GuiElement;
-import betterquesting.api.client.gui.IGuiEmbedded;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.utils.RenderUtils;
 import bq_standard.tasks.TaskMeeting;
 

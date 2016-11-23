@@ -9,12 +9,14 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiScreenThemed;
 import betterquesting.api.client.gui.controls.GuiButtonThemed;
 import betterquesting.api.client.gui.controls.GuiNumberField;
 import betterquesting.api.client.gui.misc.IVolatileScreen;
+import betterquesting.api.other.ICallback;
 import betterquesting.api.utils.RenderUtils;
-import betterquesting.client.gui.editors.json.GuiJsonObject;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootGroup.LootEntry;
 import bq_standard.rewards.loot.LootRegistry;
@@ -23,7 +25,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScreen
+public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScreen, ICallback<JsonObject>
 {
 	LootGroup group;
 	GuiNumberField lineWeight;
@@ -31,7 +33,7 @@ public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScre
 	int selIndex = -1;
 	int leftScroll = 0;
 	int maxRows = 0;
-	JsonObject lastEdit;
+	//JsonObject lastEdit;
 	
 	public GuiLootEntryEditor(GuiScreen parent, LootGroup group)
 	{
@@ -45,13 +47,13 @@ public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScre
 	{
 		super.initGui();
 		
-		if(lastEdit != null && selected != null)
+		/*if(lastEdit != null && selected != null)
 		{
 			selected.readFromJson(lastEdit);
 		}
 		
-		lastEdit = null;
-		selected = null;
+		lastEdit = null;*/
+		//selected = null;
 		
 		maxRows = (sizeY - 80)/20;
 		int btnWidth = sizeX/2 - 16;
@@ -132,9 +134,12 @@ public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScre
 		{
 			if(selected != null)
 			{
-				lastEdit = new JsonObject();
+				/*lastEdit = new JsonObject();
 				selected.writeToJson(lastEdit);
-				mc.displayGuiScreen(new GuiJsonObject(this, lastEdit, null));
+				mc.displayGuiScreen(new GuiJsonObject(this, lastEdit, null));*/
+				JsonObject json = new JsonObject();
+				selected.writeToJson(json);
+				QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(this, this, json, null);
 			}
 			
 		} else if(btn.id > 2)
@@ -269,6 +274,15 @@ public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScre
 		{
 			lineWeight.setText("" + selected.weight);
 			lineWeight.setEnabled(true);
+		}
+	}
+
+	@Override
+	public void setValue(JsonObject value)
+	{
+		if(selected != null)
+		{
+			selected.readFromJson(value);
 		}
 	}
 }

@@ -1,7 +1,7 @@
 package bq_standard.importers.hqm.converters.tasks;
 
 import java.util.ArrayList;
-import betterquesting.api.quests.tasks.ITask;
+import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.JsonHelper;
 import bq_standard.importers.hqm.HQMUtilities;
 import bq_standard.tasks.TaskCrafting;

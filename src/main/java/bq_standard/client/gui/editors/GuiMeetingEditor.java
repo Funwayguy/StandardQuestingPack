@@ -10,24 +10,25 @@ import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.MathHelper;
 import org.lwjgl.opengl.GL11;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiScreenThemed;
 import betterquesting.api.client.gui.controls.GuiButtonThemed;
 import betterquesting.api.client.gui.misc.IVolatileScreen;
 import betterquesting.api.enums.EnumSaveType;
+import betterquesting.api.other.ICallback;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api.utils.NBTConverter;
 import betterquesting.api.utils.RenderUtils;
-import betterquesting.client.gui.editors.json.GuiJsonEntitySelection;
-import betterquesting.client.gui.editors.json.GuiJsonObject;
+import bq_standard.client.gui.editors.callback.JsonSaveLoadCallback;
 import bq_standard.tasks.TaskMeeting;
 import com.google.gson.JsonObject;
 
-public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen
+public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen, ICallback<Entity>
 {
-	TaskMeeting task;
+	private final TaskMeeting task;
 	String idName = "Villager";
 	JsonObject data;
-	JsonObject lastEdit = null;
 	Entity entity;
 	
 	public GuiMeetingEditor(GuiScreen parent, TaskMeeting task)
@@ -44,13 +45,13 @@ public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen
 	{
 		super.initGui();
 		
-		if(lastEdit != null)
+		/*if(lastEdit != null)
 		{
 			data.addProperty("target", JsonHelper.GetString(lastEdit, "id:8", "Villager"));
 			data.add("targetNBT", lastEdit);
 			
 			lastEdit = null;
-		}
+		}*/
 		
 		entity = EntityList.createEntityByName(JsonHelper.GetString(data, "target", "Villager"), mc.theWorld);
 		
@@ -115,14 +116,34 @@ public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen
 		{
 			if(entity != null)
 			{
-				NBTTagCompound eTags = new NBTTagCompound();
+				/*NBTTagCompound eTags = new NBTTagCompound();
 				entity.writeToNBTOptional(eTags);
-				lastEdit = NBTConverter.NBTtoJSON_Compound(eTags, new JsonObject(), true);
-				mc.displayGuiScreen(new GuiJsonEntitySelection(this, lastEdit));
+				lastEdit = NBTConverter.NBTtoJSON_Compound(eTags, new JsonObject(), true);*/
+				
+				//mc.displayGuiScreen(new GuiJsonEntitySelection(this, this, entity));
+				QuestingAPI.getAPI(ApiReference.GUI_HELPER).openEntityEditor(this, this, entity);
 			}
 		} else if(button.id == 2)
 		{
-			mc.displayGuiScreen(new GuiJsonObject(this, data, null));
+			//mc.displayGuiScreen(new GuiJsonObject(this, data, null));
+			QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(this, new JsonSaveLoadCallback<JsonObject>(task), data, task.getDocumentation());
 		}
+	}
+
+	@Override
+	public void setValue(Entity value)
+	{
+		if(value == null)
+		{
+			this.entity = new EntityVillager(mc.theWorld);
+		} else
+		{
+			this.entity = value;
+		}
+		
+		data.addProperty("target", EntityList.getEntityString(entity));
+		NBTTagCompound tTag = new NBTTagCompound();
+		entity.writeToNBTOptional(tTag);
+		data.add("targetNBT", NBTConverter.NBTtoJSON_Compound(tTag, new JsonObject()));
 	}
 }

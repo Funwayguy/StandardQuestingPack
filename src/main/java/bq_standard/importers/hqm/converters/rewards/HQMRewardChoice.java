@@ -1,7 +1,7 @@
 package bq_standard.importers.hqm.converters.rewards;
 
 import java.util.ArrayList;
-import betterquesting.api.quests.rewards.IReward;
+import betterquesting.api.questing.rewards.IReward;
 import bq_standard.importers.hqm.HQMUtilities;
 import bq_standard.rewards.RewardChoice;
 import com.google.gson.JsonElement;

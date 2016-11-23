@@ -7,11 +7,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
 import org.lwjgl.opengl.GL11;
-import betterquesting.api.ExpansionAPI;
+import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiElement;
-import betterquesting.api.client.gui.IGuiEmbedded;
-import betterquesting.api.quests.IQuest;
-import betterquesting.api.quests.properties.NativeProps;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import betterquesting.api.properties.NativeProps;
+import betterquesting.api.questing.IQuest;
 import betterquesting.api.utils.RenderUtils;
 import bq_standard.XPHelper;
 import bq_standard.tasks.TaskXP;
@@ -43,7 +43,7 @@ public class GuiTaskXP extends GuiElement implements IGuiEmbedded
 	public void drawBackground(int mx, int my, float partialTick)
 	{
 		int barSize = Math.min(sizeX/2, 128);
-		int xp = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getPartyProgress(ExpansionAPI.getAPI().getNameCache().getQuestingID(mc.thePlayer)) : task.getGlobalProgress();
+		int xp = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getPartyProgress(QuestingAPI.getQuestingUUID(mc.thePlayer)) : task.getGlobalProgress();
 		xp = !task.levels? xp : XPHelper.getXPLevel(xp);
 		int barProg = (int)(MathHelper.clamp_float(xp/(float)task.amount, 0F, 1F) * (barSize - 2));
 		int midX = sizeX/2;

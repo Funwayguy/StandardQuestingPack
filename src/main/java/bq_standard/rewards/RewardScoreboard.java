@@ -9,10 +9,11 @@ import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.client.gui.IGuiEmbedded;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.quests.IQuest;
-import betterquesting.api.quests.rewards.IReward;
+import betterquesting.api.jdoc.IJsonDoc;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api.utils.JsonHelper;
 import bq_standard.client.gui.rewards.GuiRewardScoreboard;
 import bq_standard.core.BQ_Standard;
@@ -117,6 +118,12 @@ public class RewardScoreboard implements IReward
 	@Override
 	@SideOnly(Side.CLIENT)
 	public GuiScreen getRewardEditor(GuiScreen screen, IQuest quest)
+	{
+		return null;
+	}
+
+	@Override
+	public IJsonDoc getDocumentation()
 	{
 		return null;
 	}

@@ -3,11 +3,12 @@ package bq_standard.client.gui.rewards;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
 import org.lwjgl.opengl.GL11;
-import betterquesting.api.ExpansionAPI;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiElement;
-import betterquesting.api.client.gui.IGuiEmbedded;
-import betterquesting.api.network.PreparedPayload;
-import betterquesting.api.quests.IQuest;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import betterquesting.api.network.QuestingPacket;
+import betterquesting.api.questing.IQuest;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.RenderUtils;
 import bq_standard.client.gui.GuiScrollingItemsSmall;
@@ -35,7 +36,7 @@ public class GuiRewardChoice extends GuiElement implements IGuiEmbedded
 		this.posY = posY;
 		this.sizeY = sizeY;
 		
-		this.qID = ExpansionAPI.getAPI().getQuestDB().getKey(quest);
+		this.qID = QuestingAPI.getAPI(ApiReference.QUEST_DB).getKey(quest);
 		this.rID = quest.getRewards().getKey(reward);
 		
 		this.itemScroll = new GuiScrollingItemsSmall(mc, posX + 40, posY, sizeX - 40, sizeY);
@@ -49,7 +50,7 @@ public class GuiRewardChoice extends GuiElement implements IGuiEmbedded
 	@Override
 	public void drawBackground(int mx, int my, float partialTick)
 	{
-		int sel = reward.getSelecton(ExpansionAPI.getAPI().getNameCache().getQuestingID(mc.thePlayer));
+		int sel = reward.getSelecton(QuestingAPI.getQuestingUUID(mc.thePlayer));
 		
 		GL11.glPushMatrix();
 		GL11.glTranslatef(posX, posY + sizeY/2 - 18, 0);
@@ -87,7 +88,7 @@ public class GuiRewardChoice extends GuiElement implements IGuiEmbedded
 			retTags.setInteger("questID", qID);
 			retTags.setInteger("rewardID", rID);
 			retTags.setInteger("selection", idx);
-			ExpansionAPI.getAPI().getPacketSender().sendToServer(new PreparedPayload(StandardPacketType.CHOICE.GetLocation(), retTags));
+			QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(StandardPacketType.CHOICE.GetLocation(), retTags));
 		}
 	}
 

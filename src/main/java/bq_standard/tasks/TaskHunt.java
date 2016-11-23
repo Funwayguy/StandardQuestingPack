@@ -13,19 +13,19 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.ExpansionAPI;
-import betterquesting.api.client.gui.IGuiEmbedded;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.party.IParty;
-import betterquesting.api.quests.IQuest;
-import betterquesting.api.quests.properties.NativeProps;
-import betterquesting.api.quests.tasks.IProgression;
-import betterquesting.api.quests.tasks.ITask;
+import betterquesting.api.jdoc.IJsonDoc;
+import betterquesting.api.properties.NativeProps;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.party.IParty;
+import betterquesting.api.questing.tasks.IProgression;
+import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api.utils.NBTConverter;
-import betterquesting.party.PartyManager;
-import betterquesting.quests.QuestSettings;
 import bq_standard.client.gui.editors.GuiHuntEditor;
 import bq_standard.client.gui.tasks.GuiTaskHunt;
 import bq_standard.core.BQ_Standard;
@@ -81,7 +81,7 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	@Override
 	public void update(EntityPlayer player, IQuest quest)
 	{
-		if(player.ticksExisted%200 == 0 && !QuestSettings.INSTANCE.getProperty(NativeProps.EDIT_MODE))
+		if(player.ticksExisted%200 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
 		{
 			detect(player, quest);
 		}
@@ -90,16 +90,16 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(isComplete(ExpansionAPI.getAPI().getNameCache().getQuestingID(player)))
+		if(isComplete(QuestingAPI.getQuestingUUID(player)))
 		{
 			return;
 		}
 		
-		int progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(ExpansionAPI.getAPI().getNameCache().getQuestingID(player)) : getGlobalProgress();
+		int progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(QuestingAPI.getQuestingUUID(player)) : getGlobalProgress();
 		
 		if(progress >= required)
 		{
-			setComplete(ExpansionAPI.getAPI().getNameCache().getQuestingID(player));
+			setComplete(QuestingAPI.getQuestingUUID(player));
 		}
 	}
 	
@@ -107,7 +107,7 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	{
 		EntityPlayer player = (EntityPlayer)source.getEntity();
 		
-		UUID playerID = ExpansionAPI.getAPI().getNameCache().getQuestingID(player);
+		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
 		if(player == null || entity == null || this.isComplete(playerID))
 		{
@@ -311,7 +311,7 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	{
 		int total = 0;
 		
-		IParty party = PartyManager.INSTANCE.getUserParty(uuid);
+		IParty party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getUserParty(uuid);
 		
 		if(party == null)
 		{
@@ -343,5 +343,11 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		}
 		
 		return total;
+	}
+
+	@Override
+	public IJsonDoc getDocumentation()
+	{
+		return null;
 	}
 }

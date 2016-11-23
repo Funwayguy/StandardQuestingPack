@@ -4,13 +4,15 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiScreenThemed;
 import betterquesting.api.client.gui.controls.GuiButtonThemed;
 import betterquesting.api.client.gui.controls.GuiNumberField;
 import betterquesting.api.client.gui.misc.IVolatileScreen;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.utils.JsonHelper;
-import betterquesting.client.gui.editors.json.GuiJsonObject;
+import bq_standard.client.gui.editors.callback.JsonSaveLoadCallback;
 import bq_standard.tasks.TaskScoreboard;
 import bq_standard.tasks.TaskScoreboard.ScoreOperation;
 import com.google.gson.JsonObject;
@@ -71,7 +73,8 @@ public class GuiScoreEditor extends GuiScreenThemed implements IVolatileScreen
 			data.addProperty("operation", operation.name());
 		} else if(button.id == 2)
 		{
-			mc.displayGuiScreen(new GuiJsonObject(this, data, null));
+			//mc.displayGuiScreen(new GuiJsonObject(this, data, null));
+			QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(this, new JsonSaveLoadCallback<JsonObject>(task), data, task.getDocumentation());
 		}
 	}
 	

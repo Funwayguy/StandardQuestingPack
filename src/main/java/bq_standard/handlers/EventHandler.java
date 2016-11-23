@@ -11,10 +11,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.world.BlockEvent;
-import betterquesting.api.ExpansionAPI;
-import betterquesting.api.quests.IQuest;
-import betterquesting.api.quests.properties.NativeProps;
-import betterquesting.api.quests.tasks.ITask;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.properties.NativeProps;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.tasks.ITask;
 import bq_standard.tasks.TaskBlockBreak;
 import bq_standard.tasks.TaskCrafting;
 import bq_standard.tasks.TaskHunt;
@@ -39,7 +40,7 @@ public class EventHandler
 			actStack = CraftingManager.getInstance().findMatchingRecipe((InventoryCrafting)event.craftMatrix, event.player.worldObj);
 		}
 		
-		for(Entry<TaskCrafting,IQuest> entry : getActiveTasks(TaskCrafting.class, ExpansionAPI.getAPI().getNameCache().getQuestingID(event.player)).entrySet())
+		for(Entry<TaskCrafting,IQuest> entry : getActiveTasks(TaskCrafting.class, QuestingAPI.getQuestingUUID(event.player)).entrySet())
 		{
 			entry.getKey().onItemCrafted(entry.getValue(), event.player, actStack);
 		}
@@ -53,7 +54,7 @@ public class EventHandler
 			return;
 		}
 		
-		for(Entry<TaskCrafting,IQuest> entry : getActiveTasks(TaskCrafting.class, ExpansionAPI.getAPI().getNameCache().getQuestingID(event.player)).entrySet())
+		for(Entry<TaskCrafting,IQuest> entry : getActiveTasks(TaskCrafting.class, QuestingAPI.getQuestingUUID(event.player)).entrySet())
 		{
 			entry.getKey().onItemSmelted(entry.getValue(), event.player, event.smelting.copy());
 		}
@@ -69,7 +70,7 @@ public class EventHandler
 		
 		EntityPlayer player = (EntityPlayer)event.source.getEntity();
 		
-		for(Entry<TaskHunt,IQuest> entry : getActiveTasks(TaskHunt.class, ExpansionAPI.getAPI().getNameCache().getQuestingID(player)).entrySet())
+		for(Entry<TaskHunt,IQuest> entry : getActiveTasks(TaskHunt.class, QuestingAPI.getQuestingUUID(player)).entrySet())
 		{
 			entry.getKey().onKilledByPlayer(entry.getValue(), event.entityLiving, event.source);;
 		}
@@ -83,7 +84,7 @@ public class EventHandler
 			return;
 		}
 		
-		for(Entry<TaskBlockBreak,IQuest> entry : getActiveTasks(TaskBlockBreak.class, ExpansionAPI.getAPI().getNameCache().getQuestingID(event.getPlayer())).entrySet())
+		for(Entry<TaskBlockBreak,IQuest> entry : getActiveTasks(TaskBlockBreak.class, QuestingAPI.getQuestingUUID(event.getPlayer())).entrySet())
 		{
 			entry.getKey().onBlockBreak(entry.getValue(), event.getPlayer(), event.block, event.blockMetadata, event.x, event.y, event.z);
 		}
@@ -92,7 +93,7 @@ public class EventHandler
 	@SuppressWarnings("unchecked")
 	private <T extends ITask> Map<T, IQuest> getActiveTasks(Class<T> cls, UUID uuid)
 	{
-		List<IQuest> qList = ExpansionAPI.getAPI().getQuestDB().getAllValues();
+		List<IQuest> qList = QuestingAPI.getAPI(ApiReference.QUEST_DB).getAllValues();
 		Map<T, IQuest> tMap = new HashMap<T, IQuest>();
 		
 		if(cls == null)

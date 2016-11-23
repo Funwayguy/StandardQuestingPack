@@ -10,7 +10,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import betterquesting.api.utils.JsonHelper;
-import betterquesting.core.BQ_Settings;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootRegistry;
 import com.google.gson.JsonObject;
@@ -48,7 +47,7 @@ public class BQS_Commands extends CommandBase
 				sender.addChatMessage(new ChatComponentText("Loot database set as global default"));
 			} else if(args[1].equalsIgnoreCase("load"))
 			{
-		    	File f1 = new File(BQ_Settings.defaultDir, "DefaultLoot.json");
+		    	File f1 = new File("config/betterquesting/DefaultLoot.json");
 				JsonObject j1 = new JsonObject();
 				
 				if(f1.exists())

@@ -10,12 +10,12 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.ChestGenHooks;
 import net.minecraftforge.event.world.WorldEvent;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.ExpansionAPI;
-import betterquesting.api.network.PreparedPayload;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api.utils.NBTConverter;
-import betterquesting.core.BQ_Settings;
 import bq_standard.core.BQ_Standard;
 import bq_standard.network.StandardPacketType;
 import com.google.gson.JsonArray;
@@ -108,7 +108,7 @@ public class LootRegistry
 		LootRegistry.writeToJson(json);
 		tags.setInteger("ID", 1);
 		tags.setTag("Database", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
-		ExpansionAPI.getAPI().getPacketSender().sendToAll(new PreparedPayload(StandardPacketType.LOOT_SYNC.GetLocation(), tags));
+		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToAll(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags));
 	}
 	
 	public static void sendDatabase(EntityPlayerMP player)
@@ -118,7 +118,7 @@ public class LootRegistry
 		LootRegistry.writeToJson(json);
 		tags.setInteger("ID", 1);
 		tags.setTag("Database", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
-		ExpansionAPI.getAPI().getPacketSender().sendToPlayer(new PreparedPayload(StandardPacketType.LOOT_SYNC.GetLocation(), tags), player);
+		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToPlayer(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags), player);
 	}
 	
 	public static void writeToJson(JsonObject json)
@@ -180,7 +180,7 @@ public class LootRegistry
 			j1 = JsonHelper.ReadFromFile(f1);
 		} else
 		{
-			f1 = server.getFile(BQ_Settings.defaultDir + "QuestLoot.json");
+			f1 = server.getFile("config/betterquesting/QuestLoot.json");
 			
 			if(f1.exists())
 			{

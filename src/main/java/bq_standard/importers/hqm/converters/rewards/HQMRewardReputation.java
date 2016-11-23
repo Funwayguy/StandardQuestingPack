@@ -1,7 +1,7 @@
 package bq_standard.importers.hqm.converters.rewards;
 
 import java.util.ArrayList;
-import betterquesting.api.quests.rewards.IReward;
+import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api.utils.JsonHelper;
 import bq_standard.importers.hqm.HQMQuestImporter;
 import bq_standard.rewards.RewardScoreboard;
@@ -28,7 +28,7 @@ public class HQMRewardReputation extends HQMReward
 			
 			int index = JsonHelper.GetNumber(je.getAsJsonObject(), "reputation", 0).intValue();
 			int value = JsonHelper.GetNumber(je.getAsJsonObject(), "value", 1).intValue();
-			String name = HQMQuestImporter.reputations.containsKey(index)? HQMQuestImporter.reputations.get(index) : "Reputation (" + index + ")";
+			String name = HQMQuestImporter.instance.reputations.containsKey(index)? HQMQuestImporter.instance.reputations.get(index) : "Reputation (" + index + ")";
 			RewardScoreboard reward = new RewardScoreboard();
 			reward.score = name;
 			reward.value = value;

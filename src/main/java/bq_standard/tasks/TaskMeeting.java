@@ -10,16 +10,17 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.ExpansionAPI;
-import betterquesting.api.client.gui.IGuiEmbedded;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.quests.IQuest;
-import betterquesting.api.quests.properties.NativeProps;
-import betterquesting.api.quests.tasks.ITask;
+import betterquesting.api.jdoc.IJsonDoc;
+import betterquesting.api.properties.NativeProps;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api.utils.NBTConverter;
-import betterquesting.quests.QuestSettings;
 import bq_standard.client.gui.editors.GuiMeetingEditor;
 import bq_standard.client.gui.tasks.GuiTaskMeeting;
 import bq_standard.core.BQ_Standard;
@@ -88,7 +89,7 @@ public class TaskMeeting implements ITask
 	@Override
 	public void update(EntityPlayer player, IQuest quest)
 	{
-		if(player.ticksExisted%60 == 0 && !QuestSettings.INSTANCE.getProperty(NativeProps.EDIT_MODE))
+		if(player.ticksExisted%60 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
 		{
 			detect(player, quest);
 		}
@@ -97,7 +98,7 @@ public class TaskMeeting implements ITask
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		UUID playerID = ExpansionAPI.getAPI().getNameCache().getQuestingID(player);
+		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
 		if(!player.isEntityAlive() || isComplete(playerID))
 		{
@@ -232,5 +233,11 @@ public class TaskMeeting implements ITask
 	public IGuiEmbedded getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
 	{
 		return new GuiTaskMeeting(this, posX, posY, sizeX, sizeY);
+	}
+
+	@Override
+	public IJsonDoc getDocumentation()
+	{
+		return null;
 	}
 }

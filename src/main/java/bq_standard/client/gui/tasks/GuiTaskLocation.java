@@ -9,9 +9,9 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.WorldProvider;
 import net.minecraftforge.common.DimensionManager;
 import org.lwjgl.opengl.GL11;
-import betterquesting.api.ExpansionAPI;
+import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiElement;
-import betterquesting.api.client.gui.IGuiEmbedded;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.utils.RenderUtils;
 import bq_standard.tasks.TaskLocation;
 
@@ -67,7 +67,7 @@ public class GuiTaskLocation extends GuiElement implements IGuiEmbedded
 			i += 12;
 		}
 		
-		if(task.isComplete(ExpansionAPI.getAPI().getNameCache().getQuestingID(mc.thePlayer)))
+		if(task.isComplete(QuestingAPI.getQuestingUUID(mc.thePlayer)))
 		{
 			mc.fontRenderer.drawString(I18n.format("bq_standard.gui.found"), posX, posY + i, Color.GREEN.getRGB(), false);
 		} else

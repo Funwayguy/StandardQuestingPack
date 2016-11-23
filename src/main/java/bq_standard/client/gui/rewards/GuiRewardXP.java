@@ -5,7 +5,7 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.util.EnumChatFormatting;
 import org.lwjgl.opengl.GL11;
 import betterquesting.api.client.gui.GuiElement;
-import betterquesting.api.client.gui.IGuiEmbedded;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import bq_standard.rewards.RewardXP;
 
 public class GuiRewardXP extends GuiElement implements IGuiEmbedded

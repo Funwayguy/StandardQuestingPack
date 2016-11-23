@@ -8,13 +8,13 @@ import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
-import betterquesting.api.quests.IQuest;
-import betterquesting.api.quests.IQuestLine;
-import betterquesting.api.quests.rewards.IReward;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.IQuestLine;
+import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
-import betterquesting.database.QuestDatabase;
-import betterquesting.database.QuestLineDatabase;
 import bq_standard.rewards.RewardChoice;
 import bq_standard.rewards.RewardItem;
 import codechicken.nei.PositionedStack;
@@ -164,7 +164,7 @@ public class NEIRewardHandler implements ICraftingHandler
 			ItemStack stack = (ItemStack)o;
 			
 			qloop:
-			for(IQuest q : QuestDatabase.INSTANCE.getAllValues())
+			for(IQuest q : QuestingAPI.getAPI(ApiReference.QUEST_DB).getAllValues())
 			{
 				for(IReward r : q.getRewards().getAllValues())
 				{
@@ -218,9 +218,9 @@ public class NEIRewardHandler implements ICraftingHandler
 			this.quest = I18n.format(quest.getUnlocalisedName());
 			this.reward = I18n.format(reward.getUnlocalisedName());
 			
-			int qID = QuestDatabase.INSTANCE.getKey(quest);
+			int qID = QuestingAPI.getAPI(ApiReference.QUEST_DB).getKey(quest);
 			boolean flag = false;
-			for(IQuestLine ql : QuestLineDatabase.INSTANCE.getAllValues())
+			for(IQuestLine ql : QuestingAPI.getAPI(ApiReference.LINE_DB).getAllValues())
 			{
 				if(ql.getAllKeys().contains(qID))
 				{

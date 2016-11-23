@@ -15,21 +15,21 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.ExpansionAPI;
-import betterquesting.api.client.gui.IGuiEmbedded;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.party.IParty;
-import betterquesting.api.quests.IQuest;
-import betterquesting.api.quests.properties.NativeProps;
-import betterquesting.api.quests.tasks.IProgression;
-import betterquesting.api.quests.tasks.ITask;
+import betterquesting.api.jdoc.IJsonDoc;
+import betterquesting.api.placeholders.ItemPlaceholder;
+import betterquesting.api.properties.NativeProps;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.party.IParty;
+import betterquesting.api.questing.tasks.IProgression;
+import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api.utils.NBTConverter;
-import betterquesting.api.utils.placeholders.ItemPlaceholder;
-import betterquesting.party.PartyManager;
-import betterquesting.quests.QuestSettings;
 import bq_standard.client.gui.tasks.GuiTaskBlockBreak;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskBlockBreak;
@@ -81,7 +81,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 	@Override
 	public void update(EntityPlayer player, IQuest quest)
 	{
-		if(player.ticksExisted%200 == 0 && !QuestSettings.INSTANCE.getProperty(NativeProps.EDIT_MODE))
+		if(player.ticksExisted%200 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
 		{
 			detect(player, quest);
 		}
@@ -90,7 +90,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		UUID playerID = ExpansionAPI.getAPI().getNameCache().getQuestingID(player);
+		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
 		if(isComplete(playerID))
 		{
@@ -121,7 +121,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 	
 	public void onBlockBreak(IQuest quest, EntityPlayer player, Block b, int metadata, int x, int y, int z)
 	{
-		UUID playerID = ExpansionAPI.getAPI().getNameCache().getQuestingID(player);
+		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
 		if(isComplete(playerID))
 		{
@@ -379,7 +379,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 	{
 		int[] total = new int[blockTypes.size()];
 		
-		IParty party = PartyManager.INSTANCE.getUserParty(uuid);
+		IParty party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getUserParty(uuid);
 		
 		if(party == null)
 		{
@@ -483,5 +483,11 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 			stack.oreDict = oreDict;
 			return stack;
 		}
+	}
+
+	@Override
+	public IJsonDoc getDocumentation()
+	{
+		return null;
 	}
 }

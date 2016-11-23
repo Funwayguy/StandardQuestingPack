@@ -3,13 +3,13 @@ package bq_standard.client.gui.tasks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
-import betterquesting.api.ExpansionAPI;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiElement;
-import betterquesting.api.client.gui.IGuiEmbedded;
 import betterquesting.api.client.gui.controls.GuiButtonThemed;
-import betterquesting.api.network.PreparedPayload;
-import betterquesting.api.quests.IQuest;
-import betterquesting.database.QuestDatabase;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import betterquesting.api.network.QuestingPacket;
+import betterquesting.api.questing.IQuest;
 import bq_standard.network.StandardPacketType;
 import bq_standard.tasks.TaskCheckbox;
 
@@ -24,20 +24,20 @@ public class GuiTaskCheckbox extends GuiElement implements IGuiEmbedded
 	{
 		this.mc = Minecraft.getMinecraft();
 		
-		if(task != null && task.isComplete(ExpansionAPI.getAPI().getNameCache().getQuestingID(mc.thePlayer)))
+		if(task != null && task.isComplete(QuestingAPI.getQuestingUUID(mc.thePlayer)))
 		{
 			btn = new GuiButtonThemed(0, posX + sizeX/2 - 20, posY + sizeY/2 - 20, 40, 40, EnumChatFormatting.GREEN + "" + EnumChatFormatting.BOLD + "\u2713");
 			btn.enabled = false;
 		} else if(task != null)
 		{
-			for(IQuest q : QuestDatabase.INSTANCE.getAllValues())
+			for(IQuest q : QuestingAPI.getAPI(ApiReference.QUEST_DB).getAllValues())
 			{
 				int tmp = q.getTasks().getKey(task);
 				
 				if(tmp >= 0)
 				{
 					tId = tmp;
-					qId = QuestDatabase.INSTANCE.getKey(q);
+					qId = QuestingAPI.getAPI(ApiReference.QUEST_DB).getKey(q);
 					break;
 				}
 			}
@@ -74,7 +74,7 @@ public class GuiTaskCheckbox extends GuiElement implements IGuiEmbedded
 			tags.setInteger("ID", 2);
 			tags.setInteger("qId", qId);
 			tags.setInteger("tId", tId);
-			ExpansionAPI.getAPI().getPacketSender().sendToServer(new PreparedPayload(StandardPacketType.CHECKBOX.GetLocation(), tags));
+			QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(StandardPacketType.CHECKBOX.GetLocation(), tags));
 		}
 	}
 

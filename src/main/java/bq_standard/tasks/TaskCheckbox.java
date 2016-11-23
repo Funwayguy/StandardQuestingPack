@@ -6,10 +6,11 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.client.gui.IGuiEmbedded;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.quests.IQuest;
-import betterquesting.api.quests.tasks.ITask;
+import betterquesting.api.jdoc.IJsonDoc;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.JsonHelper;
 import bq_standard.client.gui.tasks.GuiTaskCheckbox;
 import bq_standard.core.BQ_Standard;
@@ -143,6 +144,12 @@ public class TaskCheckbox implements ITask
 	@Override
 	@SideOnly(Side.CLIENT)
 	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
+	{
+		return null;
+	}
+
+	@Override
+	public IJsonDoc getDocumentation()
 	{
 		return null;
 	}

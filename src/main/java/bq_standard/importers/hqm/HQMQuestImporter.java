@@ -1,30 +1,14 @@
 package bq_standard.importers.hqm;
 
 import java.io.File;
-import java.io.FileReader;
-import java.util.ArrayList;
+import java.io.FileFilter;
 import java.util.HashMap;
-import java.util.Map.Entry;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.init.Items;
-import org.apache.logging.log4j.Level;
-import betterquesting.api.ExpansionAPI;
-import betterquesting.api.client.IFileCallback;
-import betterquesting.api.client.io.IQuestIO;
-import betterquesting.api.network.PreparedPayload;
-import betterquesting.api.quests.IQuest;
-import betterquesting.api.quests.IQuestLine;
-import betterquesting.api.utils.BigItemStack;
-import betterquesting.api.utils.FileExtentionFilter;
+import betterquesting.api.importer.IImporter;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.IQuestDatabase;
+import betterquesting.api.questing.IQuestLineDatabase;
+import betterquesting.api.utils.FileExtensionFilter;
 import betterquesting.api.utils.JsonHelper;
-import betterquesting.client.gui.misc.GuiFileExplorer;
-import betterquesting.database.QuestDatabase;
-import betterquesting.quests.QuestInstance;
-import betterquesting.quests.QuestLine;
-import betterquesting.quests.QuestLineEntry;
-import bq_standard.client.gui.importers.GuiHQMQuestImporter;
-import bq_standard.core.BQ_Standard;
 import bq_standard.importers.hqm.converters.rewards.HQMReward;
 import bq_standard.importers.hqm.converters.rewards.HQMRewardChoice;
 import bq_standard.importers.hqm.converters.rewards.HQMRewardReputation;
@@ -34,32 +18,27 @@ import bq_standard.importers.hqm.converters.tasks.HQMTaskCraft;
 import bq_standard.importers.hqm.converters.tasks.HQMTaskDetect;
 import bq_standard.importers.hqm.converters.tasks.HQMTaskKill;
 import bq_standard.importers.hqm.converters.tasks.HQMTaskLocation;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
-public class HQMQuestImporter implements IQuestIO, IFileCallback
+public class HQMQuestImporter implements IImporter
 {
 	public static HQMQuestImporter instance = new HQMQuestImporter();
 	
 	public static HashMap<String, HQMTask> taskConverters = new HashMap<String, HQMTask>();
 	public static HashMap<String, HQMReward> rewardConverters = new HashMap<String, HQMReward>();
 	
-	@SideOnly(Side.CLIENT)
-	public static void StartImport()
+	@Override
+	public FileFilter getFileFilter()
 	{
-		idMap = new HashMap<String, IQuest>(); // Reset ID map in preparation
-		Minecraft mc = Minecraft.getMinecraft();
-		mc.displayGuiScreen(new GuiFileExplorer(mc.currentScreen, instance, new File("."), new FileExtentionFilter(".json")));
+		return new FileExtensionFilter(".json");
 	}
 	
-	public static HashMap<Integer, String> reputations = new HashMap<Integer, String>();
+	public HashMap<Integer, String> reputations = new HashMap<Integer, String>();
 	
-	public static void LoadReputations(JsonObject jsonRoot)
+	public HashMap<String, IQuest> idMap = new HashMap<String, IQuest>(); // Use this to remap old IDs to new ones
+	
+	public void LoadReputations(JsonObject jsonRoot)
 	{
 		reputations.clear();
 		
@@ -86,16 +65,14 @@ public class HQMQuestImporter implements IQuestIO, IFileCallback
 		}
 	}
 	
-	public static HashMap<String, IQuest> idMap = new HashMap<String, IQuest>(); // Use this to remap old IDs to new ones
-	
-	public static IQuest GetNewQuest(String oldID)
+	public IQuest GetNewQuest(String oldID, IQuestDatabase qdb)
 	{
 		if(idMap.containsKey(oldID))
 		{
 			return idMap.get(oldID);
 		} else
 		{
-			IQuest quest = new QuestInstance();
+			IQuest quest = qdb.createNew();
 			idMap.put(oldID, quest);
 			return quest;
 		}
@@ -263,19 +240,13 @@ public class HQMQuestImporter implements IQuestIO, IFileCallback
 	}
 
 	@Override
-	public String getUnlocalisedDescrition()
+	public String getUnlocalisedDescription()
 	{
 		return "bq_standard.importer.hqm_quest.desc";
 	}
 
 	@Override
-	public GuiScreen openGui(GuiScreen screen)
-	{
-		return null;//new GuiHQMQuestImporter(screen, posX, posY, sizeX, sizeY);
-	}
-
-	@Override
-	public void setFiles(File... files)
+	public void loadFiles(IQuestDatabase questDB, IQuestLineDatabase lineDB, File[] files)
 	{
 		for(File selected : files)
 		{
@@ -284,27 +255,8 @@ public class HQMQuestImporter implements IQuestIO, IFileCallback
 				continue;
 			}
 			
-			JsonObject json;
-			
-			try
-			{
-				FileReader fr = new FileReader(selected);
-				Gson g = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
-				json = g.fromJson(fr, JsonObject.class);
-				fr.close();
-			} catch(Exception e)
-			{
-				BQ_Standard.logger.log(Level.ERROR, "An error occured during import", e);
-				continue;
-			}
-			
-			if(json != null)
-			{
-				ImportQuestLine(json);
-			}
+			JsonObject json = JsonHelper.ReadFromFile(selected);
+			ImportQuestLine(json);
 		}
-		
-		PreparedPayload pp = QuestDatabase.INSTANCE.getSyncPacket();
-		ExpansionAPI.getAPI().getPacketSender().sendToServer(pp);
 	}
 }

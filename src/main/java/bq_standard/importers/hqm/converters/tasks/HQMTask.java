@@ -1,7 +1,7 @@
 package bq_standard.importers.hqm.converters.tasks;
 
 import java.util.ArrayList;
-import betterquesting.api.quests.tasks.ITask;
+import betterquesting.api.questing.tasks.ITask;
 import com.google.gson.JsonObject;
 
 public abstract class HQMTask

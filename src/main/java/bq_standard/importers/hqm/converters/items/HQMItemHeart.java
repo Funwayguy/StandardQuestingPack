@@ -1,11 +1,18 @@
 package bq_standard.importers.hqm.converters.items;
 
+import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import betterquesting.api.utils.BigItemStack;
-import betterquesting.core.BetterQuesting;
 
 public class HQMItemHeart extends HQMItem
 {
+	private final Item bqHeart;
+	
+	public HQMItemHeart()
+	{
+		bqHeart = (Item)Item.itemRegistry.getObject("betterquesting:extra_life");
+	}
+	
 	@Override
 	public BigItemStack convertItem(int damage, int amount, NBTTagCompound tags)
 	{
@@ -29,6 +36,6 @@ public class HQMItemHeart extends HQMItem
 				break;
 		}
 		
-		return new BigItemStack(BetterQuesting.extraLife, amt, dmg);
+		return new BigItemStack(bqHeart, amt, dmg);
 	}
 }
