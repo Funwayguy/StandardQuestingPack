@@ -2,10 +2,10 @@ package bq_standard.client.theme;
 
 import java.awt.Color;
 import java.util.UUID;
-import org.lwjgl.opengl.GL11;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import org.lwjgl.opengl.GL11;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.themes.IThemeRenderer;
 import betterquesting.api.enums.EnumQuestState;

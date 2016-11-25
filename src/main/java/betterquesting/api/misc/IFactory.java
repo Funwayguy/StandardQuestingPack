@@ -1,4 +1,4 @@
-package betterquesting.api.other;
+package betterquesting.api.misc;
 
 import net.minecraft.util.ResourceLocation;
 import com.google.gson.JsonObject;

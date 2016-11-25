@@ -3,7 +3,7 @@ package bq_standard.importers.hqm;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.HashMap;
-import betterquesting.api.importer.IImporter;
+import betterquesting.api.client.importers.IImporter;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.IQuestDatabase;
 import betterquesting.api.questing.IQuestLineDatabase;

@@ -1,4 +1,4 @@
-package betterquesting.api.toolbox;
+package betterquesting.api.client.toolbox;
 
 import java.util.List;
 

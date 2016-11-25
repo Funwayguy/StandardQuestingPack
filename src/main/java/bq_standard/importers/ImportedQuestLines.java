@@ -1,6 +1,7 @@
 package bq_standard.importers;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -17,11 +18,33 @@ import com.google.gson.JsonObject;
 public class ImportedQuestLines implements IQuestLineDatabase
 {
 	private final HashMap<Integer, IQuestLine> questLines = new HashMap<Integer, IQuestLine>();
+	private final List<Integer> lineOrder = new ArrayList<Integer>();
 	private final IQuestLineDatabase parent;
 	
 	public ImportedQuestLines(IQuestLineDatabase parent)
 	{
 		this.parent = parent;
+	}
+	
+	@Override
+	public int getOrderIndex(int lineID)
+	{
+		if(!questLines.containsKey(lineID))
+		{
+			return -1;
+		} else if(!lineOrder.contains(lineID))
+		{
+			lineOrder.add(lineID);
+		}
+		
+		return lineOrder.indexOf(lineID);
+	}
+	
+	@Override
+	public void setOrderIndex(int lineID, int index)
+	{
+		lineOrder.remove((Integer)lineID);
+		lineOrder.add(index, lineID);
 	}
 	
 	@Override
@@ -120,8 +143,11 @@ public class ImportedQuestLines implements IQuestLineDatabase
 				continue;
 			}
 			
+			int id = entry.getKey();
+			
 			JsonObject jObj = entry.getValue().writeToJson(new JsonObject(), saveType);
-			jObj.addProperty("lineID", entry.getKey());
+			jObj.addProperty("lineID", id);
+			jObj.addProperty("order", getOrderIndex(id));
 			json.add(jObj);
 		}
 		
@@ -138,6 +164,8 @@ public class ImportedQuestLines implements IQuestLineDatabase
 		
 		questLines.clear();
 		
+		HashMap<Integer,Integer> orderMap = new HashMap<Integer,Integer>();
+		
 		for(JsonElement entry : json)
 		{
 			if(entry == null || !entry.isJsonObject())
@@ -148,6 +176,8 @@ public class ImportedQuestLines implements IQuestLineDatabase
 			JsonObject jql = entry.getAsJsonObject();
 			
 			int id = JsonHelper.GetNumber(jql, "lineID", -1).intValue();
+			int order = JsonHelper.GetNumber(jql, "order", -1).intValue();
+			
 			IQuestLine line = this.createNew();
 			line.readFromJson(entry.getAsJsonObject(), saveType);
 			
@@ -155,6 +185,20 @@ public class ImportedQuestLines implements IQuestLineDatabase
 			{
 				questLines.put(id, line);
 			}
+			
+			if(order >= 0)
+			{
+				orderMap.put(order, id);
+			}
+		}
+		
+		List<Integer> orderKeys = new ArrayList<Integer>(orderMap.keySet());
+		Collections.sort(orderKeys);
+		
+		lineOrder.clear();
+		for(int o : orderKeys)
+		{
+			lineOrder.add(orderMap.get(o));
 		}
 	}
 	

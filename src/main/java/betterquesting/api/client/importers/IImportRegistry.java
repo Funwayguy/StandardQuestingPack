@@ -1,4 +1,4 @@
-package betterquesting.api.importer;
+package betterquesting.api.client.importers;
 
 import java.util.List;
 

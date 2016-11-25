@@ -1,7 +1,7 @@
 package bq_standard.client.gui.editors.callback;
 
+import betterquesting.api.misc.ICallback;
 import com.google.gson.JsonObject;
-import betterquesting.api.other.ICallback;
 
 public class JsonObjectCallback implements ICallback<JsonObject>
 {

@@ -17,7 +17,7 @@ import betterquesting.api.client.gui.controls.GuiButtonThemed;
 import betterquesting.api.client.gui.controls.GuiNumberField;
 import betterquesting.api.client.gui.misc.IVolatileScreen;
 import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.other.ICallback;
+import betterquesting.api.misc.ICallback;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api.utils.NBTConverter;
 import betterquesting.api.utils.RenderUtils;

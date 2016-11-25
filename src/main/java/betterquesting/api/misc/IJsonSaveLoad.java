@@ -1,4 +1,4 @@
-package betterquesting.api.other;
+package betterquesting.api.misc;
 
 import betterquesting.api.enums.EnumSaveType;
 import com.google.gson.JsonElement;

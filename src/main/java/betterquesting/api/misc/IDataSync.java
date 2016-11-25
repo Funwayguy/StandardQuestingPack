@@ -1,4 +1,4 @@
-package betterquesting.api.other;
+package betterquesting.api.misc;
 
 import net.minecraft.nbt.NBTTagCompound;
 import betterquesting.api.network.QuestingPacket;

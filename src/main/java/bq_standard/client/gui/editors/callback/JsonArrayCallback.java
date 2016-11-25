@@ -1,8 +1,8 @@
 package bq_standard.client.gui.editors.callback;
 
-import com.google.gson.JsonArray;
-import betterquesting.api.other.ICallback;
+import betterquesting.api.misc.ICallback;
 import betterquesting.api.utils.JsonHelper;
+import com.google.gson.JsonArray;
 
 public class JsonArrayCallback implements ICallback<JsonArray>
 {

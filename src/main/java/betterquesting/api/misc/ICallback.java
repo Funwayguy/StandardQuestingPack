@@ -1,4 +1,4 @@
-package betterquesting.api.other;
+package betterquesting.api.misc;
 
 public interface ICallback<T>
 {

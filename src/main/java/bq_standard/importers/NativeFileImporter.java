@@ -2,8 +2,8 @@ package bq_standard.importers;
 
 import java.io.File;
 import java.io.FileFilter;
+import betterquesting.api.client.importers.IImporter;
 import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.importer.IImporter;
 import betterquesting.api.questing.IQuestDatabase;
 import betterquesting.api.questing.IQuestLineDatabase;
 import betterquesting.api.utils.FileExtensionFilter;

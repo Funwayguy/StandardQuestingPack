@@ -1,4 +1,4 @@
-package betterquesting.api.registry;
+package betterquesting.api.storage;
 
 import java.util.List;
 

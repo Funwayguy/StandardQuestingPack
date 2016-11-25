@@ -1,9 +1,9 @@
-package betterquesting.api.registry;
+package betterquesting.api.storage;
 
 import java.util.UUID;
 import net.minecraft.server.MinecraftServer;
-import betterquesting.api.other.IDataSync;
-import betterquesting.api.other.IJsonSaveLoad;
+import betterquesting.api.misc.IDataSync;
+import betterquesting.api.misc.IJsonSaveLoad;
 import com.google.gson.JsonArray;
 
 public interface INameCache extends IJsonSaveLoad<JsonArray>, IDataSync

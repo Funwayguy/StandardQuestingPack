@@ -2,12 +2,12 @@ package bq_standard.client.gui;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.lwjgl.opengl.GL11;
 import net.minecraft.client.Minecraft;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
+import org.lwjgl.opengl.GL11;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.lists.GuiScrollingBase;
 import betterquesting.api.client.gui.lists.IScrollingEntry;

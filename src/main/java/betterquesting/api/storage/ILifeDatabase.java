@@ -1,8 +1,8 @@
-package betterquesting.api.registry;
+package betterquesting.api.storage;
 
 import java.util.UUID;
-import betterquesting.api.other.IDataSync;
-import betterquesting.api.other.IJsonSaveLoad;
+import betterquesting.api.misc.IDataSync;
+import betterquesting.api.misc.IJsonSaveLoad;
 import betterquesting.api.questing.party.IParty;
 import com.google.gson.JsonObject;
 

@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileReader;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.importer.IImporter;
+import betterquesting.api.client.importers.IImporter;
 import betterquesting.api.questing.IQuestDatabase;
 import betterquesting.api.questing.IQuestLineDatabase;
 import betterquesting.api.utils.FileExtensionFilter;
