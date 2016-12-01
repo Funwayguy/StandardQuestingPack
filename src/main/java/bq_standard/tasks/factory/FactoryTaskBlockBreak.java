@@ -3,12 +3,11 @@ package bq_standard.tasks.factory;
 import net.minecraft.util.ResourceLocation;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.misc.IFactory;
-import betterquesting.api.questing.tasks.ITask;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskBlockBreak;
 import com.google.gson.JsonObject;
 
-public final class FactoryTaskBlockBreak implements IFactory<ITask>
+public final class FactoryTaskBlockBreak implements IFactory<TaskBlockBreak>
 {
 	public static final FactoryTaskBlockBreak INSTANCE = new FactoryTaskBlockBreak();
 	

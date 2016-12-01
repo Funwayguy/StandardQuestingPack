@@ -3,12 +3,11 @@ package bq_standard.tasks.factory;
 import net.minecraft.util.ResourceLocation;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.misc.IFactory;
-import betterquesting.api.questing.tasks.ITask;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskRetrieval;
 import com.google.gson.JsonObject;
 
-public final class FactoryTaskRetrieval implements IFactory<ITask>
+public final class FactoryTaskRetrieval implements IFactory<TaskRetrieval>
 {
 	public static final FactoryTaskRetrieval INSTANCE = new FactoryTaskRetrieval();
 	

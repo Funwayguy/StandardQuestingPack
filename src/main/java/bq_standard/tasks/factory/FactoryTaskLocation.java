@@ -3,12 +3,11 @@ package bq_standard.tasks.factory;
 import net.minecraft.util.ResourceLocation;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.misc.IFactory;
-import betterquesting.api.questing.tasks.ITask;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskLocation;
 import com.google.gson.JsonObject;
 
-public final class FactoryTaskLocation implements IFactory<ITask>
+public final class FactoryTaskLocation implements IFactory<TaskLocation>
 {
 	public static final FactoryTaskLocation INSTANCE = new FactoryTaskLocation();
 	
@@ -23,13 +22,13 @@ public final class FactoryTaskLocation implements IFactory<ITask>
 	}
 
 	@Override
-	public ITask createNew()
+	public TaskLocation createNew()
 	{
 		return new TaskLocation();
 	}
 
 	@Override
-	public ITask loadFromJson(JsonObject json)
+	public TaskLocation loadFromJson(JsonObject json)
 	{
 		TaskLocation task = new TaskLocation();
 		task.readFromJson(json, EnumSaveType.CONFIG);

@@ -3,12 +3,11 @@ package bq_standard.tasks.factory;
 import net.minecraft.util.ResourceLocation;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.misc.IFactory;
-import betterquesting.api.questing.tasks.ITask;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskCheckbox;
 import com.google.gson.JsonObject;
 
-public final class FactoryTaskCheckbox implements IFactory<ITask>
+public final class FactoryTaskCheckbox implements IFactory<TaskCheckbox>
 {
 	public static final FactoryTaskCheckbox INSTANCE = new FactoryTaskCheckbox();
 	

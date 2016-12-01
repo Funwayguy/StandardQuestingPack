@@ -3,12 +3,11 @@ package bq_standard.rewards.factory;
 import net.minecraft.util.ResourceLocation;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.misc.IFactory;
-import betterquesting.api.questing.rewards.IReward;
 import bq_standard.core.BQ_Standard;
 import bq_standard.rewards.RewardXP;
 import com.google.gson.JsonObject;
 
-public class FactoryRewardXP implements IFactory<IReward>
+public class FactoryRewardXP implements IFactory<RewardXP>
 {
 	public static final FactoryRewardXP INSTANCE = new FactoryRewardXP();
 	
@@ -23,13 +22,13 @@ public class FactoryRewardXP implements IFactory<IReward>
 	}
 
 	@Override
-	public IReward createNew()
+	public RewardXP createNew()
 	{
 		return new RewardXP();
 	}
 
 	@Override
-	public IReward loadFromJson(JsonObject json)
+	public RewardXP loadFromJson(JsonObject json)
 	{
 		RewardXP reward = new RewardXP();
 		reward.readFromJson(json, EnumSaveType.CONFIG);
