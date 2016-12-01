@@ -70,7 +70,7 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 			return;
 		}
 		
-		boolean flag = false;
+		boolean flag = true;
 		int[] progress = quest == null || !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();
 		
 		for(int j = 0; j < blockTypes.size(); j++)
