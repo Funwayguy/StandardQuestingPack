@@ -4,11 +4,11 @@ import java.awt.Color;
 import java.util.HashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.WorldProvider;
 import net.minecraftforge.common.DimensionManager;
-import org.lwjgl.opengl.GL11;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.misc.IGuiEmbedded;
@@ -87,10 +87,10 @@ public class GuiTaskLocation extends GuiElement implements IGuiEmbedded
 		
 		if(task.hideInfo || task.range < 0 || mc.thePlayer.dimension != task.dim)
 		{
-			GL11.glPushMatrix();
-			GL11.glScalef(2F, 2F, 2F);
+			GlStateManager.pushMatrix();
+			GlStateManager.scale(2F, 2F, 2F);
 			mc.fontRendererObj.drawString(TextFormatting.BOLD + "?", cx/2 - 4, cy/2 - 4 , Color.RED.getRGB());
-			GL11.glPopMatrix();
+			GlStateManager.popMatrix();
 		} else
 		{
 			RenderUtils.DrawLine(cx, cy, cx + dx, cy + dy, 4, Color.RED.getRGB());

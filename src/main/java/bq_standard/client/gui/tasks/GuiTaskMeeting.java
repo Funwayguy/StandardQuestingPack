@@ -1,11 +1,11 @@
 package bq_standard.client.gui.tasks;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.util.math.MathHelper;
-import org.lwjgl.opengl.GL11;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.utils.RenderUtils;
@@ -37,10 +37,10 @@ public class GuiTaskMeeting extends GuiElement implements IGuiEmbedded
 	{
 		if(target != null)
 		{
-			GL11.glPushMatrix();
+			GlStateManager.pushMatrix();
 			
-			GL11.glScalef(1F, 1F, 1F);
-			GL11.glColor4f(1F, 1F, 1F, 1F);
+			GlStateManager.scale(1F, 1F, 1F);
+			GlStateManager.color(1F, 1F, 1F, 1F);
 			
 			float angle = ((float)Minecraft.getSystemTime()%30000F)/30000F * 360F;
 			float scale = 64F;
@@ -62,7 +62,7 @@ public class GuiTaskMeeting extends GuiElement implements IGuiEmbedded
 			{
 			}
 			
-			GL11.glPopMatrix();
+			GlStateManager.popMatrix();
 		} else
 		{
 			if(EntityList.NAME_TO_CLASS.containsKey(task.idName))

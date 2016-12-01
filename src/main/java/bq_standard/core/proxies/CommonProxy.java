@@ -1,7 +1,6 @@
 package bq_standard.core.proxies;
 
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.network.IPacketRegistry;
@@ -39,11 +38,13 @@ public class CommonProxy
 	
 	public void registerHandlers()
 	{
-		FMLCommonHandler.instance().bus().register(new UpdateNotification());
+		MinecraftForge.EVENT_BUS.register(new UpdateNotification());
 		MinecraftForge.EVENT_BUS.register(new LootRegistry());
-		EventHandler eh = new EventHandler();
-		MinecraftForge.EVENT_BUS.register(eh);
-		FMLCommonHandler.instance().bus().register(eh);
+		MinecraftForge.EVENT_BUS.register(new EventHandler());
+	}
+	
+	public void registerRenderers()
+	{
 	}
 	
 	public void registerExpansion()

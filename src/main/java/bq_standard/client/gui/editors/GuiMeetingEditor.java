@@ -3,13 +3,13 @@ package bq_standard.client.gui.editors;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.MathHelper;
-import org.lwjgl.opengl.GL11;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiScreenThemed;
@@ -75,9 +75,9 @@ public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen
 		
 		if(entity != null)
 		{
-			GL11.glPushMatrix();
+			GlStateManager.pushMatrix();
 			
-			GL11.glColor4f(1F, 1F, 1F, 1F);
+			GlStateManager.color(1F, 1F, 1F, 1F);
 			
 			float angle = ((float)Minecraft.getSystemTime()%30000F)/30000F * 360F;
 			float scale = 64F;
@@ -99,7 +99,7 @@ public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen
 			{
 			}
 			
-			GL11.glPopMatrix();
+			GlStateManager.popMatrix();
 		}
 	}
 	

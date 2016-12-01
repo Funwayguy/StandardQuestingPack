@@ -5,6 +5,8 @@ import java.util.UUID;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import org.apache.logging.log4j.Level;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
@@ -97,12 +99,12 @@ public class TaskLocation implements ITask
 		{
 			if(visible && range > 0) // Do not do ray casting with infinite range!
 			{
-				Vec3 pPos = Vec3.createVectorHelper(player.posX, player.posY + player.getEyeHeight(), player.posZ);
-				Vec3 tPos = Vec3.createVectorHelper(x, y, z);
+				Vec3d pPos = new Vec3d(player.posX, player.posY + player.getEyeHeight(), player.posZ);
+				Vec3d tPos = new Vec3d(x, y, z);
 				boolean liquids = false;
-				MovingObjectPosition mop = player.worldObj.func_147447_a(pPos, tPos, liquids, !liquids, false);
+				RayTraceResult mop = player.worldObj.rayTraceBlocks(pPos, tPos, liquids, !liquids, false);
 				
-				if(mop == null || mop.typeOfHit != MovingObjectType.BLOCK)
+				if(mop == null || mop.typeOfHit != RayTraceResult.Type.BLOCK)
 				{
 					setComplete(playerID);
 				} else

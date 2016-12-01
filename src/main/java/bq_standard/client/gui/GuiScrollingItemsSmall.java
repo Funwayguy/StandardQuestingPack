@@ -3,11 +3,11 @@ package bq_standard.client.gui;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
-import org.lwjgl.opengl.GL11;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.lists.GuiScrollingBase;
 import betterquesting.api.client.gui.lists.IScrollingEntry;
@@ -109,19 +109,19 @@ public class GuiScrollingItemsSmall extends GuiScrollingBase<GuiScrollingItemsSm
 		@Override
 		public void drawBackground(int mx, int my, int px, int py, int width)
 		{
-			GL11.glPushMatrix();
+			GlStateManager.pushMatrix();
 			
 			RenderUtils.DrawLine(px, py, px + width, py, 1F, getTextColor());
 			
-			GL11.glColor4f(1F, 1F, 1F, 1F);
+			GlStateManager.color(1F, 1F, 1F, 1F);
 			
-			GL11.glTranslatef(px, py, 0F);
-			//GL11.glScalef(2F, 2F, 2F);
+			GlStateManager.translate(px, py, 0F);
+			//GlStateManager.scale(2F, 2F, 2F);
 			
 			this.mc.renderEngine.bindTexture(currentTheme().getGuiTexture());
 			this.drawTexturedModalRect(0, 0, 0, 48, 18, 18);
 			
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
+			GlStateManager.enableDepth();
 			
 			if(stack != null)
 			{
@@ -134,9 +134,9 @@ public class GuiScrollingItemsSmall extends GuiScrollingBase<GuiScrollingItemsSm
 				} catch(Exception e){}
 			}
 			
-			GL11.glDisable(GL11.GL_DEPTH_TEST);
+			GlStateManager.disableDepth();
 			
-			GL11.glPopMatrix();
+			GlStateManager.popMatrix();
 			
 			RenderUtils.drawSplitString(mc.fontRendererObj, desc, px + 20, py + 4, width - 20, getTextColor(), false, 0, 0);
 		}

@@ -117,7 +117,6 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		int progress = getUsersProgress(playerID);
 		
 		Class<? extends Entity> subject = entity.getClass();
-		@SuppressWarnings("unchecked")
 		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.NAME_TO_CLASS.get(idName);
 		
 		if(subject == null || target == null)

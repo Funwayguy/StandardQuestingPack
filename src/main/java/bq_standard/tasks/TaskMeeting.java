@@ -105,9 +105,7 @@ public class TaskMeeting implements ITask
 			return;
 		}
 		
-		@SuppressWarnings("unchecked")
-		List<Entity> list = player.worldObj.getEntitiesWithinAABBExcludingEntity(player, player.boundingBox.expand(range, range, range));
-		@SuppressWarnings("unchecked")
+		List<Entity> list = player.worldObj.getEntitiesWithinAABBExcludingEntity(player, player.getEntityBoundingBox().expand(range, range, range));
 		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.NAME_TO_CLASS.get(idName);
 		
 		if(target == null)

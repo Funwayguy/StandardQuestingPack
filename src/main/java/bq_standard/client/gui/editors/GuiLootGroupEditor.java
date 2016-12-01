@@ -6,6 +6,7 @@ import java.util.List;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.MathHelper;
@@ -13,7 +14,6 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiScreenThemed;
@@ -94,7 +94,7 @@ public class GuiLootGroupEditor extends GuiScreenThemed implements IVolatileScre
 			LootRegistry.updateUI = false;
 		}
 		
-		GL11.glColor4f(1F, 1F, 1F, 1F);
+		GlStateManager.color(1F, 1F, 1F, 1F);
 		mc.renderEngine.bindTexture(this.currentTheme().getGuiTexture());
 		
 		// Left scroll bar

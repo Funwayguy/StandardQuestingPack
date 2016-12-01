@@ -2,11 +2,11 @@ package bq_standard.client.gui.tasks;
 
 import java.awt.Color;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
-import org.lwjgl.opengl.GL11;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.misc.IGuiEmbedded;
@@ -48,11 +48,11 @@ public class GuiTaskXP extends GuiElement implements IGuiEmbedded
 		int barProg = (int)(MathHelper.clamp_float(xp/(float)task.amount, 0F, 1F) * (barSize - 2));
 		int midX = sizeX/2;
 		
-		GL11.glPushMatrix();
-		GL11.glEnable(GL11.GL_DEPTH_TEST);
-		GL11.glScalef(2F, 2F, 2F);
+		GlStateManager.pushMatrix();
+		GlStateManager.enableDepth();
+		GlStateManager.scale(2F, 2F, 2F);
 		RenderUtils.RenderItemStack(mc, bottle, (posX + sizeX/2 - 16)/2, (posY + sizeY/2 - 32)/2, "");
-		GL11.glPopMatrix();
+		GlStateManager.popMatrix();
 		drawRect(posX + midX - barSize/2, posY + sizeY/2, posX + midX + barSize/2, posY + sizeY/2 + 16, Color.BLACK.getRGB());
 		drawRect(posX + midX - barSize/2 + 1, posY + sizeY/2 + 1, posX + midX - barSize/2 + barProg + 1, posY + sizeY/2 + 15, Color.GREEN.getRGB());
 		String txt = TextFormatting.BOLD + "" + xp + "/" + task.amount + (task.levels? "L" : "XP");

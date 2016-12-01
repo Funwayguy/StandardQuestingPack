@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -13,6 +14,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
@@ -119,7 +121,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		}
 	}
 	
-	public void onBlockBreak(IQuest quest, EntityPlayer player, Block b, int metadata, int x, int y, int z)
+	public void onBlockBreak(IQuest quest, EntityPlayer player, IBlockState state, BlockPos pos)
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
@@ -129,7 +131,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		}
 		
 		int[] progress = getUsersProgress(playerID);
-		TileEntity tile = player.worldObj.getTileEntity(x, y, z);
+		TileEntity tile = player.worldObj.getTileEntity(pos);
 		NBTTagCompound tags = new NBTTagCompound();
 		
 		if(tile != null)
@@ -141,12 +143,12 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		{
 			JsonBlockType block = blockTypes.get(i);
 			
-			boolean flag = block.oreDict.length() > 0 && OreDictionary.getOres(block.oreDict).contains(new ItemStack(b, 1, block.m < 0? OreDictionary.WILDCARD_VALUE : metadata));
+			boolean flag = block.oreDict.length() > 0 && OreDictionary.getOres(block.oreDict).contains(new ItemStack(state.getBlock(), 1, block.m < 0? OreDictionary.WILDCARD_VALUE : state.getBlock().getMetaFromState(state)));
 			
-			if((flag || (b == block.b && (block.m < 0 || metadata == block.m))) && ItemComparison.CompareNBTTag(block.tags, tags, true))
+			if((flag || (state.getBlock() == block.b && (block.m < 0 || state.getBlock().getMetaFromState(state) == block.m))) && ItemComparison.CompareNBTTag(block.tags, tags, true))
 			{
 				progress[i] += 1;
-				setUserProgress(playerID, progress);
+				setUserProgress(player.getUniqueID(), progress);
 				break;
 			}
 		}
@@ -203,8 +205,8 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		
 		if(json.has("blockID"))
 		{
-			Block targetBlock = (Block)Block.blockRegistry.getObject(JsonHelper.GetString(json, "blockID", "minecraft:log"));
-			targetBlock = targetBlock != null? targetBlock : Blocks.log;
+			Block targetBlock = (Block)Block.REGISTRY.getObject(new ResourceLocation(JsonHelper.GetString(json, "blockID", "minecraft:log")));
+			targetBlock = targetBlock != null? targetBlock : Blocks.LOG;
 			int targetMeta = JsonHelper.GetNumber(json, "blockMeta", -1).intValue();
 			NBTTagCompound targetNbt = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "blockNBT"), new NBTTagCompound(), true);
 			int targetNum = JsonHelper.GetNumber(json, "amount", 1).intValue();
@@ -430,7 +432,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 	
 	public static class JsonBlockType
 	{
-		public Block b = Blocks.log;
+		public Block b = Blocks.LOG;
 		public int m = -1;
 		public NBTTagCompound tags = new NBTTagCompound();
 		public int n = 1;
@@ -438,7 +440,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		
 		public JsonObject writeToJson(JsonObject json)
 		{
-			json.addProperty("blockID", Block.blockRegistry.getNameForObject(b));
+			json.addProperty("blockID", b.getRegistryName().toString());
 			json.addProperty("meta", m);
 			json.add("nbt", NBTConverter.NBTtoJSON_Compound(tags, new JsonObject(), true));
 			json.addProperty("amount", n);
@@ -448,8 +450,8 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		
 		public void readFromJson(JsonObject json)
 		{
-			b = (Block)Block.blockRegistry.getObject(JsonHelper.GetString(json, "blockID", "minecraft:log"));
-			b = b != null? b : Blocks.log;
+			b = (Block)Block.REGISTRY.getObject(new ResourceLocation(JsonHelper.GetString(json, "blockID", "minecraft:log")));
+			b = b != null? b : Blocks.LOG;
 			m = JsonHelper.GetNumber(json, "meta", -1).intValue();
 			n = n < 0? OreDictionary.WILDCARD_VALUE : n;
 			tags = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "nbt"), new NBTTagCompound(), true);
@@ -469,7 +471,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 				if(b != null)
 				{
 					stack.getBaseStack().setStackDisplayName(b.getLocalizedName());
-					stack.GetTagCompound().setString("orig_id", Block.blockRegistry.getNameForObject(b));
+					stack.GetTagCompound().setString("orig_id", Block.REGISTRY.getNameForObject(b).toString());
 				} else
 				{
 					stack.getBaseStack().setStackDisplayName("NULL");

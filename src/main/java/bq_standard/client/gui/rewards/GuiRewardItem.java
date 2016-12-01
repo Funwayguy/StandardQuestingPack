@@ -1,9 +1,9 @@
 package bq_standard.client.gui.rewards;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
-import org.lwjgl.opengl.GL11;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.utils.BigItemStack;
@@ -38,13 +38,13 @@ public class GuiRewardItem extends GuiElement implements IGuiEmbedded
 	@Override
 	public void drawBackground(int mx, int my, float partialTick)
 	{
-		GL11.glPushMatrix();
-		GL11.glTranslatef(posX, posY + sizeY/2 - 16, 0);
-		GL11.glScalef(2F, 2F, 1F);
-		GL11.glEnable(GL11.GL_DEPTH_TEST);
+		GlStateManager.pushMatrix();
+		GlStateManager.translate(posX, posY + sizeY/2 - 16, 0);
+		GlStateManager.scale(2F, 2F, 1F);
+		GlStateManager.enableDepth();
 		RenderUtils.RenderItemStack(mc, new ItemStack(Blocks.CHEST), 0, 0, "");
-		GL11.glDisable(GL11.GL_DEPTH_TEST);
-		GL11.glPopMatrix();
+		GlStateManager.disableDepth();
+		GlStateManager.popMatrix();
 		itemScroll.drawBackground(mx, my, partialTick);
 	}
 	

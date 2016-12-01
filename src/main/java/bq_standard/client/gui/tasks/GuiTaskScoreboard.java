@@ -2,8 +2,8 @@ package bq_standard.client.gui.tasks;
 
 import java.text.DecimalFormat;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.text.TextFormatting;
-import org.lwjgl.opengl.GL11;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.misc.IGuiEmbedded;
@@ -33,9 +33,9 @@ public class GuiTaskScoreboard extends GuiElement implements IGuiEmbedded
 	@Override
 	public void drawBackground(int mx, int my, float partialTick)
 	{
-		GL11.glPushMatrix();
-		GL11.glTranslatef(posX + sizeX/2, posY + sizeY/2, 0F);
-		GL11.glScalef(2F, 2F, 1F);
+		GlStateManager.pushMatrix();
+		GlStateManager.translate(posX + sizeX/2, posY + sizeY/2, 0F);
+		GlStateManager.scale(2F, 2F, 1F);
 		
 		int tw1 = mc.fontRendererObj.getStringWidth(TextFormatting.BOLD + task.scoreName);
 		mc.fontRendererObj.drawString(TextFormatting.BOLD + task.scoreName, -tw1/2, -12, getTextColor(), false);
@@ -55,7 +55,7 @@ public class GuiTaskScoreboard extends GuiElement implements IGuiEmbedded
 		
 		int tw2 = mc.fontRendererObj.getStringWidth(txt);
 		mc.fontRendererObj.drawString(txt, -tw2/2, 1, getTextColor(), false);
-		GL11.glPopMatrix();
+		GlStateManager.popMatrix();
 	}
 
 	@Override

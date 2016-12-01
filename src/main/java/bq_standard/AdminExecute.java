@@ -1,7 +1,13 @@
 package bq_standard;
 
+import net.minecraft.command.CommandResultStats.Type;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 
 /**
@@ -23,13 +29,13 @@ public class AdminExecute implements ICommandSender
 	}
 
 	@Override
-	public IChatComponent func_145748_c_()
+	public ITextComponent getDisplayName()
 	{
-		return player.func_145748_c_();
+		return player.getDisplayName();
 	}
 
 	@Override
-	public void addChatMessage(IChatComponent p_145747_1_)
+	public void addChatMessage(ITextComponent p_145747_1_)
 	{
 		player.addChatMessage(p_145747_1_);
 	}
@@ -41,14 +47,44 @@ public class AdminExecute implements ICommandSender
 	}
 
 	@Override
-	public ChunkCoordinates getPlayerCoordinates()
+	public BlockPos getPosition()
 	{
-		return player.getPlayerCoordinates();
+		return player.getPosition();
 	}
 
 	@Override
 	public World getEntityWorld()
 	{
 		return player.getEntityWorld();
+	}
+
+	@Override
+	public Vec3d getPositionVector()
+	{
+		return player.getPositionVector();
+	}
+
+	@Override
+	public Entity getCommandSenderEntity()
+	{
+		return player.getCommandSenderEntity();
+	}
+
+	@Override
+	public boolean sendCommandFeedback()
+	{
+		return player.sendCommandFeedback();
+	}
+
+	@Override
+	public void setCommandStat(Type type, int amount)
+	{
+		player.setCommandStat(type, amount);
+	}
+
+	@Override
+	public MinecraftServer getServer()
+	{
+		return player.getServer();
 	}
 }

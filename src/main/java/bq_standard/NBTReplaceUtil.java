@@ -1,7 +1,6 @@
 package bq_standard;
 
 import java.util.ArrayList;
-import java.util.Set;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -22,7 +21,7 @@ public class NBTReplaceUtil
 		{
 			NBTTagCompound compound = (NBTTagCompound)baseTag;
 			
-			for(String k : (Set<String>)compound.func_150296_c())
+			for(String k : compound.getKeySet())
 			{
 				compound.setTag(k, replaceStrings(compound.getTag(k), key, replace));
 			}
@@ -38,7 +37,7 @@ public class NBTReplaceUtil
 		} else if(baseTag instanceof NBTTagString)
 		{
 			NBTTagString tString = (NBTTagString)baseTag;
-			return (T)new NBTTagString(tString.func_150285_a_().replaceAll(key, replace));
+			return (T)new NBTTagString(tString.getString().replaceAll(key, replace));
 		}
 		
 		return baseTag; // Either isn't a string or doesn't contain one

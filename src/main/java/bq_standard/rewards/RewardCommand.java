@@ -2,9 +2,13 @@ package bq_standard.rewards;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.tileentity.CommandBlockBaseLogic;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.misc.IGuiEmbedded;
@@ -53,15 +57,16 @@ public class RewardCommand implements IReward
 		
 		String tmp = command.replaceAll("VAR_NAME", player.getName());
 		tmp = tmp.replaceAll("VAR_UUID", QuestingAPI.getQuestingUUID(player).toString());
+		MinecraftServer server = player.worldObj.getMinecraftServer();
 		
 		if(viaPlayer)
 		{
-			MinecraftServer.getServer().getCommandManager().executeCommand(new AdminExecute(player), tmp);
+			server.getCommandManager().executeCommand(new AdminExecute(player), tmp);
 		} else
 		{
 			RewardCommandSender cmdSender = new RewardCommandSender(player.worldObj, (int)player.posX, (int)player.posY, (int)player.posZ);
 			
-			MinecraftServer.getServer().getCommandManager().executeCommand(cmdSender, tmp);
+			server.getCommandManager().executeCommand(cmdSender, tmp);
 		}
 	}
 	
@@ -94,46 +99,67 @@ public class RewardCommand implements IReward
 		return null;
 	}
 	
-	public static class RewardCommandSender extends CommandBlockLogic
+	public static class RewardCommandSender extends CommandBlockBaseLogic
 	{
 		World world;
-		ChunkCoordinates blockLoc;
+		BlockPos blockLoc;
 		
 		public RewardCommandSender(World world, int x, int y, int z)
 	    {
-	    	blockLoc = new ChunkCoordinates(x, y, z);
+	    	blockLoc = new BlockPos(x, y, z);
 	    	this.world = world;
 	    }
-		
+
 		@Override
-		public ChunkCoordinates getPlayerCoordinates()
+		public BlockPos getPosition()
 		{
 			return blockLoc;
 		}
-		
+
+		@Override
+		public Vec3d getPositionVector()
+		{
+			return new Vec3d(blockLoc.getX() + 0.5D, blockLoc.getY() + 0.5D, blockLoc.getZ() + 0.5D);
+		}
+
 		@Override
 		public World getEntityWorld()
 		{
 			return world;
 		}
-		
+
 		@Override
-		public void func_145756_e(){}
-		
+		public Entity getCommandSenderEntity()
+		{
+			return null;
+		}
+
 		@Override
-		public int func_145751_f()
+		public void updateCommand()
+		{
+		}
+
+		@Override
+		public int getCommandBlockType()
 		{
 			return 0;
 		}
-		
+
 		@Override
-		public void func_145757_a(ByteBuf p_145757_1_){}
-	    
-	    @Override
+		public void fillInInfo(ByteBuf p_145757_1_)
+		{
+		}
+
 	    public String getName()
 	    {
 	        return BQ_Standard.NAME;
 	    }
+
+		@Override
+		public MinecraftServer getServer()
+		{
+			return world.getMinecraftServer();
+		}
 	}
 
 	@Override

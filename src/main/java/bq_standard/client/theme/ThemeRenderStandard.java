@@ -3,6 +3,7 @@ package bq_standard.client.theme;
 import java.awt.Color;
 import java.util.UUID;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import org.lwjgl.opengl.GL11;
@@ -40,15 +41,15 @@ public class ThemeRenderStandard extends GuiElement implements IThemeRenderer
 		boolean isMain = quest == null? false : quest.getProperties().getProperty(NativeProps.MAIN);
 		EnumQuestState qState = quest == null || playerID == null? EnumQuestState.LOCKED : quest.getState(playerID);
 		
-		GL11.glPushMatrix();
+		GlStateManager.pushMatrix();
 		
-		GL11.glDisable(GL11.GL_TEXTURE_2D);
+		GlStateManager.disableTexture2D();
 		
     	int cl = getQuestLineColor(qState);
 		float lr = (float)(cl >> 16 & 255) / 255.0F;
         float lg = (float)(cl >> 8 & 255) / 255.0F;
         float lb = (float)(cl & 255) / 255.0F;
-    	GL11.glColor4f(lr, lg, lb, 1F);
+    	GlStateManager.color(lr, lg, lb, 1F);
 		
 		GL11.glLineWidth(isMain? 8F : 4F);
 		GL11.glEnable(GL11.GL_LINE_STIPPLE);
@@ -61,10 +62,10 @@ public class ThemeRenderStandard extends GuiElement implements IThemeRenderer
 		
 		GL11.glLineStipple(1, Short.MAX_VALUE);
 		GL11.glDisable(GL11.GL_LINE_STIPPLE);
-		GL11.glEnable(GL11.GL_TEXTURE_2D);
-		GL11.glColor4f(1F, 1F, 1F, 1F);
+		GlStateManager.enableTexture2D();
+		GlStateManager.color(1F, 1F, 1F, 1F);
 		
-		GL11.glPopMatrix();
+		GlStateManager.popMatrix();
 	}
 	
 	@Override
@@ -74,18 +75,18 @@ public class ThemeRenderStandard extends GuiElement implements IThemeRenderer
 		EnumQuestState qState = quest == null || playerID == null? EnumQuestState.LOCKED : quest.getState(playerID);
 		boolean hover = mx >= px && my >= py && mx < px + sx && my < py + sy;
 		
-		GL11.glPushMatrix();
+		GlStateManager.pushMatrix();
 		
 		int ci = getQuestIconColor(qState, qState == EnumQuestState.LOCKED? 0 : (!hover? 1 : 2));
 		float ir = (float)(ci >> 16 & 255) / 255.0F;
         float ig = (float)(ci >> 8 & 255) / 255.0F;
         float ib = (float)(ci & 255) / 255.0F;
-    	GL11.glColor4f(ir, ig, ib, 1F);
+    	GlStateManager.color(ir, ig, ib, 1F);
     	
-    	GL11.glTranslatef(px, py, 0F);
+    	GlStateManager.translate(px, py, 0F);
     	float sw = sx / 24;
     	float sh = sy / 24;
-    	GL11.glScalef(sw, sh, 1F);
+    	GlStateManager.scale(sw, sh, 1F);
     	
 		Minecraft.getMinecraft().renderEngine.bindTexture(currentTheme().getGuiTexture());
     	this.drawTexturedModalRect(0, 0, (isMain? 24 : 0), 104, 24, 24);
@@ -98,7 +99,7 @@ public class ThemeRenderStandard extends GuiElement implements IThemeRenderer
     		RenderUtils.RenderItemStack(Minecraft.getMinecraft(), quest.getItemIcon().getBaseStack(), 4, 4, "");
     	}
     	
-    	GL11.glPopMatrix();
+    	GlStateManager.popMatrix();
 	}
 	
 	private int getQuestLineColor(EnumQuestState state)

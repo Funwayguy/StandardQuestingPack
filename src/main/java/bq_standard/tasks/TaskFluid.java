@@ -37,6 +37,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
+@SuppressWarnings("deprecation")
 public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int[]>
 {
 	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
@@ -219,7 +220,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 					
 					if(!player.inventory.addItemStackToInventory(empty))
 					{
-						player.dropPlayerItemWithRandomChoice(empty, false);
+						player.dropItem(empty, true, false);
 					}
 				}
 			}
@@ -543,8 +544,6 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 				submitFluid(owner, fluid);
 				input.stackSize -= 1;
 				return FluidContainerRegistry.drainFluidContainer(item);
-				//output.putStack(FluidContainerRegistry.drainFluidContainer(item));
-				//input.decrStackSize(1);
 			}
 		}
 		

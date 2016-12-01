@@ -1,9 +1,9 @@
 package bq_standard.client.gui.rewards;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;
-import org.lwjgl.opengl.GL11;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import bq_standard.rewards.RewardXP;
@@ -44,11 +44,11 @@ public class GuiRewardXP extends GuiElement implements IGuiEmbedded
 		
 		txt2 += reward.levels? "L" : "XP";
 		
-		GL11.glPushMatrix();
-		GL11.glScalef(1.5F, 1.5F, 1F);
+		GlStateManager.pushMatrix();
+		GlStateManager.scale(1.5F, 1.5F, 1F);
 		mc.fontRendererObj.drawString(txt1, (int)((posX + sizeX/2 - mc.fontRendererObj.getStringWidth(txt1)/1.5F)/1.5F), (int)((posY + sizeY/2 - 16)/1.5F), getTextColor(), false);
 		mc.fontRendererObj.drawString(txt2, (int)((posX + sizeX/2 - mc.fontRendererObj.getStringWidth(txt2)/1.5F)/1.5F), (int)((posY + sizeY/2)/1.5F), getTextColor(), false);
-		GL11.glPopMatrix();
+		GlStateManager.popMatrix();
 	}
 
 	@Override

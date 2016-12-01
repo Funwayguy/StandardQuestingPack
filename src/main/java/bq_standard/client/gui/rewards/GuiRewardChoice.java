@@ -1,8 +1,8 @@
 package bq_standard.client.gui.rewards;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.nbt.NBTTagCompound;
-import org.lwjgl.opengl.GL11;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiElement;
@@ -52,12 +52,12 @@ public class GuiRewardChoice extends GuiElement implements IGuiEmbedded
 	{
 		int sel = reward.getSelecton(QuestingAPI.getQuestingUUID(mc.thePlayer));
 		
-		GL11.glPushMatrix();
-		GL11.glTranslatef(posX, posY + sizeY/2 - 18, 0);
-		GL11.glScalef(2F, 2F, 1F);
+		GlStateManager.pushMatrix();
+		GlStateManager.translate(posX, posY + sizeY/2 - 18, 0);
+		GlStateManager.scale(2F, 2F, 1F);
 		this.mc.renderEngine.bindTexture(currentTheme().getGuiTexture());
 		this.drawTexturedModalRect(0, 0, 0, 48, 18, 18);
-		GL11.glEnable(GL11.GL_DEPTH_TEST);
+		GlStateManager.enableDepth();
 		
 		if(sel >= 0)
 		{
@@ -65,8 +65,8 @@ public class GuiRewardChoice extends GuiElement implements IGuiEmbedded
 			RenderUtils.RenderItemStack(mc, selStack.getBaseStack(), 1, 1, selStack.stackSize > 0? "" + selStack.stackSize : "");
 		}
 		
-		GL11.glDisable(GL11.GL_DEPTH_TEST);
-		GL11.glPopMatrix();
+		GlStateManager.disableDepth();
+		GlStateManager.popMatrix();
 		
 		itemScroll.drawBackground(mx, my, partialTick);
 	}

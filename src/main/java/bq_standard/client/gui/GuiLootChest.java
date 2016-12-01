@@ -4,6 +4,9 @@ import java.awt.Color;
 import java.util.ArrayList;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.GlStateManager.DestFactor;
+import net.minecraft.client.renderer.GlStateManager.SourceFactor;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
@@ -56,7 +59,7 @@ public class GuiLootChest extends GuiScreen
 		
 		BigItemStack ttStack = null;
 		
-		GL11.glPushMatrix();
+		GlStateManager.pushMatrix();
 		
 		for(int i = 0; i < rewards.size(); i++)
 		{
@@ -69,8 +72,8 @@ public class GuiLootChest extends GuiScreen
 			int rx = (width/2) - (36 * n3)/2 + (36 * n1);
 			int ry = height/2 - 36 - (n2 * 36);
 			
-			GL11.glEnable(GL11.GL_BLEND);
-			GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+			GlStateManager.enableBlend();
+			GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
 			
 			this.drawTexturedModalRect(rx, ry, 128, 0, 32, 32);
 			
@@ -83,7 +86,7 @@ public class GuiLootChest extends GuiScreen
 			}
 		}
 		
-		GL11.glPopMatrix();
+		GlStateManager.popMatrix();
 		
 		if(ttStack != null)
 		{

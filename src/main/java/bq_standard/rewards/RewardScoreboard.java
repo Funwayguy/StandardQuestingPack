@@ -2,7 +2,9 @@ package bq_standard.rewards;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.scoreboard.IScoreCriteria;
 import net.minecraft.scoreboard.Score;
+import net.minecraft.scoreboard.ScoreCriteria;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.ResourceLocation;
@@ -61,8 +63,8 @@ public class RewardScoreboard implements IReward
 		{
 			try
 			{
-		        IScoreObjectiveCriteria criteria = (IScoreObjectiveCriteria)IScoreObjectiveCriteria.field_96643_a.get(type);
-		        criteria = criteria != null? criteria : new ScoreDummyCriteria(score);
+		        IScoreCriteria criteria = IScoreCriteria.INSTANCES.get(type);
+		        criteria = criteria != null? criteria : new ScoreCriteria(score);
 				scoreObj = board.addScoreObjective(score, criteria);
 				scoreObj.setDisplayName(score);
 			} catch(Exception e)
@@ -71,16 +73,16 @@ public class RewardScoreboard implements IReward
 			}
 		}
 		
-		if(scoreObj.getCriteria().isReadOnly())
+		if(scoreObj == null || scoreObj.getCriteria().isReadOnly())
 		{
 			return;
 		}
 		
-		Score s = board.func_96529_a(player.getName(), scoreObj);
+		Score s = board.getOrCreateScore(player.getName(), scoreObj);
 		
 		if(relative)
 		{
-			s.increseScore(value);
+			s.increaseScore(value);
 		} else
 		{
 			s.setScorePoints(value);
