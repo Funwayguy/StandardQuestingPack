@@ -1,62 +1,94 @@
 package bq_standard.tasks;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.party.PartyInstance;
-import betterquesting.party.PartyManager;
-import betterquesting.party.PartyInstance.PartyMember;
-import betterquesting.quests.QuestDatabase;
-import betterquesting.quests.QuestInstance;
-import betterquesting.quests.tasks.TaskBase;
-import betterquesting.quests.tasks.advanced.IProgressionTask;
-import betterquesting.utils.JsonHelper;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import betterquesting.api.enums.EnumSaveType;
+import betterquesting.api.jdoc.IJsonDoc;
+import betterquesting.api.properties.NativeProps;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.party.IParty;
+import betterquesting.api.questing.tasks.IProgression;
+import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api.utils.JsonHelper;
 import bq_standard.XPHelper;
 import bq_standard.client.gui.tasks.GuiTaskXP;
 import bq_standard.core.BQ_Standard;
+import bq_standard.tasks.factory.FactoryTaskXP;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
-public class TaskXP extends TaskBase implements IProgressionTask<Integer>
+public class TaskXP implements ITask, IProgression<Integer>
 {
+	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	public HashMap<UUID, Integer> userProgress = new HashMap<UUID, Integer>();
 	public boolean levels = true;
 	public int amount = 30;
 	public boolean consume = true;
 	
 	@Override
-	public void Update(QuestInstance quest, EntityPlayer player)
+	public ResourceLocation getFactoryID()
 	{
-		if(player.ticksExisted%60 == 0 && !QuestDatabase.editMode)
+		return FactoryTaskXP.INSTANCE.getRegistryName();
+	}
+	
+	@Override
+	public boolean isComplete(UUID uuid)
+	{
+		return completeUsers.contains(uuid);
+	}
+	
+	@Override
+	public void setComplete(UUID uuid)
+	{
+		if(!completeUsers.contains(uuid))
+		{
+			completeUsers.add(uuid);
+		}
+	}
+	
+	@Override
+	public void update(EntityPlayer player, IQuest quest)
+	{
+		UUID playerID = QuestingAPI.getQuestingUUID(player);
+		
+		if(player.ticksExisted%60 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
 		{
 			if(!consume)
 			{
-				SetUserProgress(player.getUniqueID(), XPHelper.getPlayerXP(player));
+				setUserProgress(playerID, XPHelper.getPlayerXP(player));
 			}
 			
 			int rawXP = levels? XPHelper.getLevelXP(amount) : amount;
-			int totalXP = quest == null || !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();
+			int totalXP = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 			if(totalXP >= rawXP)
 			{
-				setCompletion(player.getUniqueID(), true);
+				setComplete(playerID);
 			}
 		}
 	}
 	
 	@Override
-	public void Detect(QuestInstance quest, EntityPlayer player)
+	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(isComplete(player.getUniqueID()))
+		UUID playerID = QuestingAPI.getQuestingUUID(player);
+		
+		if(isComplete(playerID))
 		{
 			return;
 		}
 		
-		int progress = GetUserProgress(player.getUniqueID());
+		int progress = getUsersProgress(playerID);
 		int rawXP = levels? XPHelper.getLevelXP(amount) : amount;
 		int plrXP = XPHelper.getPlayerXP(player);
 		int remaining = rawXP - progress;
@@ -65,17 +97,17 @@ public class TaskXP extends TaskBase implements IProgressionTask<Integer>
 		if(consume)
 		{
 			progress += cost;
-			SetUserProgress(player.getUniqueID(), progress);
+			setUserProgress(playerID, progress);
 			XPHelper.AddXP(player, -cost);
 		} else
 		{
-			SetUserProgress(player.getUniqueID(), plrXP);
+			setUserProgress(playerID, plrXP);
 		}
 		
-		int totalXP = quest == null || !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();
+		int totalXP = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		if(totalXP >= rawXP)
 		{
-			setCompletion(player.getUniqueID(), true);
+			setComplete(playerID);
 		}
 	}
 	
@@ -86,41 +118,56 @@ public class TaskXP extends TaskBase implements IProgressionTask<Integer>
 	}
 	
 	@Override
-	public void writeToJson(JsonObject json)
+	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
 	{
-		super.writeToJson(json);
+		if(saveType == EnumSaveType.PROGRESS)
+		{
+			return this.writeProgressToJson(json);
+		} else if(saveType != EnumSaveType.CONFIG)
+		{
+			return json;
+		}
 		
 		json.addProperty("amount", amount);
 		json.addProperty("isLevels", levels);
 		json.addProperty("consume", consume);
+		return json;
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json)
+	public void readFromJson(JsonObject json, EnumSaveType saveType)
 	{
-		super.readFromJson(json);
+		if(saveType == EnumSaveType.PROGRESS)
+		{
+			this.readProgressFromJson(json);
+			return;
+		} else if(saveType != EnumSaveType.CONFIG)
+		{
+			return;
+		}
 		
 		amount = JsonHelper.GetNumber(json, "amount", 30).intValue();
 		levels = JsonHelper.GetBoolean(json, "isLevels", true);
 		consume = JsonHelper.GetBoolean(json, "consume", true);
-		
-		if(json.has("userProgress"))
-		{
-			jMig = json;
-		}
 	}
 	
-	JsonObject jMig = null;
-	
-	@Override
 	public void readProgressFromJson(JsonObject json)
 	{
-		super.readProgressFromJson(json);
-		
-		if(jMig != null)
+		completeUsers = new ArrayList<UUID>();
+		for(JsonElement entry : JsonHelper.GetArray(json, "completeUsers"))
 		{
-			json = jMig;
-			jMig = null;
+			if(entry == null || !entry.isJsonPrimitive())
+			{
+				continue;
+			}
+			
+			try
+			{
+				completeUsers.add(UUID.fromString(entry.getAsString()));
+			} catch(Exception e)
+			{
+				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
+			}
 		}
 		
 		userProgress = new HashMap<UUID,Integer>();
@@ -145,10 +192,14 @@ public class TaskXP extends TaskBase implements IProgressionTask<Integer>
 		}
 	}
 	
-	@Override
-	public void writeProgressToJson(JsonObject json)
+	public JsonObject writeProgressToJson(JsonObject json)
 	{
-		super.writeProgressToJson(json);
+		JsonArray jArray = new JsonArray();
+		for(UUID uuid : completeUsers)
+		{
+			jArray.add(new JsonPrimitive(uuid.toString()));
+		}
+		json.add("completeUsers", jArray);
 		
 		JsonArray progArray = new JsonArray();
 		for(Entry<UUID,Integer> entry : userProgress.entrySet())
@@ -159,24 +210,26 @@ public class TaskXP extends TaskBase implements IProgressionTask<Integer>
 			progArray.add(pJson);
 		}
 		json.add("userProgress", progArray);
+		
+		return json;
 	}
 	
 	@Override
-	public void ResetProgress(UUID uuid)
+	public void resetUser(UUID uuid)
 	{
-		super.ResetProgress(uuid);
+		completeUsers.remove(uuid);
 		userProgress.remove(uuid);
 	}
 	
 	@Override
-	public void ResetAllProgress()
+	public void resetAll()
 	{
-		super.ResetAllProgress();
-		userProgress = new HashMap<UUID, Integer>();
+		completeUsers.clear();
+		userProgress.clear();;
 	}
 	
 	@Override
-	public float GetParticipation(UUID uuid)
+	public float getParticipation(UUID uuid)
 	{
 		int rawXP = !levels? amount : XPHelper.getLevelXP(amount);
 		
@@ -185,48 +238,60 @@ public class TaskXP extends TaskBase implements IProgressionTask<Integer>
 			return 1F;
 		}
 		
-		return GetUserProgress(uuid) / (float)rawXP;
+		return getUsersProgress(uuid) / (float)rawXP;
 	}
 	
 	@Override
-	public GuiEmbedded getGui(QuestInstance quest, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public IGuiEmbedded getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
 	{
-		return new GuiTaskXP(quest, this, screen, posX, posY, sizeX, sizeY);
+		return new GuiTaskXP(this, quest, posX, posY, sizeX, sizeY);
 	}
 	
 	@Override
-	public void SetUserProgress(UUID uuid, Integer progress)
+	public GuiScreen getTaskEditor(GuiScreen screen, IQuest quest)
+	{
+		return null;
+	}
+	
+	@Override
+	public void setUserProgress(UUID uuid, Integer progress)
 	{
 		userProgress.put(uuid, progress);
 	}
 	
 	@Override
-	public Integer GetUserProgress(UUID uuid)
+	public Integer getUsersProgress(UUID... users)
 	{
-		Integer i = userProgress.get(uuid);
-		return i == null? 0 : i;
+		int i = 0;
+		
+		for(UUID uuid : users)
+		{
+			Integer n = userProgress.get(uuid);
+			i += n == null? 0 : n;
+		}
+		
+		return i;
 	}
 
-	@Override
-	public Integer GetPartyProgress(UUID uuid)
+	public Integer getPartyProgress(UUID uuid)
 	{
 		int total = 0;
 		
-		PartyInstance party = PartyManager.GetParty(uuid);
+		IParty party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getUserParty(uuid);
 		
 		if(party == null)
 		{
-			return GetUserProgress(uuid);
+			return getUsersProgress(uuid);
 		} else
 		{
-			for(PartyMember mem : party.GetMembers())
+			for(UUID mem : party.getMembers())
 			{
-				if(mem != null && mem.GetPrivilege() <= 0)
+				if(mem != null && party.getStatus(mem).ordinal() <= 0)
 				{
 					continue;
 				}
 				
-				total += GetUserProgress(mem.userID);
+				total += getUsersProgress(mem);
 			}
 		}
 		
@@ -234,7 +299,7 @@ public class TaskXP extends TaskBase implements IProgressionTask<Integer>
 	}
 	
 	@Override
-	public Integer GetGlobalProgress()
+	public Integer getGlobalProgress()
 	{
 		int total = 0;
 		
@@ -245,4 +310,11 @@ public class TaskXP extends TaskBase implements IProgressionTask<Integer>
 		
 		return total;
 	}
+
+	@Override
+	public IJsonDoc getDocumentation()
+	{
+		return null;
+	}
+	
 }

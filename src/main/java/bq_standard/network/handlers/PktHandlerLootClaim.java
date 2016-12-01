@@ -5,14 +5,16 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import betterquesting.network.handlers.PktHandler;
-import betterquesting.utils.BigItemStack;
+import net.minecraft.util.ResourceLocation;
+import betterquesting.api.network.IPacketHandler;
+import betterquesting.api.utils.BigItemStack;
 import bq_standard.client.gui.GuiLootChest;
+import bq_standard.network.StandardPacketType;
 
-public class PktHandlerLootClaim extends PktHandler
+public class PktHandlerLootClaim implements IPacketHandler
 {
 	@Override
-	public void handleServer(EntityPlayerMP sender, NBTTagCompound data)
+	public void handleServer(NBTTagCompound data, EntityPlayerMP sender)
 	{
 	}
 	
@@ -35,5 +37,11 @@ public class PktHandlerLootClaim extends PktHandler
 		}
 		
 		Minecraft.getMinecraft().displayGuiScreen(new GuiLootChest(rewards, title));
+	}
+
+	@Override
+	public ResourceLocation getRegistryName()
+	{
+		return StandardPacketType.LOOT_CLAIM.GetLocation();
 	}
 }

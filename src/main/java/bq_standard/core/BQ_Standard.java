@@ -3,7 +3,7 @@ package bq_standard.core;
 import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.item.Item;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -17,33 +17,11 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.Logger;
-import betterquesting.network.PacketTypeRegistry;
-import betterquesting.quests.rewards.RewardRegistry;
-import betterquesting.quests.tasks.TaskRegistry;
 import bq_standard.commands.BQS_Commands;
 import bq_standard.core.proxies.CommonProxy;
 import bq_standard.handlers.ConfigHandler;
 import bq_standard.handlers.GuiHandler;
 import bq_standard.items.ItemLootChest;
-import bq_standard.network.StandardPacketType;
-import bq_standard.network.handlers.PktHandlerCheckbox;
-import bq_standard.network.handlers.PktHandlerLootDatabase;
-import bq_standard.network.handlers.PktHandlerScoreboard;
-import bq_standard.rewards.RewardChoice;
-import bq_standard.rewards.RewardCommand;
-import bq_standard.rewards.RewardItem;
-import bq_standard.rewards.RewardScoreboard;
-import bq_standard.rewards.RewardXP;
-import bq_standard.tasks.TaskBlockBreak;
-import bq_standard.tasks.TaskCheckbox;
-import bq_standard.tasks.TaskCrafting;
-import bq_standard.tasks.TaskFluid;
-import bq_standard.tasks.TaskHunt;
-import bq_standard.tasks.TaskLocation;
-import bq_standard.tasks.TaskMeeting;
-import bq_standard.tasks.TaskRetrieval;
-import bq_standard.tasks.TaskScoreboard;
-import bq_standard.tasks.TaskXP;
 
 @Mod(modid = BQ_Standard.MODID, version = BQ_Standard.VERSION, name = BQ_Standard.NAME, guiFactory = "bq_standard.handlers.ConfigGuiFactory")
 public class BQ_Standard
@@ -77,43 +55,13 @@ public class BQ_Standard
     	
     	proxy.registerHandlers();
     	
-    	PacketTypeRegistry.RegisterType(new PktHandlerLootDatabase(), StandardPacketType.LOOT_SYNC.GetLocation());
-    	PacketTypeRegistry.RegisterType(new PktHandlerCheckbox(), StandardPacketType.CHECKBOX.GetLocation());
-    	PacketTypeRegistry.RegisterType(new PktHandlerScoreboard(), StandardPacketType.SCORE_SYNC.GetLocation());
-    	
     	NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
     }
     
     @EventHandler
     public void init(FMLInitializationEvent event)
     {
-    	registerItem(lootChest, "loot_chest");
-    	
-    	TaskRegistry.RegisterTask(TaskRetrieval.class, new ResourceLocation(MODID + ":retrieval"));
-    	TaskRegistry.RegisterTask(TaskHunt.class, new ResourceLocation(MODID + ":hunt"));
-    	TaskRegistry.RegisterTask(TaskLocation.class, new ResourceLocation(MODID + ":location"));
-    	TaskRegistry.RegisterTask(TaskCrafting.class, new ResourceLocation(MODID + ":crafting"));
-    	TaskRegistry.RegisterTask(TaskScoreboard.class, new ResourceLocation(MODID + ":scoreboard"));
-    	TaskRegistry.RegisterTask(TaskFluid.class, new ResourceLocation(MODID + ":fluid"));
-    	TaskRegistry.RegisterTask(TaskMeeting.class, new ResourceLocation(MODID + ":meeting"));
-    	TaskRegistry.RegisterTask(TaskXP.class, new ResourceLocation(MODID + ":xp"));
-    	TaskRegistry.RegisterTask(TaskBlockBreak.class, new ResourceLocation(MODID + ":block_break"));
-    	TaskRegistry.RegisterTask(TaskCheckbox.class, new ResourceLocation(MODID + ":checkbox"));
-    	
-    	RewardRegistry.RegisterReward(RewardItem.class, new ResourceLocation(MODID + ":item"));
-    	RewardRegistry.RegisterReward(RewardChoice.class, new ResourceLocation(MODID + ":choice"));
-    	RewardRegistry.RegisterReward(RewardScoreboard.class, new ResourceLocation(MODID + ":scoreboard"));
-    	RewardRegistry.RegisterReward(RewardCommand.class, new ResourceLocation(MODID + ":command"));
-    	RewardRegistry.RegisterReward(RewardXP.class, new ResourceLocation(MODID + ":xp"));
-    	
-    	proxy.registerRenderers();
-    	proxy.registerThemes();
-    }
-    
-    public void registerItem(Item i, String name)
-    {
-    	ResourceLocation res = new ResourceLocation(MODID + ":" + name);
-    	GameRegistry.register(i.setRegistryName(res));
+    	GameRegistry.registerItem(lootChest, "loot_chest");
     }
     
     @EventHandler
@@ -124,7 +72,8 @@ public class BQ_Standard
 	@EventHandler
 	public void serverStart(FMLServerStartingEvent event)
 	{
-		ICommandManager command = event.getServer().getCommandManager();
+		MinecraftServer server = event.getServer();
+		ICommandManager command = server.getCommandManager();
 		ServerCommandManager manager = (ServerCommandManager) command;
 		
 		manager.registerCommand(new BQS_Commands());

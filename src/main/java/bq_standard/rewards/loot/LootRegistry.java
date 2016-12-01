@@ -17,12 +17,12 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import org.apache.logging.log4j.Level;
-import betterquesting.core.BQ_Settings;
-import betterquesting.network.PacketAssembly;
-import betterquesting.utils.BigItemStack;
-import betterquesting.utils.JsonHelper;
-import betterquesting.utils.JsonIO;
-import betterquesting.utils.NBTConverter;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.network.QuestingPacket;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.JsonHelper;
+import betterquesting.api.utils.NBTConverter;
 import bq_standard.core.BQ_Standard;
 import bq_standard.network.StandardPacketType;
 import com.google.gson.JsonArray;
@@ -113,7 +113,7 @@ public class LootRegistry
 		LootRegistry.writeToJson(json);
 		tags.setInteger("ID", 1);
 		tags.setTag("Database", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
-		PacketAssembly.SendToAll(StandardPacketType.LOOT_SYNC.GetLocation(), tags);
+		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToAll(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags));
 	}
 	
 	public static void sendDatabase(EntityPlayerMP player)
@@ -123,7 +123,7 @@ public class LootRegistry
 		LootRegistry.writeToJson(json);
 		tags.setInteger("ID", 1);
 		tags.setTag("Database", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
-		PacketAssembly.SendTo(StandardPacketType.LOOT_SYNC.GetLocation(), tags, player);
+		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToPlayer(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags), player);
 	}
 	
 	public static void writeToJson(JsonObject json)
@@ -182,14 +182,14 @@ public class LootRegistry
 		
 		if(f1.exists())
 		{
-			j1 = JsonIO.ReadFromFile(f1);
+			j1 = JsonHelper.ReadFromFile(f1);
 		} else
 		{
-			f1 = server.getFile(BQ_Settings.defaultDir + "QuestLoot.json");
+			f1 = server.getFile("config/betterquesting/QuestLoot.json");
 			
 			if(f1.exists())
 			{
-				j1 = JsonIO.ReadFromFile(f1);
+				j1 = JsonHelper.ReadFromFile(f1);
 			}
 		}
 		
@@ -203,7 +203,7 @@ public class LootRegistry
 		{
 			JsonObject jsonQ = new JsonObject();
 			writeToJson(jsonQ);
-			JsonIO.WriteToFile(new File(worldDir, "QuestLoot.json"), jsonQ);
+			JsonHelper.WriteToFile(new File(worldDir, "QuestLoot.json"), jsonQ);
 		}
 	}
 	

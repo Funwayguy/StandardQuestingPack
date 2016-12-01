@@ -1,28 +1,35 @@
 package bq_standard.rewards;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.Entity;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.tileentity.CommandBlockBaseLogic;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.quests.rewards.RewardBase;
-import betterquesting.utils.JsonHelper;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import betterquesting.api.enums.EnumSaveType;
+import betterquesting.api.jdoc.IJsonDoc;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.rewards.IReward;
+import betterquesting.api.utils.JsonHelper;
 import bq_standard.AdminExecute;
 import bq_standard.client.gui.rewards.GuiRewardCommand;
 import bq_standard.core.BQ_Standard;
+import bq_standard.rewards.factory.FactoryRewardCommand;
 import com.google.gson.JsonObject;
 
-public class RewardCommand extends RewardBase
+public class RewardCommand implements IReward
 {
 	public String command = "/say VAR_NAME Claimed a reward";
 	public boolean hideCmd = false;
 	public boolean viaPlayer = false;
+	
+	@Override
+	public ResourceLocation getFactoryID()
+	{
+		return FactoryRewardCommand.INSTANCE.getRegistryName();
+	}
 	
 	@Override
 	public String getUnlocalisedName()
@@ -31,13 +38,13 @@ public class RewardCommand extends RewardBase
 	}
 	
 	@Override
-	public boolean canClaim(EntityPlayer player, NBTTagCompound choiceData)
+	public boolean canClaim(EntityPlayer player, IQuest quest)
 	{
 		return true;
 	}
 	
 	@Override
-	public void Claim(EntityPlayer player, NBTTagCompound choiceData)
+	public void claimReward(EntityPlayer player, IQuest quest)
 	{
 		if(player.worldObj.isRemote)
 		{
@@ -45,22 +52,21 @@ public class RewardCommand extends RewardBase
 		}
 		
 		String tmp = command.replaceAll("VAR_NAME", player.getName());
-		tmp = tmp.replaceAll("VAR_UUID", player.getUniqueID().toString());
-		MinecraftServer server = player.worldObj.getMinecraftServer();
+		tmp = tmp.replaceAll("VAR_UUID", QuestingAPI.getQuestingUUID(player).toString());
 		
 		if(viaPlayer)
 		{
-			server.getCommandManager().executeCommand(new AdminExecute(player), tmp);
+			MinecraftServer.getServer().getCommandManager().executeCommand(new AdminExecute(player), tmp);
 		} else
 		{
 			RewardCommandSender cmdSender = new RewardCommandSender(player.worldObj, (int)player.posX, (int)player.posY, (int)player.posZ);
 			
-			server.getCommandManager().executeCommand(cmdSender, tmp);
+			MinecraftServer.getServer().getCommandManager().executeCommand(cmdSender, tmp);
 		}
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json)
+	public void readFromJson(JsonObject json, EnumSaveType saveType)
 	{
 		command = JsonHelper.GetString(json, "command", "/say VAR_NAME Claimed a reward");
 		hideCmd = JsonHelper.GetBoolean(json, "hideCommand", false);
@@ -68,82 +74,71 @@ public class RewardCommand extends RewardBase
 	}
 	
 	@Override
-	public void writeToJson(JsonObject json)
+	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
 	{
 		json.addProperty("command", command);
 		json.addProperty("hideCommand", hideCmd);
 		json.addProperty("viaPlayer", viaPlayer);
+		return json;
 	}
 	
 	@Override
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public IGuiEmbedded getRewardGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
 	{
-		return new GuiRewardCommand(this, screen, posX, posY, sizeX, sizeY);
+		return new GuiRewardCommand(this, posX, posY, sizeX, sizeY);
 	}
 	
-	public static class RewardCommandSender extends CommandBlockBaseLogic
+	@Override
+	public GuiScreen getRewardEditor(GuiScreen screen, IQuest quest)
+	{
+		return null;
+	}
+	
+	public static class RewardCommandSender extends CommandBlockLogic
 	{
 		World world;
-		BlockPos blockLoc;
+		ChunkCoordinates blockLoc;
 		
 		public RewardCommandSender(World world, int x, int y, int z)
 	    {
-	    	blockLoc = new BlockPos(x, y, z);
+	    	blockLoc = new ChunkCoordinates(x, y, z);
 	    	this.world = world;
 	    }
-
+		
 		@Override
-		public BlockPos getPosition()
+		public ChunkCoordinates getPlayerCoordinates()
 		{
 			return blockLoc;
 		}
-
-		@Override
-		public Vec3d getPositionVector()
-		{
-			return new Vec3d(blockLoc.getX() + 0.5D, blockLoc.getY() + 0.5D, blockLoc.getZ() + 0.5D);
-		}
-
+		
 		@Override
 		public World getEntityWorld()
 		{
 			return world;
 		}
-
+		
 		@Override
-		public Entity getCommandSenderEntity()
-		{
-			return null;
-		}
-
+		public void func_145756_e(){}
+		
 		@Override
-		public void updateCommand()
-		{
-		}
-
-		@Override
-		public int getCommandBlockType()
+		public int func_145751_f()
 		{
 			return 0;
 		}
-
+		
 		@Override
-		public void fillInInfo(ByteBuf p_145757_1_)
-		{
-		}
-
-	    /**
-	     * Get the name of this object. For players this returns their username
-	     */
+		public void func_145757_a(ByteBuf p_145757_1_){}
+	    
+	    @Override
 	    public String getName()
 	    {
 	        return BQ_Standard.NAME;
 	    }
+	}
 
-		@Override
-		public MinecraftServer getServer()
-		{
-			return world.getMinecraftServer();
-		}
+	@Override
+	public IJsonDoc getDocumentation()
+	{
+		return null;
 	}
 }

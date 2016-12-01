@@ -6,7 +6,6 @@ import java.util.List;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.MathHelper;
@@ -14,21 +13,23 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Mouse;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiButtonQuesting;
-import betterquesting.client.gui.misc.GuiNumberField;
-import betterquesting.client.gui.misc.IVolatileScreen;
-import betterquesting.client.themes.ThemeRegistry;
-import betterquesting.network.PacketAssembly;
-import betterquesting.utils.NBTConverter;
-import betterquesting.utils.RenderUtils;
+import org.lwjgl.opengl.GL11;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.gui.GuiScreenThemed;
+import betterquesting.api.client.gui.controls.GuiButtonThemed;
+import betterquesting.api.client.gui.controls.GuiNumberField;
+import betterquesting.api.client.gui.misc.IVolatileScreen;
+import betterquesting.api.network.QuestingPacket;
+import betterquesting.api.utils.NBTConverter;
+import betterquesting.api.utils.RenderUtils;
 import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootRegistry;
 import com.google.gson.JsonObject;
 
 @SideOnly(Side.CLIENT)
-public class GuiLootGroupEditor extends GuiQuesting implements IVolatileScreen
+public class GuiLootGroupEditor extends GuiScreenThemed implements IVolatileScreen
 {
 	GuiTextField lineTitle;
 	GuiNumberField lineWeight;
@@ -62,20 +63,20 @@ public class GuiLootGroupEditor extends GuiQuesting implements IVolatileScreen
 		lineWeight = new GuiNumberField(mc.fontRendererObj, guiLeft + sizeX/2 + 9, height/2 - 19, btnWidth/2 - 10, 18);
 		lineWeight.setMaxStringLength(Integer.MAX_VALUE);
 		 
-		this.buttonList.add(new GuiButtonQuesting(1, guiLeft + 16 + sx/4 - 50, guiTop + sizeY - 48, 100, 20, I18n.format("betterquesting.btn.new")));
-		this.buttonList.add(new GuiButtonQuesting(2, guiLeft + 16 + sx/4*3 - 75, guiTop + sizeY/2 + 20, 150, 20, I18n.format("bq_standard.btn.add_remove_drops")));
+		this.buttonList.add(new GuiButtonThemed(1, guiLeft + 16 + sx/4 - 50, guiTop + sizeY - 48, 100, 20, I18n.format("betterquesting.btn.new")));
+		this.buttonList.add(new GuiButtonThemed(2, guiLeft + 16 + sx/4*3 - 75, guiTop + sizeY/2 + 20, 150, 20, I18n.format("bq_standard.btn.add_remove_drops")));
 		
 		// Quest Line - Main
 		for(int i = 0; i < maxRows; i++)
 		{
-			GuiButtonQuesting btn = new GuiButtonQuesting(this.buttonList.size(), guiLeft + 36, guiTop + 32 + (i*20), btnWidth - 36, 20, "NULL");
+			GuiButtonThemed btn = new GuiButtonThemed(this.buttonList.size(), guiLeft + 36, guiTop + 32 + (i*20), btnWidth - 36, 20, "NULL");
 			this.buttonList.add(btn);
 		}
 		
 		// Quest Line - Delete
 		for(int i = 0; i < maxRows; i++)
 		{
-			GuiButtonQuesting btn = new GuiButtonQuesting(this.buttonList.size(), guiLeft + 16, guiTop + 32 + (i*20), 20, 20, "" + TextFormatting.RED + TextFormatting.BOLD + "x");
+			GuiButtonThemed btn = new GuiButtonThemed(this.buttonList.size(), guiLeft + 16, guiTop + 32 + (i*20), 20, 20, "" + TextFormatting.RED + TextFormatting.BOLD + "x");
 			this.buttonList.add(btn);
 		}
 		
@@ -93,8 +94,8 @@ public class GuiLootGroupEditor extends GuiQuesting implements IVolatileScreen
 			LootRegistry.updateUI = false;
 		}
 		
-		GlStateManager.color(1F, 1F, 1F, 1F);
-		mc.renderEngine.bindTexture(ThemeRegistry.curTheme().guiTexture());
+		GL11.glColor4f(1F, 1F, 1F, 1F);
+		mc.renderEngine.bindTexture(this.currentTheme().getGuiTexture());
 		
 		// Left scroll bar
 		this.drawTexturedModalRect(guiLeft + sizeX/2 - 16, this.guiTop + 32, 248, 0, 8, 20);
@@ -107,14 +108,14 @@ public class GuiLootGroupEditor extends GuiQuesting implements IVolatileScreen
 		this.drawTexturedModalRect(guiLeft + sizeX/2 - 16, this.guiTop + 32 + s, 248, 40, 8, 20);
 		this.drawTexturedModalRect(guiLeft + sizeX/2 - 16, this.guiTop + 32 + (int)Math.max(0, s * (float)leftScroll/(LootRegistry.lootGroups.size() - maxRows)), 248, 60, 8, 20);
 		
-		RenderUtils.DrawLine(width/2, guiTop + 32, width/2, guiTop + sizeY - 48, 2F, ThemeRegistry.curTheme().textColor());
+		RenderUtils.DrawLine(width/2, guiTop + 32, width/2, guiTop + sizeY - 48, 2F, this.getTextColor());
 		
-		mc.fontRendererObj.drawString(I18n.format("betterquesting.gui.name"), guiLeft + sizeX/2 + 8, guiTop + sizeY/2 - 72, ThemeRegistry.curTheme().textColor().getRGB(), false);
-		mc.fontRendererObj.drawString(I18n.format("bq_standard.gui.weight"), guiLeft + sizeX/2 + 8, guiTop + sizeY/2 - 32, ThemeRegistry.curTheme().textColor().getRGB(), false);
+		mc.fontRendererObj.drawString(I18n.format("betterquesting.gui.name"), guiLeft + sizeX/2 + 8, guiTop + sizeY/2 - 72, this.getTextColor(), false);
+		mc.fontRendererObj.drawString(I18n.format("bq_standard.gui.weight"), guiLeft + sizeX/2 + 8, guiTop + sizeY/2 - 32, this.getTextColor(), false);
 		
 		if(selected != null)
 		{
-			mc.fontRendererObj.drawString("" + new DecimalFormat("0.##").format((float)selected.weight/(float)LootRegistry.getTotalWeight() * 100F) + "%", guiLeft + 16 + (sizeX - 32)/4*3 + 8, guiTop + sizeY/2 - 14, ThemeRegistry.curTheme().textColor().getRGB(), false);
+			mc.fontRendererObj.drawString("" + new DecimalFormat("0.##").format((float)selected.weight/(float)LootRegistry.getTotalWeight() * 100F) + "%", guiLeft + 16 + (sizeX - 32)/4*3 + 8, guiTop + sizeY/2 - 14, this.getTextColor(), false);
 		}
 		
 		lineTitle.drawTextBox();
@@ -128,7 +129,7 @@ public class GuiLootGroupEditor extends GuiQuesting implements IVolatileScreen
 		NBTTagCompound tags = new NBTTagCompound();
 		tags.setInteger("ID", 1);
 		tags.setTag("Database", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
-		PacketAssembly.SendToServer(StandardPacketType.LOOT_SYNC.GetLocation(), tags);
+		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags));
 	}
 	
 	@Override

@@ -1,25 +1,35 @@
 package bq_standard.client.gui.rewards;
 
-import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.client.themes.ThemeRegistry;
+import org.lwjgl.opengl.GL11;
+import betterquesting.api.client.gui.GuiElement;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import bq_standard.rewards.RewardXP;
 
-public class GuiRewardXP extends GuiEmbedded
+public class GuiRewardXP extends GuiElement implements IGuiEmbedded
 {
-	RewardXP reward;
+	private RewardXP reward;
+	private Minecraft mc;
 	
-	public GuiRewardXP(RewardXP reward, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	private int posX = 0;
+	private int posY = 0;
+	private int sizeX = 0;
+	private int sizeY = 0;
+	
+	public GuiRewardXP(RewardXP reward, int posX, int posY, int sizeX, int sizeY)
 	{
-		super(screen, posX, posY, sizeX, sizeY);
+		this.mc = Minecraft.getMinecraft();
 		this.reward = reward;
+		this.posX = posX;
+		this.posY = posY;
+		this.sizeX = sizeX;
+		this.sizeY = sizeY;
 	}
 
 	@Override
-	public void drawGui(int mx, int my, float partialTick)
+	public void drawBackground(int mx, int my, float partialTick)
 	{
 		String txt1 = I18n.format("bq_standard.gui.experience");
 		String txt2 = "" + TextFormatting.BOLD;
@@ -34,10 +44,30 @@ public class GuiRewardXP extends GuiEmbedded
 		
 		txt2 += reward.levels? "L" : "XP";
 		
-		GlStateManager.pushMatrix();
-		GlStateManager.scale(1.5F, 1.5F, 1F);
-		screen.mc.fontRendererObj.drawString(txt1, (int)((posX + sizeX/2 - screen.mc.fontRendererObj.getStringWidth(txt1)/1.5F)/1.5F), (int)((posY + sizeY/2 - 16)/1.5F), ThemeRegistry.curTheme().textColor().getRGB(), false);
-		screen.mc.fontRendererObj.drawString(txt2, (int)((posX + sizeX/2 - screen.mc.fontRendererObj.getStringWidth(txt2)/1.5F)/1.5F), (int)((posY + sizeY/2)/1.5F), ThemeRegistry.curTheme().textColor().getRGB(), false);
-		GlStateManager.popMatrix();
+		GL11.glPushMatrix();
+		GL11.glScalef(1.5F, 1.5F, 1F);
+		mc.fontRendererObj.drawString(txt1, (int)((posX + sizeX/2 - mc.fontRendererObj.getStringWidth(txt1)/1.5F)/1.5F), (int)((posY + sizeY/2 - 16)/1.5F), getTextColor(), false);
+		mc.fontRendererObj.drawString(txt2, (int)((posX + sizeX/2 - mc.fontRendererObj.getStringWidth(txt2)/1.5F)/1.5F), (int)((posY + sizeY/2)/1.5F), getTextColor(), false);
+		GL11.glPopMatrix();
+	}
+
+	@Override
+	public void drawForeground(int mx, int my, float partialTick)
+	{
+	}
+
+	@Override
+	public void onMouseClick(int mx, int my, int click)
+	{
+	}
+
+	@Override
+	public void onMouseScroll(int mx, int my, int scroll)
+	{
+	}
+
+	@Override
+	public void onKeyTyped(char c, int keyCode)
+	{
 	}
 }

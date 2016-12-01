@@ -10,18 +10,16 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
-import betterquesting.core.BetterQuesting;
-import betterquesting.network.PacketAssembly;
-import betterquesting.quests.QuestDatabase;
-import betterquesting.utils.BigItemStack;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.network.QuestingPacket;
+import betterquesting.api.properties.NativeProps;
+import betterquesting.api.utils.BigItemStack;
 import bq_standard.core.BQ_Standard;
 import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.loot.LootGroup;
@@ -33,27 +31,21 @@ public class ItemLootChest extends Item
 	{
 		this.setMaxStackSize(1);
 		this.setUnlocalizedName("bq_standard.loot_chest");
-		this.setCreativeTab(BetterQuesting.tabQuesting);
+		this.setCreativeTab(CreativeTabs.MISC);
 	}
 
     /**
      * Called whenever this item is equipped and the right mouse button is pressed. Args: itemStack, world, entityPlayer
      */
-	@Override
-    public ActionResult<ItemStack> onItemRightClick(ItemStack stack, World world, EntityPlayer player, EnumHand hand)
+    public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player)
     {
-		if(hand != EnumHand.MAIN_HAND)
-		{
-			return new ActionResult<ItemStack>(EnumActionResult.PASS, stack);
-		}
-		
     	if(stack.getItemDamage() >= 102)
     	{
-    		if(QuestDatabase.editMode)
+    		if(QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
     		{
     			player.openGui(BQ_Standard.instance, 0, world, (int)player.posX, (int)player.posY, (int)player.posZ);
     		}
-			return new ActionResult<ItemStack>(EnumActionResult.PASS, stack);
+			return stack;
     	} else if(!world.isRemote)
     	{
     		LootGroup group;
@@ -108,7 +100,7 @@ public class ItemLootChest extends Item
     		stack.stackSize--;
     	}
     	
-    	return new ActionResult<ItemStack>(EnumActionResult.PASS, stack);
+    	return stack;
     }
 	
 	public void sendGui(EntityPlayerMP player, ArrayList<BigItemStack> loot, String title)
@@ -131,13 +123,12 @@ public class ItemLootChest extends Item
 		
 		tags.setTag("rewards", list);
 		
-		PacketAssembly.SendTo(StandardPacketType.LOOT_CLAIM.GetLocation(), tags, player);
+		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToPlayer(new QuestingPacket(StandardPacketType.LOOT_CLAIM.GetLocation(), tags), player);
 	}
 
     /**
      * returns a list of items with the same ID, but different meta (eg: dye returns 16 items)
      */
-	@Override
 	@SideOnly(Side.CLIENT)
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void getSubItems(Item item, CreativeTabs tab, List list)
@@ -161,7 +152,6 @@ public class ItemLootChest extends Item
     /**
      * allows items to add custom lines of information to the mouseover description
      */
-	@Override
 	@SideOnly(Side.CLIENT)
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void addInformation(ItemStack stack, EntityPlayer player, List list, boolean advanced)
@@ -169,7 +159,7 @@ public class ItemLootChest extends Item
 		if(stack.getItemDamage() > 101)
 		{
 			list.add(I18n.format("betterquesting.btn.edit"));
-		} else if(QuestDatabase.editMode)
+		} else if(QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
 		{
 			if(stack.getItemDamage() == 101)
 			{

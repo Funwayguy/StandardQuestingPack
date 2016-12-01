@@ -1,29 +1,16 @@
 package bq_standard.importers;
 
 import java.io.File;
-import java.io.FileReader;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import net.minecraft.client.Minecraft;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import org.apache.logging.log4j.Level;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.editors.explorer.FileExtentionFilter;
-import betterquesting.client.gui.editors.explorer.GuiFileExplorer;
-import betterquesting.client.gui.editors.explorer.IFileCallback;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.importers.ImporterBase;
-import betterquesting.quests.QuestDatabase;
-import betterquesting.quests.QuestInstance;
-import betterquesting.quests.QuestLine;
-import bq_standard.client.gui.importers.GuiNativeFileImporter;
-import bq_standard.core.BQ_Standard;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import java.io.FileFilter;
+import betterquesting.api.client.importers.IImporter;
+import betterquesting.api.enums.EnumSaveType;
+import betterquesting.api.questing.IQuestDatabase;
+import betterquesting.api.questing.IQuestLineDatabase;
+import betterquesting.api.utils.FileExtensionFilter;
+import betterquesting.api.utils.JsonHelper;
 import com.google.gson.JsonObject;
 
-public class NativeFileImporter extends ImporterBase implements IFileCallback
+public class NativeFileImporter implements IImporter
 {
 	public static NativeFileImporter instance = new NativeFileImporter();
 	
@@ -34,61 +21,21 @@ public class NativeFileImporter extends ImporterBase implements IFileCallback
 	}
 	
 	@Override
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public String getUnlocalisedDescription()
 	{
-		return new GuiNativeFileImporter(screen, posX, posY, sizeX, sizeY);
+		return "bq_standard.importer.nat_file.desc";
 	}
 	
-	@SideOnly(Side.CLIENT)
-	public static void StartImport()
+	@Override
+	public FileFilter getFileFilter()
 	{
-		Minecraft mc = Minecraft.getMinecraft();
-		mc.displayGuiScreen(new GuiFileExplorer(mc.currentScreen, instance, new File("."), new FileExtentionFilter(".json")));
-	}
-
-	protected static void ImportQuestLine(JsonObject json)
-	{
-		if(json == null)
-		{
-			return;
-		}
-		
-		// Store all the old data somewhere while we use the built in loaders
-		ConcurrentHashMap<Integer,QuestInstance> oldQuests = new ConcurrentHashMap<Integer,QuestInstance>();
-		oldQuests.putAll(QuestDatabase.questDB);
-		QuestDatabase.questDB.clear();
-		CopyOnWriteArrayList<QuestLine> oldLines = new CopyOnWriteArrayList<QuestLine>();
-		oldLines.addAll(QuestDatabase.questLines);
-		QuestDatabase.questLines.clear();
-		
-		// Use native parsing to ensure it is always up to date
-		QuestDatabase.readFromJson(json);
-		
-		// Merge quest lines
-		QuestDatabase.questLines.addAll(oldLines);
-		
-		// Swap databases in preparation for ID re-mapping
-		ConcurrentHashMap<Integer,QuestInstance> tmp = new ConcurrentHashMap<Integer,QuestInstance>();
-		tmp.putAll(oldQuests);
-		oldQuests.clear();
-		oldQuests.putAll(QuestDatabase.questDB);
-		QuestDatabase.questDB.clear();
-		tmp.putAll(tmp);
-		
-		// Re-map quest IDs
-		for(QuestInstance q : oldQuests.values())
-		{
-			int id = QuestDatabase.getUniqueID();
-			q.questID = id;
-			QuestDatabase.questDB.put(id, q);
-		}
+		return new FileExtensionFilter(".json");
 	}
 
 	@Override
-	public void setFiles(File... files)
+	public void loadFiles(IQuestDatabase questDB, IQuestLineDatabase lineDB, File[] files)
 	{
-		boolean tmpHard = QuestDatabase.bqHardcore;
-		boolean tmpEdit = QuestDatabase.editMode;
+		QuestMergeUtility mergeUtil = new QuestMergeUtility(questDB, lineDB);
 		
 		for(File selected : files)
 		{
@@ -97,28 +44,15 @@ public class NativeFileImporter extends ImporterBase implements IFileCallback
 				continue;
 			}
 			
-			JsonObject json;
+			JsonObject json = JsonHelper.ReadFromFile(selected);
 			
-			try
-			{
-				FileReader fr = new FileReader(selected);
-				Gson g = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
-				json = g.fromJson(fr, JsonObject.class);
-				fr.close();
-			} catch(Exception e)
-			{
-				BQ_Standard.logger.log(Level.ERROR, "An error occured during import", e);
-				continue;
-			}
+			ImportedQuests impQ = new ImportedQuests(questDB);
+			ImportedQuestLines impL = new ImportedQuestLines(lineDB);
 			
-			if(json != null)
-			{
-				ImportQuestLine(json);
-			}
+			impQ.readFromJson(JsonHelper.GetArray(json, "questDatabase"), EnumSaveType.CONFIG);
+			impL.readFromJson(JsonHelper.GetArray(json, "questLines"), EnumSaveType.CONFIG);
+			
+			mergeUtil.merge(impQ, impL);
 		}
-		
-		QuestDatabase.bqHardcore = tmpHard;
-		QuestDatabase.editMode = tmpEdit;
-		QuestDatabase.UpdateClients();
 	}
 }

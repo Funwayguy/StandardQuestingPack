@@ -1,17 +1,14 @@
 package bq_standard.importers.hqm;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileReader;
-import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.Level;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.editors.explorer.FileExtentionFilter;
-import betterquesting.client.gui.editors.explorer.GuiFileExplorer;
-import betterquesting.client.gui.editors.explorer.IFileCallback;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.importers.ImporterBase;
-import betterquesting.utils.JsonHelper;
-import bq_standard.client.gui.importers.GuiHQMBagImporter;
+import betterquesting.api.client.importers.IImporter;
+import betterquesting.api.questing.IQuestDatabase;
+import betterquesting.api.questing.IQuestLineDatabase;
+import betterquesting.api.utils.FileExtensionFilter;
+import betterquesting.api.utils.JsonHelper;
 import bq_standard.core.BQ_Standard;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootGroup.LootEntry;
@@ -22,7 +19,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class HQMBagImporter extends ImporterBase implements IFileCallback
+public class HQMBagImporter implements IImporter
 {
 	public static HQMBagImporter instance = new HQMBagImporter();
 	
@@ -32,10 +29,16 @@ public class HQMBagImporter extends ImporterBase implements IFileCallback
 		return "bq_standard.importer.hqm_bag.name";
 	}
 	
-	public static void StartImport()
+	@Override
+	public String getUnlocalisedDescription()
 	{
-		Minecraft mc = Minecraft.getMinecraft();
-		mc.displayGuiScreen(new GuiFileExplorer(mc.currentScreen, instance, new File("."), new FileExtentionFilter(".json")));
+		return "bq_standard.importer.hqm_bag.desc";
+	}
+	
+	@Override
+	public FileFilter getFileFilter()
+	{
+		return new FileExtensionFilter(".json");
 	}
 	
 	public static void ImportJsonBags(JsonArray json)
@@ -100,15 +103,9 @@ public class HQMBagImporter extends ImporterBase implements IFileCallback
 			LootRegistry.registerGroup(group);
 		}
 	}
-	
-	@Override
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
-	{
-		return new GuiHQMBagImporter(screen, posX, posY, sizeX, sizeY);
-	}
 
 	@Override
-	public void setFiles(File... files)
+	public void loadFiles(IQuestDatabase questDB, IQuestLineDatabase lineDB, File[] files)
 	{
 		for(File selected : files)
 		{

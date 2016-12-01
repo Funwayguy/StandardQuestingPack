@@ -4,14 +4,14 @@ import java.awt.Color;
 import java.util.ArrayList;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
-import betterquesting.utils.BigItemStack;
-import betterquesting.utils.RenderUtils;
+import org.lwjgl.opengl.GL11;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.RenderUtils;
 
 public class GuiLootChest extends GuiScreen
 {
@@ -56,7 +56,7 @@ public class GuiLootChest extends GuiScreen
 		
 		BigItemStack ttStack = null;
 		
-		GlStateManager.pushMatrix();
+		GL11.glPushMatrix();
 		
 		for(int i = 0; i < rewards.size(); i++)
 		{
@@ -69,9 +69,8 @@ public class GuiLootChest extends GuiScreen
 			int rx = (width/2) - (36 * n3)/2 + (36 * n1);
 			int ry = height/2 - 36 - (n2 * 36);
 			
-			GlStateManager.enableBlend();
-	        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-	        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+			GL11.glEnable(GL11.GL_BLEND);
+			GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 			
 			this.drawTexturedModalRect(rx, ry, 128, 0, 32, 32);
 			
@@ -84,12 +83,14 @@ public class GuiLootChest extends GuiScreen
 			}
 		}
 		
-		GlStateManager.popMatrix();
+		GL11.glPopMatrix();
 		
 		if(ttStack != null)
 		{
 			this.drawHoveringText(ttStack.getBaseStack().getTooltip(mc.thePlayer, mc.gameSettings.advancedItemTooltips), mx, my, fontRendererObj);
 		}
+		
+		// TODO: Finish rewards renderer then finish reward registry/editor/importer
 	}
 	
 	@Override

@@ -1,81 +1,72 @@
 package bq_standard.client.gui.rewards;
 
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.util.math.MathHelper;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.client.themes.ThemeRegistry;
-import betterquesting.utils.BigItemStack;
-import betterquesting.utils.RenderUtils;
+import net.minecraft.client.Minecraft;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemStack;
+import org.lwjgl.opengl.GL11;
+import betterquesting.api.client.gui.GuiElement;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.RenderUtils;
+import bq_standard.client.gui.GuiScrollingItemsSmall;
 import bq_standard.rewards.RewardItem;
 
-public class GuiRewardItem extends GuiEmbedded
+public class GuiRewardItem extends GuiElement implements IGuiEmbedded
 {
-	RewardItem reward;
-	int scroll = 0;
+	private Minecraft mc;
 	
-	public GuiRewardItem(RewardItem reward, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	private GuiScrollingItemsSmall itemScroll;
+	private int posX = 0;
+	private int posY = 0;
+	private int sizeY = 0;
+	
+	public GuiRewardItem(RewardItem reward, int posX, int posY, int sizeX, int sizeY)
 	{
-		super(screen, posX, posY, sizeX, sizeY);
-		this.reward = reward;
-	}
-
-	@Override
-	public void drawGui(int mx, int my, float partialTick)
-	{
-		int rowLMax = (sizeX - 40)/18;
-		int rowL = Math.min(reward.items.size(), rowLMax);
+		this.mc = Minecraft.getMinecraft();
+		this.posX = posX;
+		this.posY = posY;
+		this.sizeY = sizeY;
 		
-		if(rowLMax < reward.items.size())
-		{
-			scroll = MathHelper.clamp_int(scroll, 0, reward.items.size() - rowLMax);
-			RenderUtils.DrawFakeButton(screen, posX, posY, 20, 20, "<", screen.isWithin(mx, my, posX, posY, 20, 20, false)? 2 : 1);
-			RenderUtils.DrawFakeButton(screen, posX + 20 + 18*rowL, posY, 20, 20, ">", screen.isWithin(mx, my, posX + 20 + 18*rowL, posY, 20, 20, false)? 2 : 1);
-		} else
-		{
-			scroll = 0;
-		}
+		this.itemScroll = new GuiScrollingItemsSmall(mc, posX + 36, posY, sizeX - 36, sizeY);
 		
-		BigItemStack ttStack = null; // Reset
-		
-		for(int i = 0; i < rowL; i++)
+		for(BigItemStack stack : reward.items)
 		{
-			BigItemStack stack = reward.items.get(i + scroll);
-			screen.mc.renderEngine.bindTexture(ThemeRegistry.curTheme().guiTexture());
-			GlStateManager.disableDepth();
-			screen.drawTexturedModalRect(posX + (i * 18) + 20, posY + 1, 0, 48, 18, 18);
-			GlStateManager.enableDepth();
-			RenderUtils.RenderItemStack(screen.mc, stack.getBaseStack(), posX + (i * 18) + 21, posY + 2, stack != null && stack.stackSize > 1? "" + stack.stackSize : "");
-			
-			if(screen.isWithin(mx, my, posX + (i * 18) + 20, posY + 1, 16, 16, false))
-			{
-				ttStack = stack;
-			}
-		}
-		
-		if(ttStack != null)
-		{
-			screen.DrawTooltip(ttStack.getBaseStack().getTooltip(screen.mc.thePlayer, screen.mc.gameSettings.advancedItemTooltips), mx, my);
+			this.itemScroll.addItem(new BigItemStack(stack.getBaseStack()), stack.stackSize + " " + stack.getBaseStack().getDisplayName());
 		}
 	}
 	
 	@Override
-	public void mouseClick(int mx, int my, int button)
+	public void drawBackground(int mx, int my, float partialTick)
 	{
-		if(button != 0)
-		{
-			return;
-		}
-		
-		int rowLMax = (sizeX - 40)/18;
-		int rowL = Math.min(reward.items.size(), rowLMax);
-		
-		if(screen.isWithin(mx, my, posX, posY, 20, 20, false))
-		{
-			scroll = MathHelper.clamp_int(scroll - 1, 0, reward.items.size() - rowLMax);
-		} else if(screen.isWithin(mx, my, posX + 20 + 18*rowL, posY, 20, 20, false))
-		{
-			scroll = MathHelper.clamp_int(scroll + 1, 0, reward.items.size() - rowLMax);
-		}
+		GL11.glPushMatrix();
+		GL11.glTranslatef(posX, posY + sizeY/2 - 16, 0);
+		GL11.glScalef(2F, 2F, 1F);
+		GL11.glEnable(GL11.GL_DEPTH_TEST);
+		RenderUtils.RenderItemStack(mc, new ItemStack(Blocks.CHEST), 0, 0, "");
+		GL11.glDisable(GL11.GL_DEPTH_TEST);
+		GL11.glPopMatrix();
+		itemScroll.drawBackground(mx, my, partialTick);
+	}
+	
+	@Override
+	public void drawForeground(int mx, int my, float partialTick)
+	{
+		itemScroll.drawForeground(mx, my, partialTick);
+	}
+	
+	@Override
+	public void onMouseClick(int mx, int my, int button)
+	{
+	}
+	
+	@Override
+	public void onMouseScroll(int mx, int my, int scroll)
+	{
+		itemScroll.onMouseScroll(mx, my, scroll);
+	}
+	
+	@Override
+	public void onKeyTyped(char c, int keyCode)
+	{
 	}
 }
