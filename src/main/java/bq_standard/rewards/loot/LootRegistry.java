@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -31,7 +32,7 @@ import com.google.gson.JsonObject;
 
 public class LootRegistry
 {
-	public static ArrayList<LootGroup> lootGroups = new ArrayList<LootGroup>();
+	public static CopyOnWriteArrayList<LootGroup> lootGroups = new CopyOnWriteArrayList<LootGroup>();
 	public static boolean updateUI = false;
 	
 	public static void registerGroup(LootGroup group)
@@ -140,7 +141,7 @@ public class LootRegistry
 	
 	public static void readFromJson(JsonObject json)
 	{
-		lootGroups = new ArrayList<LootGroup>();
+		lootGroups.clear();
 		for(JsonElement entry : JsonHelper.GetArray(json, "groups"))
 		{
 			if(entry == null || !entry.isJsonObject())
