@@ -1,7 +1,6 @@
 package bq_standard.commands;
 
 import java.io.File;
-import java.util.ArrayList;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -68,7 +67,7 @@ public class BQS_Commands extends CommandBase
 		{
 			if(args[1].equalsIgnoreCase("all"))
 			{
-				LootRegistry.lootGroups = new ArrayList<LootGroup>();
+				LootRegistry.lootGroups.clear();
 				LootRegistry.updateClients();
 				sender.addChatMessage(new ChatComponentText("Deleted all loot groups"));
 			} else
