@@ -4,10 +4,10 @@ import net.minecraft.util.ResourceLocation;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.misc.IFactory;
 import bq_standard.core.BQ_Standard;
-import bq_standard.tasks.TaskFluid;
+import bq_standard.tasks.TaskMeeting;
 import com.google.gson.JsonObject;
 
-public final class FactoryTaskMeeting implements IFactory<TaskFluid>
+public final class FactoryTaskMeeting implements IFactory<TaskMeeting>
 {
 	public static final FactoryTaskMeeting INSTANCE = new FactoryTaskMeeting();
 	
@@ -22,15 +22,15 @@ public final class FactoryTaskMeeting implements IFactory<TaskFluid>
 	}
 
 	@Override
-	public TaskFluid createNew()
+	public TaskMeeting createNew()
 	{
-		return new TaskFluid();
+		return new TaskMeeting();
 	}
 
 	@Override
-	public TaskFluid loadFromJson(JsonObject json)
+	public TaskMeeting loadFromJson(JsonObject json)
 	{
-		TaskFluid task = new TaskFluid();
+		TaskMeeting task = new TaskMeeting();
 		task.readFromJson(json, EnumSaveType.CONFIG);
 		return task;
 	}
