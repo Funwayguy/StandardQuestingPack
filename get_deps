@@ -1,2 +1,3 @@
 echo "Downloading dependencies..."
+mkdir -p libs
 curl -k -o make_logs https://gist.githubusercontent.com/Funwayguy/69940c2849310e59816c/raw/bq_standard_make_logs

@@ -1,35 +1,38 @@
 package bq_standard.client.gui.tasks;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fluids.FluidStack;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.quests.QuestInstance;
-import bq_standard.client.gui.GuiScrollingFluids;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.gui.lists.GuiScrollingFluids;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import betterquesting.api.properties.NativeProps;
+import betterquesting.api.questing.IQuest;
 import bq_standard.tasks.TaskFluid;
 
-public class GuiTaskFluid extends GuiEmbedded
+public class GuiTaskFluid implements IGuiEmbedded
 {
+	private Minecraft mc;
 	GuiScrollingFluids scrollList;
-	QuestInstance quest;
+	IQuest quest;
 	TaskFluid task;
 	int scroll = 0;
 	
-	public GuiTaskFluid(QuestInstance quest, TaskFluid task, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public GuiTaskFluid(TaskFluid task, IQuest quest, int posX, int posY, int sizeX, int sizeY)
 	{
-		super(screen, posX, posY, sizeX, sizeY);
+		this.mc = Minecraft.getMinecraft();
 		this.task = task;
 		this.quest = quest;
 		
-		scrollList = new GuiScrollingFluids(screen, sizeX, sizeY, posY, posX);
+		scrollList = new GuiScrollingFluids(mc, posX, posY, sizeX, sizeY);
 		
 		if(task == null)
 		{
 			return;
 		}
 		
-		int[] progress = quest == null || !quest.globalQuest? task.GetUserProgress(screen.mc.thePlayer.getUniqueID()) : task.GetGlobalProgress();
+		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getUsersProgress(QuestingAPI.getQuestingUUID(mc.thePlayer)) : task.getGlobalProgress();
 		
 		for(int i = 0; i < task.requiredFluids.size(); i++)
 		{
@@ -43,7 +46,7 @@ public class GuiTaskFluid extends GuiEmbedded
 			String txt = stack.getLocalizedName() + "\n";
 			txt = txt + progress[i] + "/" + stack.amount + "mB";
 			
-			if(progress[i] >= stack.amount || task.isComplete(screen.mc.thePlayer.getUniqueID()))
+			if(progress[i] >= stack.amount || task.isComplete(QuestingAPI.getQuestingUUID(mc.thePlayer)))
 			{
 				txt += "\n" + TextFormatting.GREEN + I18n.format("betterquesting.tooltip.complete");
 			} else
@@ -51,13 +54,34 @@ public class GuiTaskFluid extends GuiEmbedded
 				txt += "\n" + TextFormatting.RED + I18n.format("betterquesting.tooltip.incomplete");
 			}
 			
-			scrollList.addEntry(stack, txt);
+			scrollList.addFluid(stack, txt);
 		}
 	}
 
 	@Override
-	public void drawGui(int mx, int my, float partialTick)
+	public void drawBackground(int mx, int my, float partialTick)
 	{
-		scrollList.drawScreen(mx, my, partialTick);
+		scrollList.drawBackground(mx, my, partialTick);
+	}
+
+	@Override
+	public void drawForeground(int mx, int my, float partialTick)
+	{
+		scrollList.drawForeground(mx, my, partialTick);
+	}
+
+	@Override
+	public void onMouseClick(int mx, int my, int click)
+	{
+	}
+
+	@Override
+	public void onMouseScroll(int mx, int my, int scroll)
+	{
+	}
+
+	@Override
+	public void onKeyTyped(char c, int keyCode)
+	{
 	}
 }

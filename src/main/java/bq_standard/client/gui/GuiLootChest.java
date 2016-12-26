@@ -5,13 +5,15 @@ import java.util.ArrayList;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.GlStateManager.DestFactor;
+import net.minecraft.client.renderer.GlStateManager.SourceFactor;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
-import betterquesting.utils.BigItemStack;
-import betterquesting.utils.RenderUtils;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.RenderUtils;
 
 public class GuiLootChest extends GuiScreen
 {
@@ -70,8 +72,7 @@ public class GuiLootChest extends GuiScreen
 			int ry = height/2 - 36 - (n2 * 36);
 			
 			GlStateManager.enableBlend();
-	        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-	        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+			GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
 			
 			this.drawTexturedModalRect(rx, ry, 128, 0, 32, 32);
 			
@@ -90,6 +91,8 @@ public class GuiLootChest extends GuiScreen
 		{
 			this.drawHoveringText(ttStack.getBaseStack().getTooltip(mc.thePlayer, mc.gameSettings.advancedItemTooltips), mx, my, fontRendererObj);
 		}
+		
+		// TODO: Finish rewards renderer then finish reward registry/editor/importer
 	}
 	
 	@Override

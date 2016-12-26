@@ -1,19 +1,33 @@
 package bq_standard.tasks;
 
+import java.util.ArrayList;
+import java.util.UUID;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.quests.QuestDatabase;
-import betterquesting.quests.QuestInstance;
-import betterquesting.quests.tasks.TaskBase;
-import betterquesting.utils.JsonHelper;
+import org.apache.logging.log4j.Level;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import betterquesting.api.enums.EnumSaveType;
+import betterquesting.api.jdoc.IJsonDoc;
+import betterquesting.api.properties.NativeProps;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api.utils.JsonHelper;
 import bq_standard.client.gui.tasks.GuiTaskLocation;
+import bq_standard.core.BQ_Standard;
+import bq_standard.tasks.factory.FactoryTaskLocation;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
-public class TaskLocation extends TaskBase
+public class TaskLocation implements ITask
 {
+	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	public String name = "New Location";
 	public int x = 0;
 	public int y = 0;
@@ -24,24 +38,59 @@ public class TaskLocation extends TaskBase
 	public boolean hideInfo = false;
 	
 	@Override
+	public ResourceLocation getFactoryID()
+	{
+		return FactoryTaskLocation.INSTANCE.getRegistryName();
+	}
+	
+	@Override
 	public String getUnlocalisedName()
 	{
 		return "bq_standard.task.location";
 	}
 	
 	@Override
-	public void Update(QuestInstance quest, EntityPlayer player)
+	public boolean isComplete(UUID uuid)
 	{
-		if(player.ticksExisted%100 == 0 && !QuestDatabase.editMode) // Only auto-detect every 5 seconds
+		return completeUsers.contains(uuid);
+	}
+	
+	@Override
+	public void setComplete(UUID uuid)
+	{
+		if(!completeUsers.contains(uuid))
 		{
-			Detect(quest, player);
+			completeUsers.add(uuid);
+		}
+	}
+
+	@Override
+	public void resetUser(UUID uuid)
+	{
+		completeUsers.remove(uuid);
+	}
+
+	@Override
+	public void resetAll()
+	{
+		completeUsers.clear();
+	}
+	
+	@Override
+	public void update(EntityPlayer player, IQuest quest)
+	{
+		if(player.ticksExisted%100 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE)) // Only auto-detect every 5 seconds
+		{
+			detect(player, quest);
 		}
 	}
 	
 	@Override
-	public void Detect(QuestInstance quest, EntityPlayer player)
+	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(!player.isEntityAlive() || isComplete(player.getUniqueID()))
+		UUID playerID = QuestingAPI.getQuestingUUID(player);
+		
+		if(!player.isEntityAlive() || isComplete(playerID))
 		{
 			return; // Keeps ray casting calls to a minimum
 		}
@@ -57,22 +106,28 @@ public class TaskLocation extends TaskBase
 				
 				if(mop == null || mop.typeOfHit != RayTraceResult.Type.BLOCK)
 				{
-					setCompletion(player.getUniqueID(), true);
+					setComplete(playerID);
 				} else
 				{
 					return;
 				}
 			} else
 			{
-				setCompletion(player.getUniqueID(), true);
+				setComplete(playerID);
 			}
 		}
 	}
 	
 	@Override
-	public void writeToJson(JsonObject json)
+	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
 	{
-		super.writeToJson(json);
+		if(saveType == EnumSaveType.PROGRESS)
+		{
+			return this.writeProgressToJson(json);
+		} else if(saveType != EnumSaveType.CONFIG)
+		{
+			return json;
+		}
 		
 		json.addProperty("name", name);
 		json.addProperty("posX", x);
@@ -82,12 +137,21 @@ public class TaskLocation extends TaskBase
 		json.addProperty("range", range);
 		json.addProperty("visible", visible);
 		json.addProperty("hideInfo", hideInfo);
+		
+		return json;
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json)
+	public void readFromJson(JsonObject json, EnumSaveType saveType)
 	{
-		super.readFromJson(json);
+		if(saveType == EnumSaveType.PROGRESS)
+		{
+			this.readProgressFromJson(json);
+			return;
+		} else if(saveType != EnumSaveType.CONFIG)
+		{
+			return;
+		}
 		
 		name = JsonHelper.GetString(json, "name", "New Location");
 		x = JsonHelper.GetNumber(json, "posX", 0).intValue();
@@ -99,9 +163,53 @@ public class TaskLocation extends TaskBase
 		hideInfo = JsonHelper.GetBoolean(json, "hideInfo", false);
 	}
 
-	@Override
-	public GuiEmbedded getGui(QuestInstance quest, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	private JsonObject writeProgressToJson(JsonObject json)
 	{
-		return new GuiTaskLocation(this, screen, posX, posY, sizeX, sizeY);
+		JsonArray jArray = new JsonArray();
+		for(UUID uuid : completeUsers)
+		{
+			jArray.add(new JsonPrimitive(uuid.toString()));
+		}
+		json.add("completeUsers", jArray);
+		
+		return json;
+	}
+
+	private void readProgressFromJson(JsonObject json)
+	{
+		completeUsers = new ArrayList<UUID>();
+		for(JsonElement entry : JsonHelper.GetArray(json, "completeUsers"))
+		{
+			if(entry == null || !entry.isJsonPrimitive())
+			{
+				continue;
+			}
+			
+			try
+			{
+				completeUsers.add(UUID.fromString(entry.getAsString()));
+			} catch(Exception e)
+			{
+				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
+			}
+		}
+	}
+
+	@Override
+	public IGuiEmbedded getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	{
+		return new GuiTaskLocation(this, posX, posY, sizeX, sizeY);
+	}
+
+	@Override
+	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
+	{
+		return null;
+	}
+
+	@Override
+	public IJsonDoc getDocumentation()
+	{
+		return null;
 	}
 }

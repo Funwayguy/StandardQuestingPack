@@ -34,7 +34,7 @@ public class UpdateNotification
 		
 		try
 		{
-			String[] data = getNotification("http://bit.ly/224cJ4H", true).split("\\n");
+			String[] data = getNotification("https://goo.gl/N4pxwj", true).split("\\n");
 			
 			if(BQS_Settings.hideUpdates)
 			{
