@@ -171,6 +171,6 @@ public class GuiHuntEditor extends GuiScreenThemed implements IVolatileScreen, I
 		data.addProperty("target", EntityList.getEntityString(entity));
 		NBTTagCompound tTag = new NBTTagCompound();
 		entity.writeToNBTOptional(tTag);
-		data.add("targetNBT", NBTConverter.NBTtoJSON_Compound(tTag, new JsonObject()));
+		data.add("targetNBT", NBTConverter.NBTtoJSON_Compound(tTag, new JsonObject(), true));
 	}
 }
