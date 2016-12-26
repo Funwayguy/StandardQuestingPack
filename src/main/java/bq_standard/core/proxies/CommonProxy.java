@@ -40,7 +40,11 @@ public class CommonProxy
 	public void registerHandlers()
 	{
 		FMLCommonHandler.instance().bus().register(new UpdateNotification());
-		MinecraftForge.EVENT_BUS.register(new LootRegistry());
+		
+		LootRegistry lr = new LootRegistry();
+		MinecraftForge.EVENT_BUS.register(lr);
+		FMLCommonHandler.instance().bus().register(lr);
+		
 		EventHandler eh = new EventHandler();
 		MinecraftForge.EVENT_BUS.register(eh);
 		FMLCommonHandler.instance().bus().register(eh);
