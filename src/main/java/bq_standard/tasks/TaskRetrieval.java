@@ -6,27 +6,26 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidStack;
+import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.party.PartyInstance;
-import betterquesting.party.PartyInstance.PartyMember;
-import betterquesting.party.PartyManager;
-import betterquesting.quests.QuestDatabase;
-import betterquesting.quests.QuestInstance;
-import betterquesting.quests.tasks.TaskBase;
-import betterquesting.quests.tasks.advanced.IContainerTask;
-import betterquesting.quests.tasks.advanced.IProgressionTask;
-import betterquesting.utils.BigItemStack;
-import betterquesting.utils.ItemComparison;
-import betterquesting.utils.JsonHelper;
-import bq_standard.client.gui.editors.GuiRetrievalEditor;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import betterquesting.api.enums.EnumSaveType;
+import betterquesting.api.jdoc.IJsonDoc;
+import betterquesting.api.properties.NativeProps;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.party.IParty;
+import betterquesting.api.questing.tasks.IItemTask;
+import betterquesting.api.questing.tasks.IProgression;
+import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.ItemComparison;
+import betterquesting.api.utils.JsonHelper;
 import bq_standard.client.gui.tasks.GuiTaskRetrieval;
 import bq_standard.core.BQ_Standard;
+import bq_standard.tasks.factory.FactoryTaskRetrieval;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -34,8 +33,9 @@ import com.google.gson.JsonPrimitive;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class TaskRetrieval extends TaskBase implements IContainerTask, IProgressionTask<int[]>
+public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 {
+	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	public ArrayList<BigItemStack> requiredItems = new ArrayList<BigItemStack>();
 	public HashMap<UUID, int[]> userProgress = new HashMap<UUID, int[]>();
 	boolean partialMatch = true;
@@ -50,18 +50,39 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 	}
 	
 	@Override
-	public void Update(QuestInstance quest, EntityPlayer player)
+	public ResourceLocation getFactoryID()
 	{
-		if(player.ticksExisted%60 == 0 && !QuestDatabase.editMode)
+		return FactoryTaskRetrieval.INSTANCE.getRegistryName();
+	}
+	
+	@Override
+	public boolean isComplete(UUID uuid)
+	{
+		return completeUsers.contains(uuid);
+	}
+	
+	@Override
+	public void setComplete(UUID uuid)
+	{
+		if(!completeUsers.contains(uuid))
+		{
+			completeUsers.add(uuid);
+		}
+	}
+	
+	@Override
+	public void update(EntityPlayer player, IQuest quest)
+	{
+		if(player.ticksExisted%60 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
 		{
 			if(!consume || autoConsume)
 			{
-				Detect(quest, player);
+				detect(player, quest);
 			} else
 			{
 				boolean flag = true;
 				
-				int[] totalProgress = quest == null || !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();
+				int[] totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(QuestingAPI.getQuestingUUID(player)) : getGlobalProgress();
 				for(int j = 0; j < requiredItems.size(); j++)
 				{
 					BigItemStack rStack = requiredItems.get(j);
@@ -77,21 +98,23 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 				
 				if(flag)
 				{
-					setCompletion(player.getUniqueID(), true);
+					setComplete(QuestingAPI.getQuestingUUID(player));
 				}
 			}
 		}
 	}
 
 	@Override
-	public void Detect(QuestInstance quest, EntityPlayer player)
+	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(player.inventory == null || isComplete(player.getUniqueID()))
+		UUID playerID = QuestingAPI.getQuestingUUID(player);
+		
+		if(player.inventory == null || isComplete(playerID))
 		{
 			return;
 		}
 		
-		int[] progress = GetUserProgress(player.getUniqueID());
+		int[] progress = this.getUsersProgress(playerID);
 		
 		for(int i = 0; i < player.inventory.getSizeInventory(); i++)
 		{
@@ -132,8 +155,8 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 		
 		if(consume)
 		{
-			SetUserProgress(player.getUniqueID(), progress);
-			totalProgress = quest == null || !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();
+			setUserProgress(playerID, progress);
+			totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		}
 		
 		for(int j = 0; j < requiredItems.size(); j++)
@@ -151,14 +174,20 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 		
 		if(flag)
 		{
-			setCompletion(player.getUniqueID(), true);
+			setComplete(playerID);
 		}
 	}
 
 	@Override
-	public void writeToJson(JsonObject json)
+	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
 	{
-		super.writeToJson(json);
+		if(saveType == EnumSaveType.PROGRESS)
+		{
+			return this.writeProgressToJson(json);
+		} else if(saveType != EnumSaveType.CONFIG)
+		{
+			return json;
+		}
 		
 		json.addProperty("partialMatch", partialMatch);
 		json.addProperty("ignoreNBT", ignoreNBT);
@@ -171,12 +200,21 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 			itemArray.add(JsonHelper.ItemStackToJson(stack, new JsonObject()));
 		}
 		json.add("requiredItems", itemArray);
+		
+		return json;
 	}
 
 	@Override
-	public void readFromJson(JsonObject json)
+	public void readFromJson(JsonObject json, EnumSaveType saveType)
 	{
-		super.readFromJson(json);
+		if(saveType == EnumSaveType.PROGRESS)
+		{
+			this.readProgressFromJson(json);
+			return;
+		} else if(saveType != EnumSaveType.CONFIG)
+		{
+			return;
+		}
 		
 		partialMatch = JsonHelper.GetBoolean(json, "partialMatch", partialMatch);
 		ignoreNBT = JsonHelper.GetBoolean(json, "ignoreNBT", ignoreNBT);
@@ -201,24 +239,25 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 				continue;
 			}
 		}
-		
-		if(json.has("userProgress"))
-		{
-			jMig = json;
-		}
 	}
 	
-	JsonObject jMig = null;
-	
-	@Override
 	public void readProgressFromJson(JsonObject json)
 	{
-		super.readProgressFromJson(json);
-		
-		if(jMig != null)
+		completeUsers = new ArrayList<UUID>();
+		for(JsonElement entry : JsonHelper.GetArray(json, "completeUsers"))
 		{
-			json = jMig;
-			jMig = null;
+			if(entry == null || !entry.isJsonPrimitive())
+			{
+				continue;
+			}
+			
+			try
+			{
+				completeUsers.add(UUID.fromString(entry.getAsString()));
+			} catch(Exception e)
+			{
+				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
+			}
 		}
 		
 		userProgress = new HashMap<UUID,int[]>();
@@ -256,10 +295,14 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 		}
 	}
 	
-	@Override
-	public void writeProgressToJson(JsonObject json)
+	public JsonObject writeProgressToJson(JsonObject json)
 	{
-		super.writeProgressToJson(json);
+		JsonArray jArray = new JsonArray();
+		for(UUID uuid : completeUsers)
+		{
+			jArray.add(new JsonPrimitive(uuid.toString()));
+		}
+		json.add("completeUsers", jArray);
 		
 		JsonArray progArray = new JsonArray();
 		for(Entry<UUID,int[]> entry : userProgress.entrySet())
@@ -275,24 +318,26 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 			progArray.add(pJson);
 		}
 		json.add("userProgress", progArray);
-	}
-
-	@Override
-	public void ResetProgress(UUID uuid)
-	{
-		super.ResetProgress(uuid);
-		userProgress.remove(uuid);
-	}
-
-	@Override
-	public void ResetAllProgress()
-	{
-		super.ResetAllProgress();
-		userProgress = new HashMap<UUID,int[]>();
+		
+		return json;
 	}
 	
 	@Override
-	public float GetParticipation(UUID uuid)
+	public void resetUser(UUID uuid)
+	{
+		completeUsers.remove(uuid);
+		userProgress.remove(uuid);
+	}
+	
+	@Override
+	public void resetAll()
+	{
+		completeUsers.clear();
+		userProgress.clear();
+	}
+	
+	@Override
+	public float getParticipation(UUID uuid)
 	{
 		if(requiredItems.size() <= 0)
 		{
@@ -301,7 +346,7 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 		
 		float total = 0F;
 		
-		int[] progress = GetUserProgress(uuid);
+		int[] progress = getUsersProgress(uuid);
 		for(int i = 0; i < requiredItems.size(); i++)
 		{
 			BigItemStack rStack = requiredItems.get(i);
@@ -312,17 +357,11 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 	}
 
 	@Override
-	public GuiEmbedded getGui(QuestInstance quest, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public IGuiEmbedded getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
 	{
-		return new GuiTaskRetrieval(quest, this, screen, posX, posY, sizeX, sizeY);
+		return new GuiTaskRetrieval(this, quest, posX, posY, sizeX, sizeY);
 	}
-
-	@Override
-	public boolean canAcceptFluid(UUID owner, Fluid fluid)
-	{
-		return false;
-	}
-
+	
 	@Override
 	public boolean canAcceptItem(UUID owner, ItemStack stack)
 	{
@@ -331,7 +370,7 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 			return false;
 		}
 		
-		int[] progress = GetUserProgress(owner);
+		int[] progress = getUsersProgress(owner);
 		
 		for(int j = 0; j < requiredItems.size(); j++)
 		{
@@ -350,24 +389,18 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 		
 		return false;
 	}
-
+	
 	@Override
-	public FluidStack submitFluid(UUID owner, FluidStack fluid)
+	public ItemStack submitItem(UUID owner, ItemStack input)
 	{
-		return fluid;
-	}
-
-	@Override
-	public void submitItem(UUID owner, Slot input, Slot output)
-	{
-		ItemStack stack = input.getStack();
+		ItemStack stack = input;
 		
 		if(owner == null || stack == null || !consume || isComplete(owner))
 		{
-			return;
+			return stack;
 		}
 		
-		int[] progress = GetUserProgress(owner);
+		int[] progress = getUsersProgress(owner);
 		
 		for(int j = 0; j < requiredItems.size(); j++)
 		{
@@ -398,57 +431,72 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 			}
 		}
 		
-		SetUserProgress(owner, progress);
+		setUserProgress(owner, progress);
 		
 		if(stack == null || stack.stackSize <= 0)
 		{
-			input.putStack(null);
+			return null;
 		} else
 		{
-			input.putStack(stack);
+			return stack;
 		}
 	}
 	
 	@Override
 	@SideOnly(Side.CLIENT)
-	public GuiScreen GetEditor(GuiScreen parent, JsonObject data)
+	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)//, JsonObject data)
 	{
-		return new GuiRetrievalEditor(parent, data);
+		return null;//new GuiRetrievalEditor(parent, this, quest);
 	}
 
 	@Override
-	public void SetUserProgress(UUID uuid, int[] progress)
+	public void setUserProgress(UUID uuid, int[] progress)
 	{
 		userProgress.put(uuid, progress);
 	}
-
+	
 	@Override
-	public int[] GetUserProgress(UUID uuid)
+	public int[] getUsersProgress(UUID... users)
 	{
-		int[] progress = userProgress.get(uuid);
+		int[] progress = new int[requiredItems.size()];
+		
+		for(UUID uuid : users)
+		{
+			int[] tmp = userProgress.get(uuid);
+			
+			if(tmp == null || tmp.length != requiredItems.size())
+			{
+				continue;
+			}
+			
+			for(int n = 0; n < progress.length; n++)
+			{
+				progress[n] += tmp[n];
+			}
+		}
+		
 		return progress == null || progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
 	}
-
-	@Override
-	public int[] GetPartyProgress(UUID uuid)
+	
+	public int[] getPartyProgress(UUID uuid)
 	{
 		int[] total = new int[requiredItems.size()];
 		
-		PartyInstance party = PartyManager.GetParty(uuid);
+		IParty party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getUserParty(uuid);
 		
 		if(party == null)
 		{
-			return GetUserProgress(uuid);
+			return getUsersProgress(uuid);
 		} else
 		{
-			for(PartyMember mem : party.GetMembers())
+			for(UUID mem : party.getMembers())
 			{
-				if(mem != null && mem.GetPrivilege() <= 0)
+				if(mem != null && party.getStatus(mem).ordinal() <= 0)
 				{
 					continue;
 				}
 
-				int[] progress = GetUserProgress(mem.userID);
+				int[] progress = getUsersProgress(mem);
 				
 				for(int i = 0; i < progress.length; i++)
 				{
@@ -461,7 +509,7 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 	}
 
 	@Override
-	public int[] GetGlobalProgress()
+	public int[] getGlobalProgress()
 	{
 		int[] total = new int[requiredItems.size()];
 		
@@ -481,5 +529,11 @@ public class TaskRetrieval extends TaskBase implements IContainerTask, IProgress
 		}
 		
 		return total;
+	}
+
+	@Override
+	public IJsonDoc getDocumentation()
+	{
+		return null;
 	}
 }

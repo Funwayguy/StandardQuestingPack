@@ -1,34 +1,44 @@
 package bq_standard.client.gui.rewards;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
 import org.lwjgl.opengl.GL11;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.client.themes.ThemeRegistry;
-import betterquesting.utils.RenderUtils;
+import betterquesting.api.client.gui.GuiElement;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import betterquesting.api.utils.RenderUtils;
 import bq_standard.rewards.RewardCommand;
 
-public class GuiRewardCommand extends GuiEmbedded
+public class GuiRewardCommand extends GuiElement implements IGuiEmbedded
 {
-	RewardCommand reward;
+	private RewardCommand reward;
+	private Minecraft mc;
 	
-	public GuiRewardCommand(RewardCommand reward, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	private int posX = 0;
+	private int posY = 0;
+	private int sizeX = 0;
+	private int sizeY = 0;
+	
+	public GuiRewardCommand(RewardCommand reward, int posX, int posY, int sizeX, int sizeY)
 	{
-		super(screen, posX, posY, sizeX, sizeY);
+		this.mc = Minecraft.getMinecraft();
 		this.reward = reward;
+		this.posX = posX;
+		this.posY = posY;
+		this.sizeX = sizeX;
+		this.sizeY = sizeY;
 	}
 	
 	@Override
-	public void drawGui(int mx, int my, float partialTick)
+	public void drawBackground(int mx, int my, float partialTick)
 	{
 		String txt1 = I18n.format("advMode.command");
 		String txt2 = EnumChatFormatting.ITALIC + (reward.hideCmd? "[HIDDEN]" : reward.command);
 		
-		screen.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
+		mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
 		IIcon icon = Blocks.command_block.getIcon(0, 0);
 		
 		GL11.glPushMatrix();
@@ -36,7 +46,27 @@ public class GuiRewardCommand extends GuiEmbedded
 		RenderUtils.itemRender.renderIcon(posX/2, (posY + sizeY/2 - 16)/2, icon, 16, 16);
 		GL11.glPopMatrix();
 		
-		screen.mc.fontRenderer.drawString(txt1, posX + 40, posY + sizeY/2 - 16, ThemeRegistry.curTheme().textColor().getRGB());
-		screen.mc.fontRenderer.drawString(screen.mc.fontRenderer.trimStringToWidth(txt2, sizeX - (32 + 8)), posX + 40, posY + sizeY/2, ThemeRegistry.curTheme().textColor().getRGB());
+		mc.fontRenderer.drawString(txt1, posX + 40, posY + sizeY/2 - 16, getTextColor());
+		mc.fontRenderer.drawString(mc.fontRenderer.trimStringToWidth(txt2, sizeX - (32 + 8)), posX + 40, posY + sizeY/2, getTextColor());
+	}
+
+	@Override
+	public void drawForeground(int mx, int my, float partialTick)
+	{
+	}
+
+	@Override
+	public void onMouseClick(int mx, int my, int click)
+	{
+	}
+
+	@Override
+	public void onMouseScroll(int mx, int my, int scroll)
+	{
+	}
+
+	@Override
+	public void onKeyTyped(char c, int keyCode)
+	{
 	}
 }

@@ -1,104 +1,104 @@
 package bq_standard.client.gui.rewards;
 
-import net.minecraft.client.resources.I18n;
-import net.minecraft.util.MathHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.nbt.NBTTagCompound;
 import org.lwjgl.opengl.GL11;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.client.themes.ThemeRegistry;
-import betterquesting.utils.BigItemStack;
-import betterquesting.utils.RenderUtils;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.gui.GuiElement;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import betterquesting.api.network.QuestingPacket;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.RenderUtils;
+import bq_standard.client.gui.GuiScrollingItemsSmall;
+import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.RewardChoice;
 
-public class GuiRewardChoice extends GuiEmbedded
+public class GuiRewardChoice extends GuiElement implements IGuiEmbedded
 {
-	RewardChoice reward;
-	int scroll = 0;
+	private RewardChoice reward;
+	private Minecraft mc;
 	
-	public GuiRewardChoice(RewardChoice reward, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	private GuiScrollingItemsSmall itemScroll;
+	private int posX = 0;
+	private int posY = 0;
+	private int sizeY = 0;
+	
+	private int qID = -1;
+	private int rID = -1;
+	
+	public GuiRewardChoice(RewardChoice reward, IQuest quest, int posX, int posY, int sizeX, int sizeY)
 	{
-		super(screen, posX, posY, sizeX, sizeY);
+		this.mc = Minecraft.getMinecraft();
 		this.reward = reward;
+		this.posX = posX;
+		this.posY = posY;
+		this.sizeY = sizeY;
+		
+		this.qID = QuestingAPI.getAPI(ApiReference.QUEST_DB).getKey(quest);
+		this.rID = quest.getRewards().getKey(reward);
+		
+		this.itemScroll = new GuiScrollingItemsSmall(mc, posX + 40, posY, sizeX - 40, sizeY);
+		
+		for(BigItemStack stack : reward.choices)
+		{
+			this.itemScroll.addItem(new BigItemStack(stack.getBaseStack()), stack.stackSize + " " + stack.getBaseStack().getDisplayName());
+		}
 	}
 
 	@Override
-	public void drawGui(int mx, int my, float partialTick)
+	public void drawBackground(int mx, int my, float partialTick)
 	{
-		int rowLMax = (sizeX - 40)/18;
-		int rowL = Math.min(reward.choices.size(), rowLMax);
+		int sel = reward.getSelecton(QuestingAPI.getQuestingUUID(mc.thePlayer));
 		
-		if(rowLMax < reward.choices.size())
-		{
-			scroll = MathHelper.clamp_int(scroll, 0, reward.choices.size() - rowLMax);
-			RenderUtils.DrawFakeButton(screen, posX, posY, 20, 20, "<", screen.isWithin(mx, my, posX, posY, 20, 20, false)? 2 : 1);
-			RenderUtils.DrawFakeButton(screen, posX + 20 + 18*rowL, posY, 20, 20, ">", screen.isWithin(mx, my, posX + 20 + 18*rowL, posY, 20, 20, false)? 2 : 1);
-		} else
-		{
-			scroll = 0;
-		}
-		
-		BigItemStack ttStack = null; // Reset
-		
-		for(int i = 0; i < rowL; i++)
-		{
-			BigItemStack stack = reward.choices.get(i + scroll);
-			screen.mc.renderEngine.bindTexture(ThemeRegistry.curTheme().guiTexture());
-			GL11.glDisable(GL11.GL_DEPTH_TEST);
-			screen.drawTexturedModalRect(posX + (i * 18) + 20, posY + 1, 0, 48, 18, 18);
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
-			RenderUtils.RenderItemStack(screen.mc, stack.getBaseStack(), posX + (i * 18) + 21, posY + 2, stack != null && stack.stackSize > 1? "" + stack.stackSize : "");
-			
-			if(screen.isWithin(mx, my, posX + (i * 18) + 20, posY + 1, 16, 16, false))
-			{
-				ttStack = stack;
-			}
-		}
-		
-		screen.mc.fontRenderer.drawString(I18n.format("betterquesting.gui.selection"), posX, posY + 32, ThemeRegistry.curTheme().textColor().getRGB(), false);
-		GL11.glColor4f(1F, 1F, 1F, 1F);
-		screen.mc.renderEngine.bindTexture(ThemeRegistry.curTheme().guiTexture());
-		GL11.glDisable(GL11.GL_DEPTH_TEST);
-		screen.drawTexturedModalRect(posX + 50, posY + 28, 0, 48, 18, 18);
+		GL11.glPushMatrix();
+		GL11.glTranslatef(posX, posY + sizeY/2 - 18, 0);
+		GL11.glScalef(2F, 2F, 1F);
+		this.mc.renderEngine.bindTexture(currentTheme().getGuiTexture());
+		this.drawTexturedModalRect(0, 0, 0, 48, 18, 18);
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
-		BigItemStack stack = (reward.selected >= 0 && reward.selected < reward.choices.size())? reward.choices.get(reward.selected) : null;
 		
-		if(stack != null)
+		if(sel >= 0)
 		{
-			RenderUtils.RenderItemStack(screen.mc, stack.getBaseStack(), posX + 51, posY + 29, stack != null && stack.stackSize > 1? "" + stack.stackSize : "");
-			
-			if(screen.isWithin(mx, my, posX + 51, posY + 29, 16, 16, false))
-			{
-				ttStack = stack;
-			}
+			BigItemStack selStack = reward.choices.get(sel);
+			RenderUtils.RenderItemStack(mc, selStack.getBaseStack(), 1, 1, selStack.stackSize > 0? "" + selStack.stackSize : "");
 		}
 		
-		if(ttStack != null)
-		{
-			screen.DrawTooltip(ttStack.getBaseStack().getTooltip(screen.mc.thePlayer, screen.mc.gameSettings.advancedItemTooltips), mx, my);
-		}
+		GL11.glDisable(GL11.GL_DEPTH_TEST);
+		GL11.glPopMatrix();
+		
+		itemScroll.drawBackground(mx, my, partialTick);
 	}
 	
 	@Override
-	public void mouseClick(int mx, int my, int button)
+	public void drawForeground(int mx, int my, float partialTick)
 	{
-		if(button != 0)
-		{
-			return;
-		}
+		itemScroll.drawForeground(mx, my, partialTick);
+	}
+	
+	@Override
+	public void onMouseClick(int mx, int my, int button)
+	{
+		int idx = itemScroll.getEntryUnderMouse(mx, my);
 		
-		int rowLMax = (sizeX - 40)/18;
-		int rowL = Math.min(reward.choices.size(), rowLMax);
-		
-		if(screen.isWithin(mx, my, posX + 20, posY + 2, rowL * 18, 18, false))
+		if(idx >= 0)
 		{
-			int i = (mx - posX - 20)/18;
-			reward.selected = i + scroll;
-		} else if(screen.isWithin(mx, my, posX, posY, 20, 20, false))
-		{
-			scroll = MathHelper.clamp_int(scroll - 1, 0, reward.choices.size() - rowLMax);
-		} else if(screen.isWithin(mx, my, posX + 20 + 18*rowL, posY, 20, 20, false))
-		{
-			scroll = MathHelper.clamp_int(scroll + 1, 0, reward.choices.size() - rowLMax);
+			NBTTagCompound retTags = new NBTTagCompound();
+			retTags.setInteger("questID", qID);
+			retTags.setInteger("rewardID", rID);
+			retTags.setInteger("selection", idx);
+			QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(StandardPacketType.CHOICE.GetLocation(), retTags));
 		}
+	}
+
+	@Override
+	public void onMouseScroll(int mx, int my, int scroll)
+	{
+	}
+
+	@Override
+	public void onKeyTyped(char c, int keyCode)
+	{
 	}
 }

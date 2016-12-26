@@ -4,27 +4,31 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.editors.json.GuiJsonObject;
-import betterquesting.client.gui.misc.GuiButtonQuesting;
-import betterquesting.client.gui.misc.GuiNumberField;
-import betterquesting.client.gui.misc.IVolatileScreen;
-import betterquesting.client.themes.ThemeRegistry;
-import betterquesting.utils.JsonHelper;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.gui.GuiScreenThemed;
+import betterquesting.api.client.gui.controls.GuiButtonThemed;
+import betterquesting.api.client.gui.controls.GuiNumberField;
+import betterquesting.api.client.gui.misc.IVolatileScreen;
+import betterquesting.api.enums.EnumSaveType;
+import betterquesting.api.utils.JsonHelper;
+import bq_standard.client.gui.editors.callback.JsonSaveLoadCallback;
+import bq_standard.tasks.TaskScoreboard;
 import bq_standard.tasks.TaskScoreboard.ScoreOperation;
 import com.google.gson.JsonObject;
 
-public class GuiScoreEditor extends GuiQuesting implements IVolatileScreen
+public class GuiScoreEditor extends GuiScreenThemed implements IVolatileScreen
 {
+	TaskScoreboard task;
 	GuiTextField txtField;
 	GuiNumberField numField;
 	ScoreOperation operation = ScoreOperation.MORE_OR_EQUAL;
 	JsonObject data;
 	
-	public GuiScoreEditor(GuiScreen parent, JsonObject data)
+	public GuiScoreEditor(GuiScreen parent, TaskScoreboard task)
 	{
 		super(parent, "bq_standard.title.edit_hunt");
-		this.data = data;
+		this.data = task.writeToJson(new JsonObject(), EnumSaveType.CONFIG);
 		operation = ScoreOperation.valueOf(JsonHelper.GetString(data, "operation", "MORE_OR_EQUAL").toUpperCase());
 		operation = operation != null? operation : ScoreOperation.MORE_OR_EQUAL;
 	}
@@ -39,8 +43,8 @@ public class GuiScoreEditor extends GuiQuesting implements IVolatileScreen
 		txtField.setText(JsonHelper.GetString(data, "scoreName", "Score"));
 		numField = new GuiNumberField(mc.fontRenderer, guiLeft + sizeX/2 + 1, guiTop + sizeY/2 + 1, 98, 18);
 		numField.setText("" + JsonHelper.GetNumber(data, "target", 1).intValue());
-		this.buttonList.add(new GuiButtonQuesting(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2, 100, 20, operation.GetText()));
-		this.buttonList.add(new GuiButtonQuesting(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 20, 200, 20, I18n.format("betterquesting.btn.advanced")));
+		this.buttonList.add(new GuiButtonThemed(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2, 100, 20, operation.GetText()));
+		this.buttonList.add(new GuiButtonThemed(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 20, 200, 20, I18n.format("betterquesting.btn.advanced")));
 	}
 	
 	@Override
@@ -48,7 +52,7 @@ public class GuiScoreEditor extends GuiQuesting implements IVolatileScreen
 	{
 		super.drawScreen(mx, my, partialTick);
 		
-		mc.fontRenderer.drawString(I18n.format("betterquesting.gui.name"), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 - 32, ThemeRegistry.curTheme().textColor().getRGB());
+		mc.fontRenderer.drawString(I18n.format("betterquesting.gui.name"), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 - 32, getTextColor());
 		numField.drawTextBox();
 		txtField.drawTextBox();
 	}
@@ -58,7 +62,10 @@ public class GuiScoreEditor extends GuiQuesting implements IVolatileScreen
 	{
 		super.actionPerformed(button);
 		
-		if(button.id == 1)
+		if(button.id == 0)
+		{
+			task.readFromJson(data, EnumSaveType.CONFIG);
+		} else if(button.id == 1)
 		{
 			int i = operation.ordinal();
 			operation = ScoreOperation.values()[(i + 1)%ScoreOperation.values().length];
@@ -66,7 +73,8 @@ public class GuiScoreEditor extends GuiQuesting implements IVolatileScreen
 			data.addProperty("operation", operation.name());
 		} else if(button.id == 2)
 		{
-			mc.displayGuiScreen(new GuiJsonObject(this, data));
+			//mc.displayGuiScreen(new GuiJsonObject(this, data, null));
+			QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(this, new JsonSaveLoadCallback<JsonObject>(task), data, task.getDocumentation());
 		}
 	}
 	

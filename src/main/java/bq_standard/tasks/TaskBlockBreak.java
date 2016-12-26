@@ -5,37 +5,44 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
 import net.minecraft.block.Block;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.Level;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.core.BetterQuesting;
-import betterquesting.party.PartyInstance;
-import betterquesting.party.PartyInstance.PartyMember;
-import betterquesting.party.PartyManager;
-import betterquesting.quests.QuestDatabase;
-import betterquesting.quests.QuestInstance;
-import betterquesting.quests.tasks.advanced.AdvancedTaskBase;
-import betterquesting.quests.tasks.advanced.IProgressionTask;
-import betterquesting.utils.BigItemStack;
-import betterquesting.utils.ItemComparison;
-import betterquesting.utils.JsonHelper;
-import betterquesting.utils.NBTConverter;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import betterquesting.api.enums.EnumSaveType;
+import betterquesting.api.jdoc.IJsonDoc;
+import betterquesting.api.placeholders.ItemPlaceholder;
+import betterquesting.api.properties.NativeProps;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.party.IParty;
+import betterquesting.api.questing.tasks.IProgression;
+import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.ItemComparison;
+import betterquesting.api.utils.JsonHelper;
+import betterquesting.api.utils.NBTConverter;
 import bq_standard.client.gui.tasks.GuiTaskBlockBreak;
 import bq_standard.core.BQ_Standard;
+import bq_standard.tasks.factory.FactoryTaskBlockBreak;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
-public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask<int[]>
+public class TaskBlockBreak implements ITask, IProgression<int[]>
 {
+	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	public HashMap<UUID, int[]> userProgress = new HashMap<UUID, int[]>();
 	public ArrayList<JsonBlockType> blockTypes = new ArrayList<JsonBlockType>();
 	
@@ -45,30 +52,53 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 	}
 	
 	@Override
+	public ResourceLocation getFactoryID()
+	{
+		return FactoryTaskBlockBreak.INSTANCE.getRegistryName();
+	}
+	
+	@Override
+	public boolean isComplete(UUID uuid)
+	{
+		return completeUsers.contains(uuid);
+	}
+	
+	@Override
+	public void setComplete(UUID uuid)
+	{
+		if(!completeUsers.contains(uuid))
+		{
+			completeUsers.add(uuid);
+		}
+	}
+	
+	@Override
 	public String getUnlocalisedName()
 	{
 		return "bq_standard.task.block_break";
 	}
 	
 	@Override
-	public void Update(QuestInstance quest, EntityPlayer player)
+	public void update(EntityPlayer player, IQuest quest)
 	{
-		if(player.ticksExisted%200 == 0 && !QuestDatabase.editMode)
+		if(player.ticksExisted%200 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
 		{
-			Detect(quest, player);
+			detect(player, quest);
 		}
 	}
 	
 	@Override
-	public void Detect(QuestInstance quest, EntityPlayer player)
+	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(isComplete(player.getUniqueID()))
+		UUID playerID = QuestingAPI.getQuestingUUID(player);
+		
+		if(isComplete(playerID))
 		{
 			return;
 		}
 		
 		boolean flag = true;
-		int[] progress = quest == null || !quest.globalQuest? GetPartyProgress(player.getUniqueID()) : GetGlobalProgress();
+		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		
 		for(int j = 0; j < blockTypes.size(); j++)
 		{
@@ -85,19 +115,20 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 		
 		if(flag)
 		{
-			setCompletion(player.getUniqueID(), true);
+			setComplete(playerID);
 		}
 	}
 	
-	@Override
-	public void onBlockBreak(QuestInstance quest, EntityPlayer player, Block b, int metadata, int x, int y, int z)
+	public void onBlockBreak(IQuest quest, EntityPlayer player, Block b, int metadata, int x, int y, int z)
 	{
-		if(isComplete(player.getUniqueID()))
+		UUID playerID = QuestingAPI.getQuestingUUID(player);
+		
+		if(isComplete(playerID))
 		{
 			return;
 		}
 		
-		int[] progress = GetUserProgress(player.getUniqueID());
+		int[] progress = getUsersProgress(playerID);
 		TileEntity tile = player.worldObj.getTileEntity(x, y, z);
 		NBTTagCompound tags = new NBTTagCompound();
 		
@@ -115,18 +146,24 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 			if((flag || (b == block.b && (block.m < 0 || metadata == block.m))) && ItemComparison.CompareNBTTag(block.tags, tags, true))
 			{
 				progress[i] += 1;
-				SetUserProgress(player.getUniqueID(), progress);
+				setUserProgress(playerID, progress);
 				break;
 			}
 		}
 		
-		Detect(quest, player);
+		detect(player, quest);
 	}
 	
 	@Override
-	public void writeToJson(JsonObject json)
+	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
 	{
-		super.writeToJson(json);
+		if(saveType == EnumSaveType.PROGRESS)
+		{
+			return this.writeProgressToJson(json);
+		} else if(saveType != EnumSaveType.CONFIG)
+		{
+			return json;
+		}
 		
 		JsonArray bAry = new JsonArray();
 		for(JsonBlockType block : blockTypes)
@@ -135,12 +172,21 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 			bAry.add(jbt);
 		}
 		json.add("blocks", bAry);
+		
+		return json;
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json)
+	public void readFromJson(JsonObject json, EnumSaveType saveType)
 	{
-		super.readFromJson(json);
+		if(saveType == EnumSaveType.PROGRESS)
+		{
+			this.readProgressFromJson(json);
+			return;
+		} else if(saveType != EnumSaveType.CONFIG)
+		{
+			return;
+		}
 		
 		blockTypes.clear();
 		for(JsonElement element : JsonHelper.GetArray(json, "blocks"))
@@ -171,24 +217,25 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 			
 			blockTypes.add(leg);
 		}
-		
-		if(json.has("userProgress"))
-		{
-			jMig = json;
-		}
 	}
 	
-	JsonObject jMig = null; // Used for migrating progress over
-	
-	@Override
 	public void readProgressFromJson(JsonObject json)
 	{
-		super.readProgressFromJson(json);
-		
-		if(jMig != null)
+		completeUsers = new ArrayList<UUID>();
+		for(JsonElement entry : JsonHelper.GetArray(json, "completeUsers"))
 		{
-			json = jMig;
-			jMig = null;
+			if(entry == null || !entry.isJsonPrimitive())
+			{
+				continue;
+			}
+			
+			try
+			{
+				completeUsers.add(UUID.fromString(entry.getAsString()));
+			} catch(Exception e)
+			{
+				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
+			}
 		}
 		
 		userProgress = new HashMap<UUID,int[]>();
@@ -226,10 +273,14 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 		}
 	}
 	
-	@Override
-	public void writeProgressToJson(JsonObject json)
+	public JsonObject writeProgressToJson(JsonObject json)
 	{
-		super.writeProgressToJson(json);
+		JsonArray jArray = new JsonArray();
+		for(UUID uuid : completeUsers)
+		{
+			jArray.add(new JsonPrimitive(uuid.toString()));
+		}
+		json.add("completeUsers", jArray);
 		
 		JsonArray progArray = new JsonArray();
 		for(Entry<UUID,int[]> entry : userProgress.entrySet())
@@ -245,24 +296,24 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 			progArray.add(pJson);
 		}
 		json.add("userProgress", progArray);
+		
+		return json;
 	}
 	
 	@Override
-	public void ResetProgress(UUID uuid)
+	public void resetUser(UUID uuid)
 	{
-		super.ResetProgress(uuid);
+		completeUsers.remove(uuid);
 		userProgress.remove(uuid);
 	}
-
-	@Override
-	public void ResetAllProgress()
+	
+	public void resetAll()
 	{
-		super.ResetAllProgress();
+		completeUsers.clear();
 		userProgress = new HashMap<UUID, int[]>();
 	}
 	
-	@Override
-	public float GetParticipation(UUID uuid)
+	public float getParticipation(UUID uuid)
 	{
 		if(blockTypes.size() <= 0)
 		{
@@ -271,7 +322,7 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 		
 		float total = 0F;
 		
-		int[] progress = GetUserProgress(uuid);
+		int[] progress = getUsersProgress(uuid);
 		for(int i = 0; i < blockTypes.size(); i++)
 		{
 			JsonBlockType block = blockTypes.get(i);
@@ -282,44 +333,67 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 	}
 
 	@Override
-	public GuiEmbedded getGui(QuestInstance quest, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	@SideOnly(Side.CLIENT)
+	public IGuiEmbedded getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
 	{
-		return new GuiTaskBlockBreak(quest, this, screen, posX, posY, sizeX, sizeY);
+		return new GuiTaskBlockBreak(this, quest, posX, posY, sizeX, sizeY);
 	}
 	
 	@Override
-	public void SetUserProgress(UUID uuid, int[] progress)
+	@SideOnly(Side.CLIENT)
+	public GuiScreen getTaskEditor(GuiScreen screen, IQuest quest)
+	{
+		return null;
+	}
+	
+	@Override
+	public void setUserProgress(UUID uuid, int[] progress)
 	{
 		userProgress.put(uuid, progress);
 	}
 	
 	@Override
-	public int[] GetUserProgress(UUID uuid)
+	public int[] getUsersProgress(UUID... users)
 	{
-		int[] progress = userProgress.get(uuid);
+		int[] progress = new int[blockTypes.size()];
+		
+		for(UUID uuid : users)
+		{
+			int[] tmp = userProgress.get(uuid);
+			
+			if(tmp == null || tmp.length != blockTypes.size())
+			{
+				continue;
+			}
+			
+			for(int n = 0; n < progress.length; n++)
+			{
+				progress[n] += tmp[n];
+			}
+		}
+		
 		return progress == null || progress.length != blockTypes.size()? new int[blockTypes.size()] : progress;
 	}
 	
-	@Override
-	public int[] GetPartyProgress(UUID uuid)
+	public int[] getPartyProgress(UUID uuid)
 	{
 		int[] total = new int[blockTypes.size()];
 		
-		PartyInstance party = PartyManager.GetParty(uuid);
+		IParty party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getUserParty(uuid);
 		
 		if(party == null)
 		{
-			return GetUserProgress(uuid);
+			return getUsersProgress(uuid);
 		} else
 		{
-			for(PartyMember mem : party.GetMembers())
+			for(UUID mem : party.getMembers())
 			{
-				if(mem != null && mem.GetPrivilege() <= 0)
+				if(mem != null && party.getStatus(mem).ordinal() <= 0)
 				{
 					continue;
 				}
 
-				int[] progress = GetUserProgress(mem.userID);
+				int[] progress = getUsersProgress(mem);
 				
 				for(int i = 0; i < progress.length; i++)
 				{
@@ -332,7 +406,7 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 	}
 	
 	@Override
-	public int[] GetGlobalProgress()
+	public int[] getGlobalProgress()
 	{
 		int[] total = new int[blockTypes.size()];
 		
@@ -389,7 +463,7 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 			
 			if(b == null || Item.getItemFromBlock(b) == null)
 			{
-				stack = new BigItemStack(BetterQuesting.placeholder, n, 0);
+				stack = new BigItemStack(ItemPlaceholder.placeholder, n, 0);
 				stack.getBaseStack().setStackDisplayName("NULL");
 				
 				if(b != null)
@@ -409,5 +483,11 @@ public class TaskBlockBreak extends AdvancedTaskBase implements IProgressionTask
 			stack.oreDict = oreDict;
 			return stack;
 		}
+	}
+
+	@Override
+	public IJsonDoc getDocumentation()
+	{
+		return null;
 	}
 }

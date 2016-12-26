@@ -1,19 +1,31 @@
 package bq_standard.rewards;
 
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
-import com.google.gson.JsonObject;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.quests.rewards.RewardBase;
-import betterquesting.utils.JsonHelper;
+import net.minecraft.util.ResourceLocation;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import betterquesting.api.enums.EnumSaveType;
+import betterquesting.api.jdoc.IJsonDoc;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.rewards.IReward;
+import betterquesting.api.utils.JsonHelper;
 import bq_standard.XPHelper;
 import bq_standard.client.gui.rewards.GuiRewardXP;
+import bq_standard.rewards.factory.FactoryRewardXP;
+import com.google.gson.JsonObject;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
-public class RewardXP extends RewardBase
+public class RewardXP implements IReward
 {
 	public int amount = 1;
 	public boolean levels = true;
+	
+	@Override
+	public ResourceLocation getFactoryID()
+	{
+		return FactoryRewardXP.INSTANCE.getRegistryName();
+	}
 	
 	@Override
 	public String getUnlocalisedName()
@@ -22,35 +34,49 @@ public class RewardXP extends RewardBase
 	}
 	
 	@Override
-	public boolean canClaim(EntityPlayer player, NBTTagCompound choiceData)
+	public boolean canClaim(EntityPlayer player, IQuest quest)
 	{
 		return true;
 	}
 	
 	@Override
-	public void Claim(EntityPlayer player, NBTTagCompound choiceData)
+	public void claimReward(EntityPlayer player, IQuest quest)
 	{
 		XPHelper.AddXP(player, !levels? amount : XPHelper.getLevelXP(amount));
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json)
+	public void readFromJson(JsonObject json, EnumSaveType saveType)
 	{
 		amount = JsonHelper.GetNumber(json, "amount", 1).intValue();
 		levels = JsonHelper.GetBoolean(json, "isLevels", true);
 	}
 	
 	@Override
-	public void writeToJson(JsonObject json)
+	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
 	{
 		json.addProperty("amount", amount);
 		json.addProperty("isLevels", levels);
+		return json;
 	}
 	
 	@Override
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	@SideOnly(Side.CLIENT)
+	public IGuiEmbedded getRewardGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
 	{
-		return new GuiRewardXP(this, screen, posX, posY, sizeX, sizeY);
+		return new GuiRewardXP(this, posX, posY, sizeX, sizeY);
 	}
 	
+	@Override
+	@SideOnly(Side.CLIENT)
+	public GuiScreen getRewardEditor(GuiScreen screen, IQuest quest)
+	{
+		return null;
+	}
+
+	@Override
+	public IJsonDoc getDocumentation()
+	{
+		return null;
+	}
 }

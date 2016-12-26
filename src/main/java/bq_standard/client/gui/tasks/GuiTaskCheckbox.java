@@ -1,71 +1,72 @@
 package bq_standard.client.gui.tasks;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiButtonQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.network.PacketAssembly;
-import betterquesting.quests.QuestDatabase;
-import betterquesting.quests.QuestInstance;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.gui.GuiElement;
+import betterquesting.api.client.gui.controls.GuiButtonThemed;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import betterquesting.api.network.QuestingPacket;
+import betterquesting.api.questing.IQuest;
 import bq_standard.network.StandardPacketType;
 import bq_standard.tasks.TaskCheckbox;
 
-public class GuiTaskCheckbox extends GuiEmbedded
+public class GuiTaskCheckbox extends GuiElement implements IGuiEmbedded
 {
-	GuiButtonQuesting btn;
-	TaskCheckbox task;
-	int qId = -1;
-	int tId = -1;
+	private Minecraft mc;
+	private GuiButtonThemed btn;
+	private int qId = -1;
+	private int tId = -1;
 	
-	public GuiTaskCheckbox(TaskCheckbox task, GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public GuiTaskCheckbox(TaskCheckbox task, int posX, int posY, int sizeX, int sizeY)
 	{
-		super(screen, posX, posY, sizeX, sizeY);
-		this.task = task;
+		this.mc = Minecraft.getMinecraft();
 		
-		if(task != null && task.isComplete(screen.mc.thePlayer.getUniqueID()))
+		if(task != null && task.isComplete(QuestingAPI.getQuestingUUID(mc.thePlayer)))
 		{
-			btn = new GuiButtonQuesting(0, posX + sizeX/2 - 20, posY + sizeY/2 - 20, 40, 40, EnumChatFormatting.GREEN + "" + EnumChatFormatting.BOLD + "\u2713");
+			btn = new GuiButtonThemed(0, posX + sizeX/2 - 20, posY + sizeY/2 - 20, 40, 40, EnumChatFormatting.GREEN + "" + EnumChatFormatting.BOLD + "\u2713");
 			btn.enabled = false;
 		} else if(task != null)
 		{
-			for(QuestInstance q : QuestDatabase.questDB.values())
+			for(IQuest q : QuestingAPI.getAPI(ApiReference.QUEST_DB).getAllValues())
 			{
-				int tmp = q.tasks.indexOf(task);
+				int tmp = q.getTasks().getKey(task);
 				
 				if(tmp >= 0)
 				{
 					tId = tmp;
-					qId = q.questID;
+					qId = QuestingAPI.getAPI(ApiReference.QUEST_DB).getKey(q);
 					break;
 				}
 			}
 			
 			if(qId < 0)
 			{
-				btn = new GuiButtonQuesting(0, posX + sizeX/2 - 20, posY + sizeY/2 - 20, 40, 40, "?");
+				btn = new GuiButtonThemed(0, posX + sizeX/2 - 20, posY + sizeY/2 - 20, 40, 40, "?");
 				btn.enabled = false;
 			} else
 			{
-				btn = new GuiButtonQuesting(0, posX + sizeX/2 - 20, posY + sizeY/2 - 20, 40, 40, EnumChatFormatting.RED + "" + EnumChatFormatting.BOLD + "x");
+				btn = new GuiButtonThemed(0, posX + sizeX/2 - 20, posY + sizeY/2 - 20, 40, 40, EnumChatFormatting.RED + "" + EnumChatFormatting.BOLD + "x");
 			}
 		} else
 		{
-			btn = new GuiButtonQuesting(0, posX + sizeX/2 - 20, posY + sizeY/2 - 20, 40, 40, "?");
+			btn = new GuiButtonThemed(0, posX + sizeX/2 - 20, posY + sizeY/2 - 20, 40, 40, "?");
 			btn.enabled = false;
 		}
 	}
 	
 	@Override
-	public void drawGui(int mx, int my, float partialTick)
+	public void drawBackground(int mx, int my, float partialTick)
 	{
-		btn.drawButton(screen.mc, mx, my);
+		btn.drawButton(mc, mx, my);
 	}
 	
 	@Override
-	public void mouseClick(int mx, int my, int click)
+	public void onMouseClick(int mx, int my, int click)
 	{
-		if(btn.enabled && btn.visible && btn.mousePressed(screen.mc, mx, my))
+		if(btn.enabled && btn.visible && btn.mousePressed(mc, mx, my))
 		{
 			btn.enabled = false;
 			btn.displayString = EnumChatFormatting.GREEN + "" + EnumChatFormatting.BOLD + "\u2713";
@@ -73,7 +74,22 @@ public class GuiTaskCheckbox extends GuiEmbedded
 			tags.setInteger("ID", 2);
 			tags.setInteger("qId", qId);
 			tags.setInteger("tId", tId);
-			PacketAssembly.SendToServer(StandardPacketType.CHECKBOX.GetLocation(), tags);
+			QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(StandardPacketType.CHECKBOX.GetLocation(), tags));
 		}
+	}
+
+	@Override
+	public void drawForeground(int mx, int my, float partialTick)
+	{
+	}
+
+	@Override
+	public void onMouseScroll(int mx, int my, int scroll)
+	{
+	}
+
+	@Override
+	public void onKeyTyped(char c, int keyCode)
+	{
 	}
 }

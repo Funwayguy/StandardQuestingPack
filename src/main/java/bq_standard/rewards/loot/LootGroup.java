@@ -2,8 +2,8 @@ package bq_standard.rewards.loot;
 
 import java.util.ArrayList;
 import java.util.Random;
-import betterquesting.utils.BigItemStack;
-import betterquesting.utils.JsonHelper;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.JsonHelper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

@@ -1,25 +1,36 @@
 package bq_standard.rewards;
 
 import java.util.ArrayList;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
-import betterquesting.client.gui.GuiQuesting;
-import betterquesting.client.gui.misc.GuiEmbedded;
-import betterquesting.quests.rewards.RewardBase;
-import betterquesting.utils.BigItemStack;
-import betterquesting.utils.JsonHelper;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import betterquesting.api.enums.EnumSaveType;
+import betterquesting.api.jdoc.IJsonDoc;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.rewards.IReward;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.JsonHelper;
 import bq_standard.NBTReplaceUtil;
 import bq_standard.client.gui.rewards.GuiRewardItem;
 import bq_standard.core.BQ_Standard;
+import bq_standard.rewards.factory.FactoryRewardItem;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class RewardItem extends RewardBase
+public class RewardItem implements IReward
 {
 	public ArrayList<BigItemStack> items = new ArrayList<BigItemStack>();
+	
+	@Override
+	public ResourceLocation getFactoryID()
+	{
+		return FactoryRewardItem.INSTANCE.getRegistryName();
+	}
 	
 	@Override
 	public String getUnlocalisedName()
@@ -28,13 +39,13 @@ public class RewardItem extends RewardBase
 	}
 	
 	@Override
-	public boolean canClaim(EntityPlayer player, NBTTagCompound choiceData)
+	public boolean canClaim(EntityPlayer player, IQuest quest)
 	{
 		return true;
 	}
 
 	@Override
-	public void Claim(EntityPlayer player, NBTTagCompound choiceData)
+	public void claimReward(EntityPlayer player, IQuest quest)
 	{
 		for(BigItemStack r : items)
 		{
@@ -45,7 +56,7 @@ public class RewardItem extends RewardBase
 				if(s.getTagCompound() != null)
 				{
 					s.setTagCompound(NBTReplaceUtil.replaceStrings(s.getTagCompound(), "VAR_NAME", player.getCommandSenderName()));
-					s.setTagCompound(NBTReplaceUtil.replaceStrings(s.getTagCompound(), "VAR_UUID", player.getUniqueID().toString()));
+					s.setTagCompound(NBTReplaceUtil.replaceStrings(s.getTagCompound(), "VAR_UUID", QuestingAPI.getQuestingUUID(player).toString()));
 				}
 				
 				if(!player.inventory.addItemStackToInventory(s))
@@ -57,7 +68,7 @@ public class RewardItem extends RewardBase
 	}
 
 	@Override
-	public void readFromJson(JsonObject json)
+	public void readFromJson(JsonObject json, EnumSaveType saveType)
 	{
 		items = new ArrayList<BigItemStack>();
 		for(JsonElement entry : JsonHelper.GetArray(json, "rewards"))
@@ -86,7 +97,7 @@ public class RewardItem extends RewardBase
 	}
 
 	@Override
-	public void writeToJson(JsonObject json)
+	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
 	{
 		JsonArray rJson = new JsonArray();
 		for(BigItemStack stack : items)
@@ -94,11 +105,24 @@ public class RewardItem extends RewardBase
 			rJson.add(JsonHelper.ItemStackToJson(stack, new JsonObject()));
 		}
 		json.add("rewards", rJson);
+		return json;
 	}
 
 	@Override
-	public GuiEmbedded getGui(GuiQuesting screen, int posX, int posY, int sizeX, int sizeY)
+	public IGuiEmbedded getRewardGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
 	{
-		return new GuiRewardItem(this, screen, posX, posY, sizeX, sizeY);
+		return new GuiRewardItem(this, posX, posY, sizeX, sizeY);
+	}
+	
+	@Override
+	public GuiScreen getRewardEditor(GuiScreen screen, IQuest quest)
+	{
+		return null;
+	}
+
+	@Override
+	public IJsonDoc getDocumentation()
+	{
+		return null;
 	}
 }

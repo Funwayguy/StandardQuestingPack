@@ -4,18 +4,19 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.ChestGenHooks;
 import net.minecraftforge.event.world.WorldEvent;
 import org.apache.logging.log4j.Level;
-import betterquesting.core.BQ_Settings;
-import betterquesting.network.PacketAssembly;
-import betterquesting.utils.BigItemStack;
-import betterquesting.utils.JsonHelper;
-import betterquesting.utils.JsonIO;
-import betterquesting.utils.NBTConverter;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.network.QuestingPacket;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.JsonHelper;
+import betterquesting.api.utils.NBTConverter;
 import bq_standard.core.BQ_Standard;
 import bq_standard.network.StandardPacketType;
 import com.google.gson.JsonArray;
@@ -26,7 +27,7 @@ import cpw.mods.fml.common.gameevent.PlayerEvent;
 
 public class LootRegistry
 {
-	public static ArrayList<LootGroup> lootGroups = new ArrayList<LootGroup>();
+	public static CopyOnWriteArrayList<LootGroup> lootGroups = new CopyOnWriteArrayList<LootGroup>();
 	public static boolean updateUI = false;
 	
 	public static void registerGroup(LootGroup group)
@@ -108,7 +109,7 @@ public class LootRegistry
 		LootRegistry.writeToJson(json);
 		tags.setInteger("ID", 1);
 		tags.setTag("Database", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
-		PacketAssembly.SendToAll(StandardPacketType.LOOT_SYNC.GetLocation(), tags);
+		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToAll(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags));
 	}
 	
 	public static void sendDatabase(EntityPlayerMP player)
@@ -118,7 +119,7 @@ public class LootRegistry
 		LootRegistry.writeToJson(json);
 		tags.setInteger("ID", 1);
 		tags.setTag("Database", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
-		PacketAssembly.SendTo(StandardPacketType.LOOT_SYNC.GetLocation(), tags, player);
+		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToPlayer(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags), player);
 	}
 	
 	public static void writeToJson(JsonObject json)
@@ -135,7 +136,7 @@ public class LootRegistry
 	
 	public static void readFromJson(JsonObject json)
 	{
-		lootGroups = new ArrayList<LootGroup>();
+		lootGroups.clear();
 		for(JsonElement entry : JsonHelper.GetArray(json, "groups"))
 		{
 			if(entry == null || !entry.isJsonObject())
@@ -177,14 +178,14 @@ public class LootRegistry
 		
 		if(f1.exists())
 		{
-			j1 = JsonIO.ReadFromFile(f1);
+			j1 = JsonHelper.ReadFromFile(f1);
 		} else
 		{
-			f1 = server.getFile(BQ_Settings.defaultDir + "QuestLoot.json");
+			f1 = server.getFile("config/betterquesting/QuestLoot.json");
 			
 			if(f1.exists())
 			{
-				j1 = JsonIO.ReadFromFile(f1);
+				j1 = JsonHelper.ReadFromFile(f1);
 			}
 		}
 		
@@ -198,7 +199,7 @@ public class LootRegistry
 		{
 			JsonObject jsonQ = new JsonObject();
 			writeToJson(jsonQ);
-			JsonIO.WriteToFile(new File(worldDir, "QuestLoot.json"), jsonQ);
+			JsonHelper.WriteToFile(new File(worldDir, "QuestLoot.json"), jsonQ);
 		}
 	}
 	

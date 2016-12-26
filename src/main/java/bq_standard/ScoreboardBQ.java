@@ -1,22 +1,24 @@
 package bq_standard;
 
-import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
-import betterquesting.network.PacketAssembly;
-import betterquesting.utils.JsonHelper;
-import betterquesting.utils.NBTConverter;
+import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTTagCompound;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.network.QuestingPacket;
+import betterquesting.api.utils.JsonHelper;
+import betterquesting.api.utils.NBTConverter;
 import bq_standard.network.StandardPacketType;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
 
 public class ScoreboardBQ
 {
-	static HashMap<String, ScoreBQ> objectives = new HashMap<String, ScoreBQ>();
+	static ConcurrentHashMap<String, ScoreBQ> objectives = new ConcurrentHashMap<String, ScoreBQ>();
 	
 	public static int getScore(UUID uuid, String scoreName)
 	{
@@ -41,7 +43,7 @@ public class ScoreboardBQ
 			objectives.put(scoreName, score);
 		}
 		
-		score.setScore(player.getUniqueID(), value);
+		score.setScore(QuestingAPI.getQuestingUUID(player), value);
 		
 		if(player instanceof EntityPlayerMP)
 		{
@@ -55,7 +57,7 @@ public class ScoreboardBQ
 		JsonObject json = new JsonObject();
 		writeJson(json);
 		tags.setTag("data", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
-		PacketAssembly.SendTo(StandardPacketType.SCORE_SYNC.GetLocation(), tags, player);
+		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToPlayer(new QuestingPacket(StandardPacketType.SCORE_SYNC.GetLocation(), tags), player);
 	}
 	
 	public static void readJson(JsonObject json)

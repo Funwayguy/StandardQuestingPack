@@ -1,7 +1,6 @@
 package bq_standard.network;
 
 import net.minecraft.util.ResourceLocation;
-import betterquesting.core.BetterQuesting;
 import bq_standard.core.BQ_Standard;
 
 public enum StandardPacketType
@@ -9,15 +8,23 @@ public enum StandardPacketType
 	LOOT_SYNC,
 	LOOT_CLAIM,
 	CHECKBOX,
-	SCORE_SYNC;
+	SCORE_SYNC,
+	CHOICE;
+	
+	private final ResourceLocation ID;
+	
+	private StandardPacketType()
+	{
+		ID = new ResourceLocation(BQ_Standard.MODID, this.toString().toLowerCase());
+	}
 	
 	public ResourceLocation GetLocation()
 	{
-		return new ResourceLocation(BQ_Standard.MODID + ":" + this.toString().toLowerCase());
+		return ID;
 	}
 	
 	public String GetName()
 	{
-		return BetterQuesting.MODID + ":" + this.toString().toLowerCase();
+		return ID.toString();
 	}
 }
