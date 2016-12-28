@@ -11,6 +11,7 @@ import bq_standard.handlers.EventHandler;
 import bq_standard.network.handlers.PktHandlerCheckbox;
 import bq_standard.network.handlers.PktHandlerChoice;
 import bq_standard.network.handlers.PktHandlerLootDatabase;
+import bq_standard.network.handlers.PktHandlerLootImport;
 import bq_standard.network.handlers.PktHandlerScoreboard;
 import bq_standard.rewards.factory.FactoryRewardChoice;
 import bq_standard.rewards.factory.FactoryRewardCommand;
@@ -73,5 +74,6 @@ public class CommonProxy
 		packetReg.registerHandler(new PktHandlerCheckbox());
 		packetReg.registerHandler(new PktHandlerScoreboard());
 		packetReg.registerHandler(new PktHandlerChoice());
+		packetReg.registerHandler(new PktHandlerLootImport());
 	}
 }

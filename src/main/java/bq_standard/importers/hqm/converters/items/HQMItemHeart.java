@@ -5,7 +5,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import betterquesting.api.utils.BigItemStack;
 
-public class HQMItemHeart extends HQMItem
+public class HQMItemHeart implements HQMItem
 {
 	private final Item bqHeart;
 	

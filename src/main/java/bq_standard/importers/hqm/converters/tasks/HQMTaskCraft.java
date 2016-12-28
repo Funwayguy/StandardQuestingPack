@@ -1,6 +1,7 @@
 package bq_standard.importers.hqm.converters.tasks;
 
 import java.util.ArrayList;
+import java.util.List;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.JsonHelper;
 import bq_standard.importers.hqm.HQMUtilities;
@@ -8,12 +9,12 @@ import bq_standard.tasks.TaskCrafting;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class HQMTaskCraft extends HQMTask
+public class HQMTaskCraft implements HQMTask
 {
 	@Override
-	public ArrayList<ITask> Convert(JsonObject json)
+	public List<ITask> Convert(JsonObject json)
 	{
-		ArrayList<ITask> tList = new ArrayList<ITask>();
+		List<ITask> tList = new ArrayList<ITask>();
 		
 		TaskCrafting task = new TaskCrafting();
 		

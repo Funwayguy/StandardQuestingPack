@@ -184,7 +184,7 @@ public class LootRegistry
 			j1 = JsonHelper.ReadFromFile(f1);
 		} else
 		{
-			f1 = server.getFile("config/betterquesting/QuestLoot.json");
+			f1 = server.getFile("config/betterquesting/DefaultLoot.json");
 			
 			if(f1.exists())
 			{
