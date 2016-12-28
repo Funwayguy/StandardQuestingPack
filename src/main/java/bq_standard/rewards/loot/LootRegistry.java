@@ -107,7 +107,6 @@ public class LootRegistry
 		NBTTagCompound tags = new NBTTagCompound();
 		JsonObject json = new JsonObject();
 		LootRegistry.writeToJson(json);
-		tags.setInteger("ID", 1);
 		tags.setTag("Database", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
 		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToAll(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags));
 	}
@@ -117,7 +116,6 @@ public class LootRegistry
 		NBTTagCompound tags = new NBTTagCompound();
 		JsonObject json = new JsonObject();
 		LootRegistry.writeToJson(json);
-		tags.setInteger("ID", 1);
 		tags.setTag("Database", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
 		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToPlayer(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags), player);
 	}
@@ -181,7 +179,7 @@ public class LootRegistry
 			j1 = JsonHelper.ReadFromFile(f1);
 		} else
 		{
-			f1 = server.getFile("config/betterquesting/QuestLoot.json");
+			f1 = server.getFile("config/betterquesting/DefaultLoot.json");
 			
 			if(f1.exists())
 			{

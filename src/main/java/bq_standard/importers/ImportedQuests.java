@@ -45,6 +45,7 @@ public class ImportedQuests implements IQuestDatabase
 			return false;
 		}
 		
+		value.setParentDatabase(this);
 		database.put(key, value);
 		return true;
 	}
@@ -168,6 +169,8 @@ public class ImportedQuests implements IQuestDatabase
 	@Override
 	public IQuest createNew()
 	{
-		return this.parent.createNew();
+		IQuest q = this.parent.createNew();
+		q.setParentDatabase(this);
+		return q;
 	}
 }

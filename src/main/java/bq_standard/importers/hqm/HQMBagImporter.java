@@ -2,19 +2,25 @@ package bq_standard.importers.hqm;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileReader;
-import org.apache.logging.log4j.Level;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import net.minecraft.nbt.NBTTagCompound;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.importers.IImporter;
+import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.questing.IQuestDatabase;
 import betterquesting.api.questing.IQuestLineDatabase;
 import betterquesting.api.utils.FileExtensionFilter;
 import betterquesting.api.utils.JsonHelper;
-import bq_standard.core.BQ_Standard;
+import betterquesting.api.utils.NBTConverter;
+import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootGroup.LootEntry;
-import bq_standard.rewards.loot.LootRegistry;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -22,6 +28,8 @@ import com.google.gson.JsonObject;
 public class HQMBagImporter implements IImporter
 {
 	public static HQMBagImporter instance = new HQMBagImporter();
+	
+	public List<LootGroup> hqmLoot = new ArrayList<LootGroup>();
 	
 	@Override
 	public String getUnlocalisedName()
@@ -41,7 +49,7 @@ public class HQMBagImporter implements IImporter
 		return new FileExtensionFilter(".json");
 	}
 	
-	public static void ImportJsonBags(JsonArray json)
+	private void ImportJsonBags(JsonArray json)
 	{
 		for(JsonElement e : json)
 		{
@@ -100,13 +108,15 @@ public class HQMBagImporter implements IImporter
 				group.lootEntry.add(lEntry);
 			}
 			
-			LootRegistry.registerGroup(group);
+			hqmLoot.add(group);
 		}
 	}
 
 	@Override
 	public void loadFiles(IQuestDatabase questDB, IQuestLineDatabase lineDB, File[] files)
 	{
+		hqmLoot.clear();
+		
 		for(File selected : files)
 		{
 			if(selected == null || !selected.exists())
@@ -114,26 +124,46 @@ public class HQMBagImporter implements IImporter
 				continue;
 			}
 			
-			JsonArray json; // Bag.json is formatting as an array!
+			JsonArray json = ReadFromFile(selected);
 			
-			try
-			{
-				FileReader fr = new FileReader(selected);
-				Gson g = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
-				json = g.fromJson(fr, JsonArray.class);
-				fr.close();
-			} catch(Exception e)
-			{
-				BQ_Standard.logger.log(Level.ERROR, "An error occured during import", e);
-				continue;
-			}
-			
-			if(json != null)
+			if(json != null && json.size() > 0)
 			{
 				ImportJsonBags(json);
 			}
 		}
 		
-		LootRegistry.updateClients();
+		NBTTagCompound tags = new NBTTagCompound();
+		JsonObject base = new JsonObject();
+		JsonArray jAry = new JsonArray();
+		
+		for(LootGroup group : hqmLoot)
+		{
+			JsonObject jGrp = new JsonObject();
+			group.writeToJson(jGrp);
+			jAry.add(jGrp);
+		}
+		
+		base.add("groups", jAry);
+		tags.setTag("data", NBTConverter.JSONtoNBT_Object(base, new NBTTagCompound()));
+		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(StandardPacketType.LOOT_IMPORT.GetLocation(), tags));
+	}
+	
+	private JsonArray ReadFromFile(File file)
+	{
+		if(file == null || !file.exists())
+		{
+			return new JsonArray();
+		}
+		
+		try
+		{
+			InputStreamReader fr = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
+			JsonArray json = new Gson().fromJson(fr, JsonArray.class);
+			fr.close();
+			return json;
+		} catch(Exception e)
+		{
+			return new JsonArray(); // Just a safety measure against NPEs
+		}
 	}
 }

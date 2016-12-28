@@ -3,11 +3,10 @@ package bq_standard.importers.hqm.converters.rewards;
 import java.util.ArrayList;
 import java.util.List;
 import betterquesting.api.questing.rewards.IReward;
-import bq_standard.importers.hqm.HQMUtilities;
-import bq_standard.rewards.RewardItem;
+import bq_standard.rewards.RewardCommand;
 import com.google.gson.JsonElement;
 
-public class HQMRewardStandard implements HQMReward
+public class HQMRewardCommand implements HQMReward
 {
 	@Override
 	public List<IReward> Convert(JsonElement json)
@@ -19,20 +18,18 @@ public class HQMRewardStandard implements HQMReward
 			return rList;
 		}
 		
-		RewardItem reward = new RewardItem();
-		rList.add(reward);
-		
 		for(JsonElement je : json.getAsJsonArray())
 		{
-			if(je == null || !je.isJsonObject())
+			if(je == null || !je.isJsonPrimitive())
 			{
 				continue;
 			}
 			
-			reward.items.add(HQMUtilities.HQMStackT1(je.getAsJsonObject()));
+			RewardCommand reward = new RewardCommand();
+			reward.command = je.getAsString();
+			rList.add(reward);
 		}
 		
 		return rList;
 	}
-	
 }

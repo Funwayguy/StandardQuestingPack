@@ -7,6 +7,8 @@ import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.themes.IThemeRegistry;
 import bq_standard.client.theme.ThemeStandard;
 import bq_standard.importers.NativeFileImporter;
+import bq_standard.importers.hqm.HQMBagImporter;
+import bq_standard.importers.hqm.HQMQuestImporter;
 import bq_standard.nei.NEIRegister;
 import bq_standard.network.handlers.PktHandlerLootClaim;
 import cpw.mods.fml.common.Loader;
@@ -38,6 +40,8 @@ public class ClientProxy extends CommonProxy
 		QuestingAPI.getAPI(ApiReference.PACKET_REG).registerHandler(new PktHandlerLootClaim());
 		
 		QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(new NativeFileImporter());
+		QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(new HQMQuestImporter());
+		QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(new HQMBagImporter());
 		
 		IThemeRegistry themeReg = QuestingAPI.getAPI(ApiReference.THEME_REG);
 		themeReg.registerTheme(new ThemeStandard("Standard Light", new ResourceLocation("betterquesting", "textures/gui/editor_gui.png"), new ResourceLocation("bq_standard", "light")));

@@ -47,7 +47,7 @@ public class NativeFileImporter implements IImporter
 			JsonObject json = JsonHelper.ReadFromFile(selected);
 			
 			ImportedQuests impQ = new ImportedQuests(questDB);
-			ImportedQuestLines impL = new ImportedQuestLines(lineDB);
+			ImportedQuestLines impL = new ImportedQuestLines(lineDB); // If I can stop this from exceeding 27 (making dummy parents) we might be able to fix the base in the same way
 			
 			impQ.readFromJson(JsonHelper.GetArray(json, "questDatabase"), EnumSaveType.CONFIG);
 			impL.readFromJson(JsonHelper.GetArray(json, "questLines"), EnumSaveType.CONFIG);

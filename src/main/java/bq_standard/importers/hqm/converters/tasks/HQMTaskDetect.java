@@ -1,6 +1,7 @@
 package bq_standard.importers.hqm.converters.tasks;
 
 import java.util.ArrayList;
+import java.util.List;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.JsonHelper;
 import bq_standard.importers.hqm.HQMUtilities;
@@ -9,7 +10,7 @@ import bq_standard.tasks.TaskRetrieval;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class HQMTaskDetect extends HQMTask
+public class HQMTaskDetect implements HQMTask
 {
 	boolean consume = false;
 	
@@ -19,9 +20,9 @@ public class HQMTaskDetect extends HQMTask
 	}
 	
 	@Override
-	public ArrayList<ITask> Convert(JsonObject json)
+	public List<ITask> Convert(JsonObject json)
 	{
-		ArrayList<ITask> tList = new ArrayList<ITask>();
+		List<ITask> tList = new ArrayList<ITask>();
 		TaskRetrieval retTask = new TaskRetrieval();
 		TaskFluid fluTask = new TaskFluid();
 		

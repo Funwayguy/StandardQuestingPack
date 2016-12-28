@@ -4,7 +4,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import betterquesting.api.utils.BigItemStack;
 import bq_standard.core.BQ_Standard;
 
-public class HQMItemBag extends HQMItem
+public class HQMItemBag implements HQMItem
 {
 	@Override
 	public BigItemStack convertItem(int damage, int amount, NBTTagCompound tags)
