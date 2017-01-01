@@ -10,6 +10,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -37,15 +40,21 @@ public class ItemLootChest extends Item
     /**
      * Called whenever this item is equipped and the right mouse button is pressed. Args: itemStack, world, entityPlayer
      */
-    public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player)
+	@Override
+    public ActionResult<ItemStack> onItemRightClick(ItemStack stack, World world, EntityPlayer player, EnumHand hand)
     {
+		if(hand != EnumHand.MAIN_HAND)
+		{
+			return new ActionResult<ItemStack>(EnumActionResult.PASS, stack);
+		}
+		
     	if(stack.getItemDamage() >= 102)
     	{
-    		if(QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
+    		if(QuestingAPI.getAPI(ApiReference.SETTINGS).canUserEdit(player))
     		{
     			player.openGui(BQ_Standard.instance, 0, world, (int)player.posX, (int)player.posY, (int)player.posZ);
     		}
-			return stack;
+			return new ActionResult<ItemStack>(EnumActionResult.PASS, stack);
     	} else if(!world.isRemote)
     	{
     		LootGroup group;
@@ -100,13 +109,12 @@ public class ItemLootChest extends Item
     		stack.stackSize--;
     	}
     	
-    	return stack;
+    	return new ActionResult<ItemStack>(EnumActionResult.PASS, stack);
     }
 	
 	public void sendGui(EntityPlayerMP player, ArrayList<BigItemStack> loot, String title)
 	{
 		NBTTagCompound tags = new NBTTagCompound();
-		tags.setInteger("ID", 0);
 		tags.setString("title", title);
 		
 		NBTTagList list = new NBTTagList();
