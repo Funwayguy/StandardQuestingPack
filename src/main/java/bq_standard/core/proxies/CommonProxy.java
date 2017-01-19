@@ -6,7 +6,6 @@ import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.network.IPacketRegistry;
 import betterquesting.api.questing.rewards.IRewardRegistry;
 import betterquesting.api.questing.tasks.ITaskRegistry;
-import bq_standard.client.gui.UpdateNotification;
 import bq_standard.handlers.EventHandler;
 import bq_standard.network.handlers.PktHandlerCheckbox;
 import bq_standard.network.handlers.PktHandlerChoice;
@@ -40,8 +39,6 @@ public class CommonProxy
 	
 	public void registerHandlers()
 	{
-		FMLCommonHandler.instance().bus().register(new UpdateNotification());
-		
 		LootRegistry lr = new LootRegistry();
 		MinecraftForge.EVENT_BUS.register(lr);
 		FMLCommonHandler.instance().bus().register(lr);

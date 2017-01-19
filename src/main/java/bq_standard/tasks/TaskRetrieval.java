@@ -41,6 +41,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 	boolean partialMatch = true;
 	boolean ignoreNBT = false;
 	public boolean consume = true;
+	public boolean idvDetect = true;
 	public boolean autoConsume = false;
 	
 	@Override
@@ -133,7 +134,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 				{
 					continue;
 				}
-
+				
 				int remaining = rStack.stackSize - progress[j];
 				
 				if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.oreDict, rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
@@ -150,10 +151,21 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 			}
 		}
 		
+		if(!consume && idvDetect) // Resets incomplete detections
+		{
+			for(int i = 0; i < progress.length; i++)
+			{
+				if(progress[i] < requiredItems.get(i).stackSize)
+				{
+					progress[i] = 0;
+				}
+			}
+		}
+		
 		boolean flag = true;
 		int[] totalProgress = progress;
 		
-		if(consume)
+		if(consume || idvDetect)
 		{
 			setUserProgress(playerID, progress);
 			totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
@@ -192,6 +204,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 		json.addProperty("partialMatch", partialMatch);
 		json.addProperty("ignoreNBT", ignoreNBT);
 		json.addProperty("consume", consume);
+		json.addProperty("groupDetect", !idvDetect);
 		json.addProperty("autoConsume", autoConsume);
 		
 		JsonArray itemArray = new JsonArray();
@@ -219,6 +232,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 		partialMatch = JsonHelper.GetBoolean(json, "partialMatch", partialMatch);
 		ignoreNBT = JsonHelper.GetBoolean(json, "ignoreNBT", ignoreNBT);
 		consume = JsonHelper.GetBoolean(json, "consume", true);
+		idvDetect = !JsonHelper.GetBoolean(json, "groupDetect", true);
 		autoConsume = JsonHelper.GetBoolean(json, "autoConsume", false);
 		
 		requiredItems = new ArrayList<BigItemStack>();
@@ -500,7 +514,13 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 				
 				for(int i = 0; i < progress.length; i++)
 				{
-					total[i] += progress[i];
+					if(idvDetect)
+					{
+						total[i] = Math.max(total[i], progress[i]);
+					} else
+					{
+						total[i] += progress[i];
+					}
 				}
 			}
 		}
@@ -524,7 +544,13 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 			
 			for(int i = 0; i < progress.length; i++)
 			{
-				total[i] += progress[i];
+				if(idvDetect)
+				{
+					total[i] = Math.max(total[i], progress[i]);
+				} else
+				{
+					total[i] += progress[i];
+				}
 			}
 		}
 		

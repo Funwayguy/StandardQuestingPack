@@ -25,6 +25,8 @@ public class ClientProxy extends CommonProxy
 	public void registerHandlers()
 	{
 		super.registerHandlers();
+		
+		//FMLCommonHandler.instance().bus().register(new UpdateNotification());
     	
     	if(Loader.isModLoaded("NotEnoughItems"))
     	{
