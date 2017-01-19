@@ -11,6 +11,9 @@
   "credits": "Thank you Patreons for all your support <3",
   "logoFile": "title.png",
   "screenshots": [],
+  "useDependencyInformation": true,
+  "parent": "betterquesting",
+  "requiredMods": ["betterquesting"],
   "dependencies": ["betterquesting"]
 }
 ]

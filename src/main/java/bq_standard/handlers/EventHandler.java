@@ -11,6 +11,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemCraftedEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemSmeltedEvent;
@@ -19,6 +20,7 @@ import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
+import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskBlockBreak;
 import bq_standard.tasks.TaskCrafting;
 import bq_standard.tasks.TaskHunt;
@@ -127,5 +129,15 @@ public class EventHandler
 		}
 		
 		return tMap;
+	}
+	
+	@SubscribeEvent
+	public void onConfigChanged(ConfigChangedEvent event)
+	{
+		if(event.getModID().equalsIgnoreCase(BQ_Standard.MODID))
+		{
+			ConfigHandler.config.save();
+			ConfigHandler.initConfigs();
+		}
 	}
 }
