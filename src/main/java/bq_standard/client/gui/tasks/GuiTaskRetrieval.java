@@ -36,7 +36,7 @@ public class GuiTaskRetrieval extends GuiElement implements IGuiEmbedded
 			return;
 		}
 		
-		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getUsersProgress(QuestingAPI.getQuestingUUID(mc.thePlayer)) : task.getGlobalProgress();
+		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getPartyProgress(QuestingAPI.getQuestingUUID(mc.thePlayer)) : task.getGlobalProgress();
 		
 		for(int i = 0; i < task.requiredItems.size(); i++)
 		{
