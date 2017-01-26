@@ -31,7 +31,7 @@ public class GuiTaskBlockBreak extends GuiElement implements IGuiEmbedded
 		
 		UUID playerID = QuestingAPI.getQuestingUUID(mc.thePlayer);
 		
-		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getUsersProgress(playerID) : task.getGlobalProgress();
+		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getPartyProgress(playerID) : task.getGlobalProgress();
 		
 		for(int i = 0; i < task.blockTypes.size(); i++)
 		{
