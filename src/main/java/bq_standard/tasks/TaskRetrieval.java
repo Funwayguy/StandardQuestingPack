@@ -20,6 +20,7 @@ import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.IItemTask;
 import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api.utils.JsonHelper;
@@ -33,7 +34,7 @@ import com.google.gson.JsonPrimitive;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
+public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITickableTask
 {
 	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	public ArrayList<BigItemStack> requiredItems = new ArrayList<BigItemStack>();
@@ -72,7 +73,11 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 	}
 	
 	@Override
-	public void update(EntityPlayer player, IQuest quest)
+	@Deprecated
+	public void update(EntityPlayer player, IQuest quest){}
+	
+	@Override
+	public void updateTask(EntityPlayer player, IQuest quest)
 	{
 		if(player.ticksExisted%60 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
 		{

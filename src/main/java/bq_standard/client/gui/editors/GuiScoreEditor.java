@@ -19,15 +19,17 @@ import com.google.gson.JsonObject;
 
 public class GuiScoreEditor extends GuiScreenThemed implements IVolatileScreen
 {
-	TaskScoreboard task;
-	GuiTextField txtField;
-	GuiNumberField numField;
-	ScoreOperation operation = ScoreOperation.MORE_OR_EQUAL;
-	JsonObject data;
+	private final TaskScoreboard task;
+	private final JsonObject data;
+	
+	private GuiTextField txtField;
+	private GuiNumberField numField;
+	private ScoreOperation operation = ScoreOperation.MORE_OR_EQUAL;
 	
 	public GuiScoreEditor(GuiScreen parent, TaskScoreboard task)
 	{
 		super(parent, "bq_standard.title.edit_hunt");
+		this.task = task;
 		this.data = task.writeToJson(new JsonObject(), EnumSaveType.CONFIG);
 		operation = ScoreOperation.valueOf(JsonHelper.GetString(data, "operation", "MORE_OR_EQUAL").toUpperCase());
 		operation = operation != null? operation : ScoreOperation.MORE_OR_EQUAL;

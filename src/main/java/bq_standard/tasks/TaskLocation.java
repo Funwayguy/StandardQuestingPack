@@ -17,6 +17,7 @@ import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api.utils.JsonHelper;
 import bq_standard.client.gui.tasks.GuiTaskLocation;
 import bq_standard.core.BQ_Standard;
@@ -26,7 +27,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-public class TaskLocation implements ITask
+public class TaskLocation implements ITask, ITickableTask
 {
 	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	public String name = "New Location";
@@ -78,7 +79,11 @@ public class TaskLocation implements ITask
 	}
 	
 	@Override
-	public void update(EntityPlayer player, IQuest quest)
+	@Deprecated
+	public void update(EntityPlayer player, IQuest quest){}
+	
+	@Override
+	public void updateTask(EntityPlayer player, IQuest quest)
 	{
 		if(player.ticksExisted%100 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE)) // Only auto-detect every 5 seconds
 		{

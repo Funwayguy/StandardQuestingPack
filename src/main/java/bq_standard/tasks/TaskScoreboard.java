@@ -19,6 +19,7 @@ import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api.utils.JsonHelper;
 import bq_standard.ScoreboardBQ;
 import bq_standard.client.gui.editors.GuiScoreEditor;
@@ -32,7 +33,7 @@ import com.google.gson.JsonPrimitive;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class TaskScoreboard implements ITask
+public class TaskScoreboard implements ITask, ITickableTask
 {
 	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	public String scoreName = "Score";
@@ -82,7 +83,11 @@ public class TaskScoreboard implements ITask
 	}
 	
 	@Override
-	public void update(EntityPlayer player, IQuest quest)
+	@Deprecated
+	public void update(EntityPlayer player, IQuest quest){}
+	
+	@Override
+	public void updateTask(EntityPlayer player, IQuest quest)
 	{
 		if(player.ticksExisted%20 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE)) // Auto-detect once per second
 		{

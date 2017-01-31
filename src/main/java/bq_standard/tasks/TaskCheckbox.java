@@ -125,9 +125,8 @@ public class TaskCheckbox implements ITask
 	}
 
 	@Override
-	public void update(EntityPlayer player, IQuest quest)
-	{
-	}
+	@Deprecated
+	public void update(EntityPlayer player, IQuest quest){}
 
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
