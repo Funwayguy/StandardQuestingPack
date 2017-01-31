@@ -18,6 +18,7 @@ import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api.utils.JsonHelper;
 import bq_standard.XPHelper;
 import bq_standard.client.gui.tasks.GuiTaskXP;
@@ -28,7 +29,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-public class TaskXP implements ITask, IProgression<Integer>
+public class TaskXP implements ITask, IProgression<Integer>, ITickableTask
 {
 	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	public HashMap<UUID, Integer> userProgress = new HashMap<UUID, Integer>();
@@ -58,7 +59,11 @@ public class TaskXP implements ITask, IProgression<Integer>
 	}
 	
 	@Override
-	public void update(EntityPlayer player, IQuest quest)
+	@Deprecated
+	public void update(EntityPlayer player, IQuest quest){}
+	
+	@Override
+	public void updateTask(EntityPlayer player, IQuest quest)
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		

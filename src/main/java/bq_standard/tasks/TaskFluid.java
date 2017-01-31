@@ -27,6 +27,7 @@ import betterquesting.api.questing.tasks.IFluidTask;
 import betterquesting.api.questing.tasks.IItemTask;
 import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api.utils.NBTConverter;
 import bq_standard.client.gui.tasks.GuiTaskFluid;
@@ -38,7 +39,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 @SuppressWarnings("deprecation")
-public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int[]>
+public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int[]>, ITickableTask
 {
 	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	public ArrayList<FluidStack> requiredFluids = new ArrayList<FluidStack>();
@@ -74,7 +75,11 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 	}
 	
 	@Override
-	public void update(EntityPlayer player, IQuest quest)
+	@Deprecated
+	public void update(EntityPlayer player, IQuest quest){}
+	
+	@Override
+	public void updateTask(EntityPlayer player, IQuest quest)
 	{
 		if(player.ticksExisted%60 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
 		{
