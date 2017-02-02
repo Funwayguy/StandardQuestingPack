@@ -1,5 +1,8 @@
 package bq_standard.handlers;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryCrafting;
@@ -18,6 +21,8 @@ import cpw.mods.fml.client.event.ConfigChangedEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.ItemCraftedEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.ItemSmeltedEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
+import cpw.mods.fml.common.gameevent.TickEvent.Phase;
 
 public class EventHandler
 {
@@ -83,6 +88,26 @@ public class EventHandler
 		for(Entry<TaskBlockBreak,IQuest> entry : QuestCache.INSTANCE.getActiveTasks(QuestingAPI.getQuestingUUID(event.getPlayer()), TaskBlockBreak.class).entrySet())
 		{
 			entry.getKey().onBlockBreak(entry.getValue(), event.getPlayer(), event.block, event.blockMetadata, event.x, event.y, event.z);
+		}
+	}
+	
+	public static final List<Runnable> runnable = new ArrayList<Runnable>();
+	
+	@SubscribeEvent
+	public void onServerTick(TickEvent.ServerTickEvent event)
+	{
+		if(event.phase != Phase.START)
+		{
+			return;
+		}
+		
+		Iterator<Runnable> iRun = runnable.iterator();
+		
+		while(iRun.hasNext())
+		{
+			Runnable run = iRun.next();
+			run.run();
+			iRun.remove();
 		}
 	}
 	

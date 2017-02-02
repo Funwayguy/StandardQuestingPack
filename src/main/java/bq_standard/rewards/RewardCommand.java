@@ -17,7 +17,7 @@ import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api.utils.JsonHelper;
 import bq_standard.AdminExecute;
 import bq_standard.client.gui.rewards.GuiRewardCommand;
-import bq_standard.core.BQ_Standard;
+import bq_standard.handlers.EventHandler;
 import bq_standard.rewards.factory.FactoryRewardCommand;
 import com.google.gson.JsonObject;
 
@@ -46,7 +46,7 @@ public class RewardCommand implements IReward
 	}
 	
 	@Override
-	public void claimReward(EntityPlayer player, IQuest quest)
+	public void claimReward(final EntityPlayer player, IQuest quest)
 	{
 		if(player.worldObj.isRemote)
 		{
@@ -54,16 +54,31 @@ public class RewardCommand implements IReward
 		}
 		
 		String tmp = command.replaceAll("VAR_NAME", player.getCommandSenderName());
-		tmp = tmp.replaceAll("VAR_UUID", QuestingAPI.getQuestingUUID(player).toString());
+		final String finCom = tmp.replaceAll("VAR_UUID", QuestingAPI.getQuestingUUID(player).toString());
+		final MinecraftServer server = MinecraftServer.getServer();
 		
 		if(viaPlayer)
 		{
-			MinecraftServer.getServer().getCommandManager().executeCommand(new AdminExecute(player), tmp);
+			EventHandler.runnable.add(new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					server.getCommandManager().executeCommand(new AdminExecute(player), finCom);
+				}
+			});
 		} else
 		{
-			RewardCommandSender cmdSender = new RewardCommandSender(player.worldObj, (int)player.posX, (int)player.posY, (int)player.posZ);
+			final RewardCommandSender cmdSender = new RewardCommandSender(player.worldObj, (int)player.posX, (int)player.posY, (int)player.posZ);
 			
-			MinecraftServer.getServer().getCommandManager().executeCommand(cmdSender, tmp);
+			EventHandler.runnable.add(new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					server.getCommandManager().executeCommand(cmdSender, finCom);
+				}
+			});
 		}
 	}
 	
@@ -134,7 +149,7 @@ public class RewardCommand implements IReward
 	    @Override
 	    public String getCommandSenderName()
 	    {
-	        return BQ_Standard.NAME;
+	        return "BetterQuesting";
 	    }
 	}
 
