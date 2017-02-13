@@ -37,6 +37,7 @@ public class TaskScoreboard implements ITask, ITickableTask
 {
 	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	public String scoreName = "Score";
+	public String scoreDisp = "Score";
 	public String type = "dummy";
 	public int target = 1;
 	public float conversion = 1F;
@@ -113,7 +114,7 @@ public class TaskScoreboard implements ITask, ITickableTask
 		        IScoreObjectiveCriteria criteria = (IScoreObjectiveCriteria)IScoreObjectiveCriteria.field_96643_a.get(type);
 		        criteria = criteria != null? criteria : new ScoreDummyCriteria(scoreName);
 				scoreObj = board.addScoreObjective(scoreName, criteria);
-				scoreObj.setDisplayName(scoreName);
+				scoreObj.setDisplayName(scoreDisp);
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to create score '" + scoreName + "' for task!", e);
@@ -142,6 +143,7 @@ public class TaskScoreboard implements ITask, ITickableTask
 		}
 		
 		json.addProperty("scoreName", scoreName);
+		json.addProperty("scoreDisp", scoreDisp);
 		json.addProperty("type", type);
 		json.addProperty("target", target);
 		json.addProperty("unitConversion", conversion);
@@ -165,6 +167,7 @@ public class TaskScoreboard implements ITask, ITickableTask
 		
 		scoreName = JsonHelper.GetString(json, "scoreName", "Score");
 		scoreName.replaceAll(" ", "_");
+		scoreDisp = JsonHelper.GetString(json, "scoreDisp", scoreDisp);
 		type = JsonHelper.GetString(json, "type", "dummy");
 		target = JsonHelper.GetNumber(json, "target", 1).intValue();
 		conversion = JsonHelper.GetNumber(json, "unitConversion", conversion).floatValue();

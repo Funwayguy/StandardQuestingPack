@@ -12,7 +12,7 @@ import bq_standard.tasks.TaskScoreboard;
 
 public class GuiTaskScoreboard extends GuiElement implements IGuiEmbedded
 {
-	TaskScoreboard task;
+	private final TaskScoreboard task;
 	private Minecraft mc;
 	
 	private int posX = 0;
@@ -38,7 +38,7 @@ public class GuiTaskScoreboard extends GuiElement implements IGuiEmbedded
 		GL11.glScalef(2F, 2F, 1F);
 		
 		int tw1 = mc.fontRenderer.getStringWidth(EnumChatFormatting.BOLD + task.scoreName);
-		mc.fontRenderer.drawString(EnumChatFormatting.BOLD + task.scoreName, -tw1/2, -12, getTextColor(), false);
+		mc.fontRenderer.drawString(EnumChatFormatting.BOLD + task.scoreDisp, -tw1/2, -12, getTextColor(), false);
 		int score = ScoreboardBQ.getScore(QuestingAPI.getQuestingUUID(mc.thePlayer), task.scoreName);
 		DecimalFormat df = new DecimalFormat("0.##");
 		String value = df.format(score/task.conversion) + task.suffix;
