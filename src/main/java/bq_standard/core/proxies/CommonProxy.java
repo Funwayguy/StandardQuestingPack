@@ -6,11 +6,12 @@ import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.network.IPacketRegistry;
 import betterquesting.api.questing.rewards.IRewardRegistry;
 import betterquesting.api.questing.tasks.ITaskRegistry;
-import bq_standard.client.gui.UpdateNotification;
+import bq_standard.core.BQ_Standard;
 import bq_standard.handlers.EventHandler;
 import bq_standard.network.handlers.PktHandlerCheckbox;
 import bq_standard.network.handlers.PktHandlerChoice;
 import bq_standard.network.handlers.PktHandlerLootDatabase;
+import bq_standard.network.handlers.PktHandlerLootImport;
 import bq_standard.network.handlers.PktHandlerScoreboard;
 import bq_standard.rewards.factory.FactoryRewardChoice;
 import bq_standard.rewards.factory.FactoryRewardCommand;
@@ -38,7 +39,6 @@ public class CommonProxy
 	
 	public void registerHandlers()
 	{
-		MinecraftForge.EVENT_BUS.register(new UpdateNotification());
 		MinecraftForge.EVENT_BUS.register(new LootRegistry());
 		MinecraftForge.EVENT_BUS.register(new EventHandler());
 	}
@@ -73,5 +73,8 @@ public class CommonProxy
 		packetReg.registerHandler(new PktHandlerCheckbox());
 		packetReg.registerHandler(new PktHandlerScoreboard());
 		packetReg.registerHandler(new PktHandlerChoice());
+		packetReg.registerHandler(new PktHandlerLootImport());
+		
+		BQ_Standard.lootChest.setCreativeTab(QuestingAPI.getAPI(ApiReference.CREATIVE_TAB));
 	}
 }

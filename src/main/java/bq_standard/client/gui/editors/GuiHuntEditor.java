@@ -10,6 +10,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
@@ -48,19 +49,11 @@ public class GuiHuntEditor extends GuiScreenThemed implements IVolatileScreen, I
 	{
 		super.initGui();
 		
-		/*if(lastEdit != null)
-		{
-			data.addProperty("target", JsonHelper.GetString(lastEdit, "id:8", "Zombie"));
-			data.add("targetNBT", lastEdit);
-			
-			lastEdit = null;
-		}*/
-		
-		entity = EntityList.createEntityByName(JsonHelper.GetString(data, "target", "Zombie"), mc.theWorld);
+		entity = EntityList.createEntityByIDFromName(new ResourceLocation(JsonHelper.GetString(data, "target", "minecraft:zombie")), mc.world);
 		
 		if(entity == null)
 		{
-			entity = new EntityZombie(mc.theWorld);
+			entity = new EntityZombie(mc.world);
 			data.addProperty("target", "Zombie");
 			data.add("targetNBT", new JsonObject());
 		} else
@@ -100,7 +93,7 @@ public class GuiHuntEditor extends GuiScreenThemed implements IVolatileScreen, I
 			
 			try
 			{
-				RenderUtils.RenderEntity(guiLeft + sizeX/2, guiTop + sizeY/4 + MathHelper.ceiling_float_int(entity.height/2F*scale) + 16, (int)scale, angle, 0F, entity);
+				RenderUtils.RenderEntity(guiLeft + sizeX/2, guiTop + sizeY/4 + MathHelper.ceil(entity.height/2F*scale) + 16, (int)scale, angle, 0F, entity);
 			} catch(Exception e)
 			{
 			}
@@ -162,7 +155,7 @@ public class GuiHuntEditor extends GuiScreenThemed implements IVolatileScreen, I
 	{
 		if(value == null)
 		{
-			this.entity = new EntityZombie(mc.theWorld);
+			this.entity = new EntityZombie(mc.world);
 		} else
 		{
 			this.entity = value;
@@ -171,6 +164,6 @@ public class GuiHuntEditor extends GuiScreenThemed implements IVolatileScreen, I
 		data.addProperty("target", EntityList.getEntityString(entity));
 		NBTTagCompound tTag = new NBTTagCompound();
 		entity.writeToNBTOptional(tTag);
-		data.add("targetNBT", NBTConverter.NBTtoJSON_Compound(tTag, new JsonObject()));
+		data.add("targetNBT", NBTConverter.NBTtoJSON_Compound(tTag, new JsonObject(), true));
 	}
 }

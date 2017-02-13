@@ -22,6 +22,7 @@ import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.IItemTask;
 import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api.utils.JsonHelper;
@@ -33,7 +34,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
+public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITickableTask
 {
 	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	public ArrayList<BigItemStack> requiredItems = new ArrayList<BigItemStack>();
@@ -41,6 +42,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 	boolean partialMatch = true;
 	boolean ignoreNBT = false;
 	public boolean consume = true;
+	public boolean idvDetect = true;
 	public boolean autoConsume = false;
 	
 	@Override
@@ -71,7 +73,11 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 	}
 	
 	@Override
-	public void update(EntityPlayer player, IQuest quest)
+	@Deprecated
+	public void update(EntityPlayer player, IQuest quest){}
+	
+	@Override
+	public void updateTask(EntityPlayer player, IQuest quest)
 	{
 		if(player.ticksExisted%60 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
 		{
@@ -133,7 +139,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 				{
 					continue;
 				}
-
+				
 				int remaining = rStack.stackSize - progress[j];
 				
 				if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.oreDict, rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
@@ -141,11 +147,22 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 					if(consume)
 					{
 						ItemStack removed = player.inventory.decrStackSize(i, remaining);
-						progress[j] += removed.stackSize;
+						progress[j] += removed.getCount();
 					} else
 					{
-						progress[j] += Math.min(remaining, stack.stackSize);
+						progress[j] += Math.min(remaining, stack.getCount());
 					}
+				}
+			}
+		}
+		
+		if(!consume && idvDetect) // Resets incomplete detections
+		{
+			for(int i = 0; i < progress.length; i++)
+			{
+				if(progress[i] < requiredItems.get(i).stackSize)
+				{
+					progress[i] = 0;
 				}
 			}
 		}
@@ -153,7 +170,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 		boolean flag = true;
 		int[] totalProgress = progress;
 		
-		if(consume)
+		if(consume || idvDetect)
 		{
 			setUserProgress(playerID, progress);
 			totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
@@ -192,6 +209,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 		json.addProperty("partialMatch", partialMatch);
 		json.addProperty("ignoreNBT", ignoreNBT);
 		json.addProperty("consume", consume);
+		json.addProperty("groupDetect", !idvDetect);
 		json.addProperty("autoConsume", autoConsume);
 		
 		JsonArray itemArray = new JsonArray();
@@ -219,6 +237,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 		partialMatch = JsonHelper.GetBoolean(json, "partialMatch", partialMatch);
 		ignoreNBT = JsonHelper.GetBoolean(json, "ignoreNBT", ignoreNBT);
 		consume = JsonHelper.GetBoolean(json, "consume", true);
+		idvDetect = !JsonHelper.GetBoolean(json, "groupDetect", true);
 		autoConsume = JsonHelper.GetBoolean(json, "autoConsume", false);
 		
 		requiredItems = new ArrayList<BigItemStack>();
@@ -395,7 +414,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 	{
 		ItemStack stack = input;
 		
-		if(owner == null || stack == null || !consume || isComplete(owner))
+		if(owner == null || stack == null || stack.isEmpty() || !consume || isComplete(owner))
 		{
 			return stack;
 		}
@@ -420,11 +439,11 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 			
 			if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.oreDict, rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
 			{
-				int removed = Math.min(stack.stackSize, remaining);
-				stack.stackSize -= removed;
+				int removed = Math.min(stack.getCount(), remaining);
+				stack.shrink(removed);
 				progress[j] += removed;
 				
-				if(stack.stackSize <= 0)
+				if(stack.getCount() <= 0)
 				{
 					break;
 				}
@@ -433,9 +452,9 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 		
 		setUserProgress(owner, progress);
 		
-		if(stack == null || stack.stackSize <= 0)
+		if(stack == null || stack.isEmpty() || stack.getCount() <= 0)
 		{
-			return null;
+			return ItemStack.EMPTY;
 		} else
 		{
 			return stack;
@@ -500,7 +519,13 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 				
 				for(int i = 0; i < progress.length; i++)
 				{
-					total[i] += progress[i];
+					if(idvDetect)
+					{
+						total[i] = Math.max(total[i], progress[i]);
+					} else
+					{
+						total[i] += progress[i];
+					}
 				}
 			}
 		}
@@ -524,7 +549,13 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask
 			
 			for(int i = 0; i < progress.length; i++)
 			{
-				total[i] += progress[i];
+				if(idvDetect)
+				{
+					total[i] = Math.max(total[i], progress[i]);
+				} else
+				{
+					total[i] += progress[i];
+				}
 			}
 		}
 		

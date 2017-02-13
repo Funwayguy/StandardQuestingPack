@@ -50,7 +50,7 @@ public class GuiRewardChoice extends GuiElement implements IGuiEmbedded
 	@Override
 	public void drawBackground(int mx, int my, float partialTick)
 	{
-		int sel = reward.getSelecton(QuestingAPI.getQuestingUUID(mc.thePlayer));
+		int sel = reward.getSelecton(QuestingAPI.getQuestingUUID(mc.player));
 		
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(posX, posY + sizeY/2 - 18, 0);

@@ -1,8 +1,8 @@
 package bq_standard;
 
-import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
@@ -18,7 +18,7 @@ import com.google.gson.JsonObject;
 
 public class ScoreboardBQ
 {
-	static HashMap<String, ScoreBQ> objectives = new HashMap<String, ScoreBQ>();
+	static ConcurrentHashMap<String, ScoreBQ> objectives = new ConcurrentHashMap<String, ScoreBQ>();
 	
 	public static int getScore(UUID uuid, String scoreName)
 	{

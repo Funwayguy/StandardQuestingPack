@@ -43,9 +43,9 @@ public class GuiTaskXP extends GuiElement implements IGuiEmbedded
 	public void drawBackground(int mx, int my, float partialTick)
 	{
 		int barSize = Math.min(sizeX/2, 128);
-		int xp = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getPartyProgress(QuestingAPI.getQuestingUUID(mc.thePlayer)) : task.getGlobalProgress();
+		int xp = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getPartyProgress(QuestingAPI.getQuestingUUID(mc.player)) : task.getGlobalProgress();
 		xp = !task.levels? xp : XPHelper.getXPLevel(xp);
-		int barProg = (int)(MathHelper.clamp_float(xp/(float)task.amount, 0F, 1F) * (barSize - 2));
+		int barProg = (int)(MathHelper.clamp(xp/(float)task.amount, 0F, 1F) * (barSize - 2));
 		int midX = sizeX/2;
 		
 		GlStateManager.pushMatrix();

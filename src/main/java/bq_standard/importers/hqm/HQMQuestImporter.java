@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 import net.minecraft.init.Items;
 import org.apache.logging.log4j.Level;
@@ -24,6 +25,7 @@ import betterquesting.api.utils.JsonHelper;
 import bq_standard.core.BQ_Standard;
 import bq_standard.importers.hqm.converters.rewards.HQMReward;
 import bq_standard.importers.hqm.converters.rewards.HQMRewardChoice;
+import bq_standard.importers.hqm.converters.rewards.HQMRewardCommand;
 import bq_standard.importers.hqm.converters.rewards.HQMRewardReputation;
 import bq_standard.importers.hqm.converters.rewards.HQMRewardStandard;
 import bq_standard.importers.hqm.converters.tasks.HQMTask;
@@ -82,7 +84,7 @@ public class HQMQuestImporter implements IImporter
 		}
 	}
 	
-	public void LoadReputations(JsonObject jsonRoot)
+	private void LoadReputations(JsonObject jsonRoot)
 	{
 		reputations.clear();
 		
@@ -109,7 +111,7 @@ public class HQMQuestImporter implements IImporter
 		}
 	}
 	
-	public IQuest GetNewQuest(String oldID, IQuestDatabase qdb)
+	private IQuest GetNewQuest(String oldID, IQuestDatabase qdb)
 	{
 		if(idMap.containsKey(oldID))
 		{
@@ -123,7 +125,7 @@ public class HQMQuestImporter implements IImporter
 		}
 	}
 	
-	public void ImportQuestLine(IQuestDatabase questDB, IQuestLineDatabase lineDB, JsonObject json)
+	private void ImportQuestLine(IQuestDatabase questDB, IQuestLineDatabase lineDB, JsonObject json)
 	{
 		IQuestLine questLine = lineDB.createNew();
 		IPropertyContainer qlProps = questLine.getProperties();
@@ -148,7 +150,7 @@ public class HQMQuestImporter implements IImporter
 			JsonObject jQuest = element.getAsJsonObject();
 			
 			String name = JsonHelper.GetString(jQuest, "name", "HQM Quest");
-			String idName = name;
+			String idName = jQuest.has("uuid")? JsonHelper.GetString(jQuest, "uuid", name) : name;
 			
 			if(loadedQuests.contains(idName))
 			{
@@ -157,7 +159,7 @@ public class HQMQuestImporter implements IImporter
 				{
 					n++;
 				}
-				BQ_Standard.logger.log(Level.WARN, "Found duplicate named quest " + name + ". Any quests with this pre-requisite will need repair!");
+				BQ_Standard.logger.log(Level.WARN, "Found duplicate quest " + name + ". Any quests with this pre-requisite will need repair!");
 				idName = name + " (" + n + ")";
 			}
 			
@@ -206,7 +208,6 @@ public class HQMQuestImporter implements IImporter
 				}
 				
 				IQuest preReq = GetNewQuest(id, questDB);
-				preReq.getProperties().setProperty(NativeProps.NAME, id);
 				quest.getPrerequisites().add(preReq);
 			}
 			
@@ -229,7 +230,7 @@ public class HQMQuestImporter implements IImporter
 					continue;
 				}
 				
-				ArrayList<ITask> tsks = taskConverters.get(tType).Convert(jTask);
+				List<ITask> tsks = taskConverters.get(tType).Convert(jTask);
 				
 				if(tsks != null && tsks.size() > 0)
 				{
@@ -248,7 +249,7 @@ public class HQMQuestImporter implements IImporter
 					continue;
 				}
 				
-				ArrayList<IReward> rews = entry.getValue().Convert(jQuest.get(entry.getKey()));
+				List<IReward> rews = entry.getValue().Convert(jQuest.get(entry.getKey()));
 				
 				if(rews != null && rews.size() > 0)
 				{
@@ -286,5 +287,6 @@ public class HQMQuestImporter implements IImporter
 		rewardConverters.put("reward", new HQMRewardStandard());
 		rewardConverters.put("rewardchoice", new HQMRewardChoice());
 		rewardConverters.put("reputationrewards", new HQMRewardReputation());
+		rewardConverters.put("commandrewards", new HQMRewardCommand());
 	}
 }

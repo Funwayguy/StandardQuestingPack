@@ -28,13 +28,13 @@ public class UpdateNotification
 		
 		if(BQ_Standard.HASH == "CI_MOD_" + "HASH")
 		{
-			event.player.addChatMessage(new TextComponentString(TextFormatting.RED + "THIS COPY OF " + BQ_Standard.NAME.toUpperCase() + " IS NOT FOR PUBLIC USE!"));
+			event.player.sendMessage(new TextComponentString(TextFormatting.RED + "THIS COPY OF " + BQ_Standard.NAME.toUpperCase() + " IS NOT FOR PUBLIC USE!"));
 			return;
 		}
 		
 		try
 		{
-			String[] data = getNotification("http://bit.ly/224cJ4H", true).split("\\n");
+			String[] data = getNotification("https://goo.gl/N4pxwj", true).split("\\n");
 			
 			if(BQS_Settings.hideUpdates)
 			{
@@ -74,7 +74,7 @@ public class UpdateNotification
 			
 			if(!hasLog || data.length < 2)
 			{
-				event.player.addChatMessage(new TextComponentString(TextFormatting.RED + "An error has occured while checking " + BQ_Standard.NAME + " version!"));
+				event.player.sendMessage(new TextComponentString(TextFormatting.RED + "An error has occured while checking " + BQ_Standard.NAME + " version!"));
 				BQ_Standard.logger.log(Level.ERROR, "An error has occured while checking " + BQ_Standard.NAME + " version! (hasLog: " + hasLog + ", data: " + data.length + ")");
 				return;
 			} else
@@ -89,25 +89,25 @@ public class UpdateNotification
 			
 			if(hasUpdate)
 			{
-				event.player.addChatMessage(new TextComponentString(TextFormatting.RED + "Update for " + BQ_Standard.NAME + " available!"));
-				event.player.addChatMessage(new TextComponentString("Download: http://minecraft.curseforge.com/projects/better-questing-standard-expansion"));
+				event.player.sendMessage(new TextComponentString(TextFormatting.RED + "Update for " + BQ_Standard.NAME + " available!"));
+				event.player.sendMessage(new TextComponentString("Download: http://minecraft.curseforge.com/projects/better-questing-standard-expansion"));
 				
 				for(int i = 2; i < data.length; i++)
 				{
 					if(i > 5)
 					{
-						event.player.addChatMessage(new TextComponentString("and " + (data.length - 5) + " more..."));
+						event.player.sendMessage(new TextComponentString("and " + (data.length - 5) + " more..."));
 						break;
 					} else
 					{
-						event.player.addChatMessage(new TextComponentString("- " + data[i].trim()));
+						event.player.sendMessage(new TextComponentString("- " + data[i].trim()));
 					}
 				}
 			}
 			
 		} catch(Exception e)
 		{
-			event.player.addChatMessage(new TextComponentString(TextFormatting.RED + "An error has occured while checking " + BQ_Standard.NAME + " version!"));
+			event.player.sendMessage(new TextComponentString(TextFormatting.RED + "An error has occured while checking " + BQ_Standard.NAME + " version!"));
 			e.printStackTrace();
 			return;
 		}

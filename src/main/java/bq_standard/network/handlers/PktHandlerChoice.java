@@ -62,7 +62,7 @@ public class PktHandlerChoice implements IPacketHandler
 	@SideOnly(Side.CLIENT)
 	public void handleClient(NBTTagCompound tag)
 	{
-		EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
+		EntityPlayerSP player = Minecraft.getMinecraft().player;
 		
 		int qID = tag.hasKey("questID")? tag.getInteger("questID") : -1;
 		int rID = tag.hasKey("rewardID")? tag.getInteger("rewardID") : -1;

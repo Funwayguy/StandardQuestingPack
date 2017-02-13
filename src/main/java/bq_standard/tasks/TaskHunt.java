@@ -79,13 +79,8 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	}
 	
 	@Override
-	public void update(EntityPlayer player, IQuest quest)
-	{
-		if(player.ticksExisted%200 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
-		{
-			detect(player, quest);
-		}
-	}
+	@Deprecated
+	public void update(EntityPlayer player, IQuest quest){}
 	
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
@@ -117,7 +112,7 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		int progress = getUsersProgress(playerID);
 		
 		Class<? extends Entity> subject = entity.getClass();
-		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.NAME_TO_CLASS.get(idName);
+		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.getClass(new ResourceLocation(idName));
 		
 		if(subject == null || target == null)
 		{

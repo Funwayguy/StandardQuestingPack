@@ -10,6 +10,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -31,21 +34,28 @@ public class ItemLootChest extends Item
 	{
 		this.setMaxStackSize(1);
 		this.setUnlocalizedName("bq_standard.loot_chest");
-		this.setCreativeTab(CreativeTabs.MISC);
 	}
 
     /**
      * Called whenever this item is equipped and the right mouse button is pressed. Args: itemStack, world, entityPlayer
      */
-    public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player)
+	@Override
+    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand)
     {
+		ItemStack stack = player.getHeldItem(hand);
+		
+		if(hand != EnumHand.MAIN_HAND)
+		{
+			return new ActionResult<ItemStack>(EnumActionResult.PASS, stack);
+		}
+		
     	if(stack.getItemDamage() >= 102)
     	{
-    		if(QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
+    		if(QuestingAPI.getAPI(ApiReference.SETTINGS).canUserEdit(player))
     		{
     			player.openGui(BQ_Standard.instance, 0, world, (int)player.posX, (int)player.posY, (int)player.posZ);
     		}
-			return stack;
+			return new ActionResult<ItemStack>(EnumActionResult.PASS, stack);
     	} else if(!world.isRemote)
     	{
     		LootGroup group;
@@ -54,7 +64,7 @@ public class ItemLootChest extends Item
     			group = LootRegistry.getWeightedGroup(itemRand.nextFloat(), itemRand);
     		} else
     		{
-    			group = LootRegistry.getWeightedGroup(MathHelper.clamp_int(stack.getItemDamage(), 0, 100)/100F, itemRand);
+    			group = LootRegistry.getWeightedGroup(MathHelper.clamp(stack.getItemDamage(), 0, 100)/100F, itemRand);
     		}
 	    	ArrayList<BigItemStack> loot = new ArrayList<BigItemStack>();
 	    	String title = "Dungeon Loot";
@@ -97,16 +107,15 @@ public class ItemLootChest extends Item
     	
     	if(!player.capabilities.isCreativeMode)
     	{
-    		stack.stackSize--;
+    		stack.shrink(1);
     	}
     	
-    	return stack;
+    	return new ActionResult<ItemStack>(EnumActionResult.PASS, stack);
     }
 	
 	public void sendGui(EntityPlayerMP player, ArrayList<BigItemStack> loot, String title)
 	{
 		NBTTagCompound tags = new NBTTagCompound();
-		tags.setInteger("ID", 0);
 		tags.setString("title", title);
 		
 		NBTTagList list = new NBTTagList();
@@ -166,7 +175,7 @@ public class ItemLootChest extends Item
 				list.add(I18n.format("bq_standard.tooltip.loot_chest", "???"));
 			} else
 			{
-				list.add(I18n.format("bq_standard.tooltip.loot_chest", MathHelper.clamp_int(stack.getItemDamage(), 0, 100) + "%"));
+				list.add(I18n.format("bq_standard.tooltip.loot_chest", MathHelper.clamp(stack.getItemDamage(), 0, 100) + "%"));
 			}
 		}
     }

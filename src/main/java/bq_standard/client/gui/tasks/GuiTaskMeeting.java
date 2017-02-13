@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.misc.IGuiEmbedded;
@@ -57,7 +58,7 @@ public class GuiTaskMeeting extends GuiElement implements IGuiEmbedded
 			
 			try
 			{
-				RenderUtils.RenderEntity(posX + sizeX/2, posY + sizeY/2 + MathHelper.ceiling_float_int(target.height/2F*scale) + 8, (int)scale, angle, 0F, target);
+				RenderUtils.RenderEntity(posX + sizeX/2, posY + sizeY/2 + MathHelper.ceil(target.height/2F*scale) + 8, (int)scale, angle, 0F, target);
 			} catch(Exception e)
 			{
 			}
@@ -65,9 +66,9 @@ public class GuiTaskMeeting extends GuiElement implements IGuiEmbedded
 			GlStateManager.popMatrix();
 		} else
 		{
-			if(EntityList.NAME_TO_CLASS.containsKey(task.idName))
+			if(EntityList.isRegistered(new ResourceLocation(task.idName)))
 			{
-				target = EntityList.createEntityByName(task.idName, mc.theWorld);
+				target = EntityList.createEntityByIDFromName(new ResourceLocation(task.idName), mc.world);
 				target.readFromNBT(task.targetTags);
 			}
 		}

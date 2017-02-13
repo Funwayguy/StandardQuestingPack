@@ -1,18 +1,19 @@
 package bq_standard.importers.hqm.converters.tasks;
 
 import java.util.ArrayList;
+import java.util.List;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.JsonHelper;
 import bq_standard.tasks.TaskHunt;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class HQMTaskKill extends HQMTask
+public class HQMTaskKill implements HQMTask
 {
 	@Override
-	public ArrayList<ITask> Convert(JsonObject json)
+	public List<ITask> Convert(JsonObject json)
 	{
-		ArrayList<ITask> tList = new ArrayList<ITask>();
+		List<ITask> tList = new ArrayList<ITask>();
 		
 		for(JsonElement je : JsonHelper.GetArray(json, "mobs"))
 		{
@@ -24,7 +25,7 @@ public class HQMTaskKill extends HQMTask
 			JsonObject jMob = je.getAsJsonObject();
 			
 			TaskHunt task = new TaskHunt();
-			task.idName = JsonHelper.GetString(jMob, "mob", "Zombie");
+			task.idName = JsonHelper.GetString(jMob, "mob", "minecraft:zombie");
 			task.required = JsonHelper.GetNumber(jMob, "kills", 1).intValue();
 			task.subtypes = !JsonHelper.GetBoolean(jMob, "exact", false);
 			tList.add(task);

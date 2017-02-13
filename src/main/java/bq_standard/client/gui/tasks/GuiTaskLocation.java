@@ -40,7 +40,7 @@ public class GuiTaskLocation extends GuiElement implements IGuiEmbedded
 	public void drawBackground(int mx, int my, float partialTick)
 	{
 		// Calculate compass direction
-		double la = Math.atan2(task.y - mc.thePlayer.posY, task.x - mc.thePlayer.posX);
+		double la = Math.atan2(task.y - mc.player.posY, task.x - mc.player.posX);
 		int radius = Math.min(sizeY/2, sizeX/4) - 12;
 		int dx = (int)(Math.cos(la) * radius);
 		int dy = (int)(Math.sin(la) * -radius);
@@ -59,7 +59,7 @@ public class GuiTaskLocation extends GuiElement implements IGuiEmbedded
 			{
 				mc.fontRendererObj.drawString(I18n.format("bq_standard.gui.location", "(" + task.x + ", " + task.y + ", " + task.z + ")"), posX, posY + i, getTextColor(), false);
 				i += 12;
-				mc.fontRendererObj.drawString(I18n.format("bq_standard.gui.distance", (int)mc.thePlayer.getDistance(task.x, task.y, task.z) + "m"), posX, posY + i, getTextColor(), false);
+				mc.fontRendererObj.drawString(I18n.format("bq_standard.gui.distance", (int)mc.player.getDistance(task.x, task.y, task.z) + "m"), posX, posY + i, getTextColor(), false);
 				i += 12;
 			}
 			
@@ -67,7 +67,7 @@ public class GuiTaskLocation extends GuiElement implements IGuiEmbedded
 			i += 12;
 		}
 		
-		if(task.isComplete(QuestingAPI.getQuestingUUID(mc.thePlayer)))
+		if(task.isComplete(QuestingAPI.getQuestingUUID(mc.player)))
 		{
 			mc.fontRendererObj.drawString(I18n.format("bq_standard.gui.found"), posX, posY + i, Color.GREEN.getRGB(), false);
 		} else
@@ -85,7 +85,7 @@ public class GuiTaskLocation extends GuiElement implements IGuiEmbedded
 		mc.fontRendererObj.drawString(TextFormatting.BOLD + "E", cx + radius + 2, cy - 4, getTextColor());
 		mc.fontRendererObj.drawString(TextFormatting.BOLD + "W", cx - radius - 8, cy - 4, getTextColor());
 		
-		if(task.hideInfo || task.range < 0 || mc.thePlayer.dimension != task.dim)
+		if(task.hideInfo || task.range < 0 || mc.player.dimension != task.dim)
 		{
 			GlStateManager.pushMatrix();
 			GlStateManager.scale(2F, 2F, 2F);

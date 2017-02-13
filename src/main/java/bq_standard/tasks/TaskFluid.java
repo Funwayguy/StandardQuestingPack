@@ -9,9 +9,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.IFluidContainerItem;
+import net.minecraftforge.fluids.FluidUtil;
+import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
@@ -27,6 +27,7 @@ import betterquesting.api.questing.tasks.IFluidTask;
 import betterquesting.api.questing.tasks.IItemTask;
 import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api.utils.NBTConverter;
 import bq_standard.client.gui.tasks.GuiTaskFluid;
@@ -37,8 +38,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-@SuppressWarnings("deprecation")
-public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int[]>
+public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int[]>, ITickableTask
 {
 	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	public ArrayList<FluidStack> requiredFluids = new ArrayList<FluidStack>();
@@ -74,7 +74,11 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 	}
 	
 	@Override
-	public void update(EntityPlayer player, IQuest quest)
+	@Deprecated
+	public void update(EntityPlayer player, IQuest quest){}
+	
+	@Override
+	public void updateTask(EntityPlayer player, IQuest quest)
 	{
 		if(player.ticksExisted%60 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
 		{
@@ -122,14 +126,22 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		
 		for(int i = 0; i < player.inventory.getSizeInventory(); i++)
 		{
+			ItemStack stack = player.inventory.getStackInSlot(i);
+			
+			if(stack == null || stack.isEmpty())
+			{
+				continue;
+			}
+			
+			IFluidHandlerItem handler = FluidUtil.getFluidHandler(stack);
+			
+			if(handler == null)
+			{
+				continue;
+			}
+			
 			for(int j = 0; j < requiredFluids.size(); j++)
 			{
-				ItemStack stack = player.inventory.getStackInSlot(i);
-				
-				if(stack == null || FluidContainerRegistry.isEmptyContainer(stack))
-				{
-					break;
-				}
 				
 				FluidStack rStack = requiredFluids.get(j);
 				
@@ -140,18 +152,18 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 				
 				int remaining = rStack.amount - progress[j];
 				
-				if(rStack.isFluidEqual(stack))
+				FluidStack fluid = handler.drain(new FluidStack(rStack.getFluid(), remaining), consume);
+				
+				if(fluid == null || fluid.amount <= 0)
 				{
-					if(consume)
-					{
-						FluidStack fluid = this.getFluid(player, i, true, remaining);
-						progress[j] += Math.min(remaining, fluid == null? 0 : fluid.amount);
-					} else
-					{
-						FluidStack fluid = this.getFluid(player, i, false, remaining);
-						progress[j] += Math.min(remaining, fluid == null? 0 : fluid.amount);
-					}
+					continue;
+				} else if(consume)
+				{
+					stack = handler.getContainer();
+					player.inventory.setInventorySlotContents(i, stack);
 				}
+				
+				progress[j] += Math.min(remaining, fluid == null? 0 : fluid.amount);
 			}
 		}
 		
@@ -180,52 +192,6 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		if(flag)
 		{
 			setComplete(playerID);
-		}
-	}
-	
-	/**
-	 * Returns the fluid drained (or can be drained) up to the specified amount
-	 */
-	public FluidStack getFluid(EntityPlayer player, int slot, boolean drain, int amount)
-	{
-		ItemStack stack = player.inventory.getStackInSlot(slot);
-		
-		if(stack == null || amount <= 0)
-		{
-			return null;
-		}
-		
-		if(stack.getItem() instanceof IFluidContainerItem)
-		{
-			IFluidContainerItem container = (IFluidContainerItem)stack.getItem();
-			
-			return container.drain(stack, amount, drain);
-		} else
-		{
-			FluidStack fluid = FluidContainerRegistry.getFluidForFilledItem(stack);
-			int tmp1 = fluid.amount;
-			int tmp2 = 1;
-			while(fluid.amount < amount && tmp2 < stack.stackSize)
-			{
-				tmp2++;
-				fluid.amount += tmp1;
-			}
-			
-			if(drain)
-			{
-				for(; tmp2 > 0; tmp2--)
-				{
-					ItemStack empty = FluidContainerRegistry.drainFluidContainer(stack);
-					player.inventory.decrStackSize(slot, 1);
-					
-					if(!player.inventory.addItemStackToInventory(empty))
-					{
-						player.dropItem(empty, true, false);
-					}
-				}
-			}
-			
-			return fluid;
 		}
 	}
 	
@@ -448,24 +414,14 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 	@Override
 	public boolean canAcceptItem(UUID owner, ItemStack item)
 	{
-		if(owner == null || item == null || !consume || isComplete(owner) || requiredFluids.size() <= 0)
+		if(owner == null || item == null || item.isEmpty() || !consume || isComplete(owner) || requiredFluids.size() <= 0)
 		{
 			return false;
 		}
 		
-		if(item.getItem() instanceof IFluidContainerItem)
-		{
-			FluidStack contents = ((IFluidContainerItem)item.getItem()).getFluid(item);
-			
-			return contents != null && this.canAcceptFluid(owner, contents);
-		} else if(FluidContainerRegistry.isFilledContainer(item))
-		{
-			FluidStack contents = FluidContainerRegistry.getFluidForFilledItem(item);
-			
-			return contents != null && this.canAcceptFluid(owner, contents);
-		}
+		FluidStack contents = FluidUtil.getFluidContained(item);
 		
-		return false;
+		return contents != null && this.canAcceptFluid(owner, contents);
 	}
 
 	@Override
@@ -516,35 +472,24 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 	{
 		ItemStack item = input;
 		
-		if(item == null)
+		if(item == null || item.isEmpty())
 		{
 			return item;
 		}
 		
 		item = item.copy(); // Prevents issues with stack filling/draining
-		item.stackSize = 1; // Decrease input stack by 1 when drain has been confirmed
+		item.setCount(1); // Decrease input stack by 1 when drain has been confirmed
+
+		IFluidHandlerItem handler = FluidUtil.getFluidHandler(item);
+		FluidStack fluid = handler.drain(Integer.MAX_VALUE, false);//FluidUtil.getFluidContained(item);
 		
-		if(item.getItem() instanceof IFluidContainerItem)
+		if(fluid != null && handler != null)
 		{
-			IFluidContainerItem container = (IFluidContainerItem)item.getItem();
-			FluidStack fluid = container.getFluid(item);
 			int amount = fluid.amount;
 			fluid = submitFluid(owner, fluid);
-			container.drain(item, fluid == null? amount : amount - fluid.amount, true);
-			input.stackSize -= 1;
-			//output.putStack(item);
-			return item;
-			
-		} else
-		{
-			FluidStack fluid = FluidContainerRegistry.getFluidForFilledItem(item);
-			
-			if(fluid != null)
-			{
-				submitFluid(owner, fluid);
-				input.stackSize -= 1;
-				return FluidContainerRegistry.drainFluidContainer(item);
-			}
+			input.shrink(1);
+			handler.drain(amount - (fluid == null? 0 : fluid.amount), true);
+			return handler.getContainer();
 		}
 		
 		return item;

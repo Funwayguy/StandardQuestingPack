@@ -9,6 +9,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
@@ -27,7 +28,7 @@ import com.google.gson.JsonObject;
 public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen, ICallback<Entity>
 {
 	private final TaskMeeting task;
-	String idName = "Villager";
+	String idName = "minecraft:villager";
 	JsonObject data;
 	Entity entity;
 	
@@ -36,7 +37,7 @@ public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen
 		super(parent, "bq_standard.title.edit_meeting");
 		this.task = task;
 		this.data = task.writeToJson(new JsonObject(), EnumSaveType.CONFIG);
-		idName = JsonHelper.GetString(data, "target", "Villager");
+		idName = JsonHelper.GetString(data, "target", "minecraft:villager");
 	}
 	
 	@Override
@@ -44,19 +45,11 @@ public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen
 	{
 		super.initGui();
 		
-		/*if(lastEdit != null)
-		{
-			data.addProperty("target", JsonHelper.GetString(lastEdit, "id:8", "Villager"));
-			data.add("targetNBT", lastEdit);
-			
-			lastEdit = null;
-		}*/
-		
-		entity = EntityList.createEntityByName(JsonHelper.GetString(data, "target", "Villager"), mc.theWorld);
+		entity = EntityList.createEntityByIDFromName(new ResourceLocation(JsonHelper.GetString(data, "target", "minecraft:villager")), mc.world);
 		
 		if(entity == null)
 		{
-			entity = new EntityVillager(mc.theWorld);
+			entity = new EntityVillager(mc.world);
 			data.addProperty("target", "Villager");
 			data.add("targetNBT", new JsonObject());
 		} else
@@ -94,7 +87,7 @@ public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen
 			
 			try
 			{
-				RenderUtils.RenderEntity(guiLeft + sizeX/2, guiTop + sizeY/4 + MathHelper.ceiling_float_int(entity.height/2F*scale) + 16, (int)scale, angle, 0F, entity);
+				RenderUtils.RenderEntity(guiLeft + sizeX/2, guiTop + sizeY/4 + MathHelper.ceil(entity.height/2F*scale) + 16, (int)scale, angle, 0F, entity);
 			} catch(Exception e)
 			{
 			}
@@ -115,16 +108,10 @@ public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen
 		{
 			if(entity != null)
 			{
-				/*NBTTagCompound eTags = new NBTTagCompound();
-				entity.writeToNBTOptional(eTags);
-				lastEdit = NBTConverter.NBTtoJSON_Compound(eTags, new JsonObject(), true);*/
-				
-				//mc.displayGuiScreen(new GuiJsonEntitySelection(this, this, entity));
 				QuestingAPI.getAPI(ApiReference.GUI_HELPER).openEntityEditor(this, this, entity);
 			}
 		} else if(button.id == 2)
 		{
-			//mc.displayGuiScreen(new GuiJsonObject(this, data, null));
 			QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(this, new JsonSaveLoadCallback<JsonObject>(task), data, task.getDocumentation());
 		}
 	}
@@ -134,13 +121,13 @@ public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen
 	{
 		if(value == null)
 		{
-			this.entity = new EntityVillager(mc.theWorld);
+			this.entity = new EntityVillager(mc.world);
 		} else
 		{
 			this.entity = value;
 		}
 		
-		data.addProperty("target", EntityList.getEntityString(entity));
+		data.addProperty("target", EntityList.getKey(entity).toString());
 		NBTTagCompound tTag = new NBTTagCompound();
 		entity.writeToNBTOptional(tTag);
 		data.add("targetNBT", NBTConverter.NBTtoJSON_Compound(tTag, new JsonObject()));

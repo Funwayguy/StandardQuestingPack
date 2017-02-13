@@ -22,7 +22,7 @@ public class PktHandlerLootDatabase implements IPacketHandler
 		if(!sender.getServer().getPlayerList().canSendCommands(sender.getGameProfile()))
 		{
 			BQ_Standard.logger.log(Level.WARN, "Player " + sender.getName() + " (UUID:" + QuestingAPI.getQuestingUUID(sender) + ") tried to edit loot chests without OP permissions!");
-			sender.addChatComponentMessage(new TextComponentString(TextFormatting.RED + "You need to be OP to edit loot!"));
+			sender.sendMessage(new TextComponentString(TextFormatting.RED + "You need to be OP to edit loot!"));
 			return; // Player is not operator. Do nothing
 		}
 		

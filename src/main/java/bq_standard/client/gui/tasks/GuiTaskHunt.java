@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import org.apache.logging.log4j.Level;
 import betterquesting.api.api.QuestingAPI;
@@ -64,7 +65,7 @@ public class GuiTaskHunt extends GuiElement implements IGuiEmbedded
 			
 			try
 			{
-				RenderUtils.RenderEntity(posX + sizeX/2, posY + sizeY/2 + MathHelper.ceiling_float_int(target.height/2F*scale) + 8, (int)scale, angle, 0F, target);
+				RenderUtils.RenderEntity(posX + sizeX/2, posY + sizeY/2 + MathHelper.ceil(target.height/2F*scale) + 8, (int)scale, angle, 0F, target);
 			} catch(Exception e)
 			{
 			}
@@ -72,11 +73,11 @@ public class GuiTaskHunt extends GuiElement implements IGuiEmbedded
 			GlStateManager.popMatrix();
 		} else
 		{
-			if(EntityList.NAME_TO_CLASS.containsKey(task.idName))
+			if(EntityList.isRegistered(new ResourceLocation(task.idName)))
 			{
 				try
 				{
-					target = EntityList.createEntityByName(task.idName, mc.theWorld);
+					target = EntityList.createEntityByIDFromName(new ResourceLocation(task.idName), mc.world);
 					target.readFromNBT(task.targetTags);
 				} catch(Exception e)
 				{
@@ -85,7 +86,7 @@ public class GuiTaskHunt extends GuiElement implements IGuiEmbedded
 			}
 		}
 		
-		int progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getUsersProgress(QuestingAPI.getQuestingUUID(mc.thePlayer)) : task.getGlobalProgress();
+		int progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? task.getPartyProgress(QuestingAPI.getQuestingUUID(mc.player)) : task.getGlobalProgress();
 		String tnm = !task.ignoreNBT && target != null? target.getName() : task.idName;
 		String txt = I18n.format("bq_standard.gui.kill", tnm) + " " + progress + "/" + task.required;
 		mc.fontRendererObj.drawString(txt, posX + sizeX/2 - mc.fontRendererObj.getStringWidth(txt)/2, posY, getTextColor());

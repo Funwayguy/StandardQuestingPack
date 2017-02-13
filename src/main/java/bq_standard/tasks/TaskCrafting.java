@@ -68,13 +68,8 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	}
 	
 	@Override
-	public void update(EntityPlayer player, IQuest quest)
-	{
-		if(player.ticksExisted%200 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
-		{
-			detect(player, quest);
-		}
-	}
+	@Deprecated
+	public void update(EntityPlayer player, IQuest quest){}
 	
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
@@ -132,7 +127,7 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 			
 			if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.oreDict, rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
 			{
-				progress[i] += stack.stackSize;
+				progress[i] += stack.getCount();
 			}
 		}
 		
@@ -158,7 +153,7 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 			
 			if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.oreDict, rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
 			{
-				progress[i] += stack.stackSize;
+				progress[i] += stack.getCount();
 			}
 		}
 		

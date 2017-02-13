@@ -12,7 +12,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
-import org.lwjgl.opengl.GL11;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.RenderUtils;
 
@@ -54,8 +53,8 @@ public class GuiLootChest extends GuiScreen
 		mc.fontRendererObj.drawString(txt, width/2 - mc.fontRendererObj.getStringWidth(txt)/2, height/2 + ch + 8, Color.WHITE.getRGB(), false);
 		
 		// Auto balance row size
-		int rowL = MathHelper.ceiling_float_int(rewards.size()/8F);
-		rowL = MathHelper.ceiling_float_int(rewards.size()/rowL);
+		int rowL = MathHelper.ceil(rewards.size()/8F);
+		rowL = MathHelper.ceil(rewards.size()/rowL);
 		
 		BigItemStack ttStack = null;
 		
@@ -90,7 +89,7 @@ public class GuiLootChest extends GuiScreen
 		
 		if(ttStack != null)
 		{
-			this.drawHoveringText(ttStack.getBaseStack().getTooltip(mc.thePlayer, mc.gameSettings.advancedItemTooltips), mx, my, fontRendererObj);
+			this.drawHoveringText(ttStack.getBaseStack().getTooltip(mc.player, mc.gameSettings.advancedItemTooltips), mx, my, fontRendererObj);
 		}
 		
 		// TODO: Finish rewards renderer then finish reward registry/editor/importer

@@ -218,14 +218,14 @@ public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScre
         
         if(SDX != 0 && isWithin(mx, my, this.guiLeft, this.guiTop, sizeX/2, sizeY))
         {
-    		leftScroll = Math.max(0, MathHelper.clamp_int(leftScroll + SDX, 0, group.lootEntry.size() - maxRows));
+    		leftScroll = Math.max(0, MathHelper.clamp(leftScroll + SDX, 0, group.lootEntry.size() - maxRows));
     		RefreshColumns();
         }
     }
 	
 	public void RefreshColumns()
 	{
-		leftScroll = Math.max(0, MathHelper.clamp_int(leftScroll, 0, group.lootEntry.size() - maxRows));
+		leftScroll = Math.max(0, MathHelper.clamp(leftScroll, 0, group.lootEntry.size() - maxRows));
 		
 		if(selected != null && !group.lootEntry.contains(selected))
 		{

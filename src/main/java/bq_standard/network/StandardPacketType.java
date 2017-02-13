@@ -7,6 +7,7 @@ public enum StandardPacketType
 {
 	LOOT_SYNC,
 	LOOT_CLAIM,
+	LOOT_IMPORT,
 	CHECKBOX,
 	SCORE_SYNC,
 	CHOICE;

@@ -50,7 +50,7 @@ public class QuestMergeUtility
 		
 		for(int id : idList)
 		{
-			while(existing.contains(n))
+			while(existing.contains(n) || remapped.containsValue(n))
 			{
 				n++;
 			}

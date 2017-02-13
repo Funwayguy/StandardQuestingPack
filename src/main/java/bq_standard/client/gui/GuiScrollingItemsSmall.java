@@ -1,12 +1,11 @@
 package bq_standard.client.gui;
 
-import java.util.ArrayList;
-import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraftforge.oredict.OreDictionary;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.lists.GuiScrollingBase;
@@ -41,7 +40,7 @@ public class GuiScrollingItemsSmall extends GuiScrollingBase<GuiScrollingItemsSm
 		private BigItemStack stack;
 		private String desc = "";
 		
-		private List<ItemStack> subStacks = new ArrayList<ItemStack>();
+		private NonNullList<ItemStack> subStacks = NonNullList.<ItemStack>create();
 		
 		public ScrollingEntryItem(Minecraft mc, BigItemStack stack, String desc)
 		{
@@ -66,7 +65,7 @@ public class GuiScrollingItemsSmall extends GuiScrollingBase<GuiScrollingItemsSm
 					
 					Item oItem = oreStack.getItem();
 					
-					List<ItemStack> tmp = new ArrayList<ItemStack>();
+					NonNullList<ItemStack> tmp = NonNullList.<ItemStack>create();
 					
 					if(oreStack.getItemDamage() == OreDictionary.WILDCARD_VALUE)
 					{
@@ -151,7 +150,7 @@ public class GuiScrollingItemsSmall extends GuiScrollingBase<GuiScrollingItemsSm
 				
 				try
 				{
-					this.drawTooltip(tmpStack.getTooltip(mc.thePlayer, mc.gameSettings.advancedItemTooltips), mx, my, mc.fontRendererObj);
+					this.drawTooltip(tmpStack.getTooltip(mc.player, mc.gameSettings.advancedItemTooltips), mx, my, mc.fontRendererObj);
 				} catch(Exception e){}
 			}
 		}
