@@ -12,7 +12,6 @@
   "logoFile": "title.png",
   "screenshots": [],
   "useDependencyInformation": true,
-  "parent": "betterquesting",
   "requiredMods": ["betterquesting"],
   "dependencies": ["betterquesting"]
 }

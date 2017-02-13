@@ -6,6 +6,7 @@ import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.network.IPacketRegistry;
 import betterquesting.api.questing.rewards.IRewardRegistry;
 import betterquesting.api.questing.tasks.ITaskRegistry;
+import bq_standard.core.BQ_Standard;
 import bq_standard.handlers.EventHandler;
 import bq_standard.network.handlers.PktHandlerCheckbox;
 import bq_standard.network.handlers.PktHandlerChoice;
@@ -73,5 +74,7 @@ public class CommonProxy
 		packetReg.registerHandler(new PktHandlerScoreboard());
 		packetReg.registerHandler(new PktHandlerChoice());
 		packetReg.registerHandler(new PktHandlerLootImport());
+		
+		BQ_Standard.lootChest.setCreativeTab(QuestingAPI.getAPI(ApiReference.CREATIVE_TAB));
 	}
 }
