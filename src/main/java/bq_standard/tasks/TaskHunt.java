@@ -113,14 +113,15 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		
 		Class<? extends Entity> subject = entity.getClass();
 		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.NAME_TO_CLASS.get(idName);
+		String subjectID = subject == null? null : EntityList.CLASS_TO_NAME.get(subject);
 		
-		if(subject == null || target == null)
+		if(subject == null || subjectID == null || target == null)
 		{
 			return; // Missing necessary data
 		} else if(subtypes && !target.isAssignableFrom(subject))
 		{
 			return; // This is not the intended target or sub-type
-		} else if(!subtypes && !EntityList.getEntityString(entity).equals(idName))
+		} else if(!subtypes && !subjectID.equals(idName))
 		{
 			return; // This isn't the exact target required
 		}
