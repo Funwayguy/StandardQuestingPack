@@ -41,7 +41,7 @@ public class TaskHunt implements ITask, IProgression<Integer>
 {
 	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	public HashMap<UUID, Integer> userProgress = new HashMap<UUID, Integer>();
-	public String idName = "Zombie";
+	public String idName = "minecraft:zombie";
 	public int required = 1;
 	public boolean ignoreNBT = true;
 	public boolean subtypes = true;
@@ -112,15 +112,17 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		int progress = getUsersProgress(playerID);
 		
 		Class<? extends Entity> subject = entity.getClass();
-		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.getClass(new ResourceLocation(idName));
+		ResourceLocation targetID = new ResourceLocation(idName);
+		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.getClass(targetID);
+		ResourceLocation subjectID = subject == null? null : EntityList.getKey(subject);
 		
-		if(subject == null || target == null)
+		if(subject == null || subjectID == null || target == null)
 		{
 			return; // Missing necessary data
 		} else if(subtypes && !target.isAssignableFrom(subject))
 		{
 			return; // This is not the intended target or sub-type
-		} else if(!subtypes && !EntityList.getEntityString(entity).equals(idName))
+		} else if(!subtypes && !subjectID.equals(targetID))
 		{
 			return; // This isn't the exact target required
 		}
@@ -169,7 +171,7 @@ public class TaskHunt implements ITask, IProgression<Integer>
 			return;
 		}
 		
-		idName = JsonHelper.GetString(json, "target", "Zombie");
+		idName = JsonHelper.GetString(json, "target", "minecraft:zombie");
 		required = JsonHelper.GetNumber(json, "required", 1).intValue();
 		subtypes = JsonHelper.GetBoolean(json, "subtypes", true);
 		ignoreNBT = JsonHelper.GetBoolean(json, "ignoreNBT", true);

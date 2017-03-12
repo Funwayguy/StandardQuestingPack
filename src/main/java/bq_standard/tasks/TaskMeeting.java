@@ -37,7 +37,7 @@ public class TaskMeeting implements ITask, ITickableTask
 {
 	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	
-	public String idName = "Villager";
+	public String idName = "minecraft:villager";
 	public int range = 4;
 	public int amount = 1;
 	public boolean ignoreNBT = true;
@@ -111,7 +111,8 @@ public class TaskMeeting implements ITask, ITickableTask
 		}
 		
 		List<Entity> list = player.world.getEntitiesWithinAABBExcludingEntity(player, player.getEntityBoundingBox().expand(range, range, range));
-		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.getClass(new ResourceLocation(idName));
+		ResourceLocation targetID = new ResourceLocation(idName);
+		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.getClass(targetID);
 		
 		if(target == null)
 		{
@@ -123,11 +124,15 @@ public class TaskMeeting implements ITask, ITickableTask
 		for(Entity entity : list)
 		{
 			Class<? extends Entity> subject = entity.getClass();
+			ResourceLocation subjectID = subject == null? null : EntityList.getKey(subject);
 			
-			if(subtypes && !target.isAssignableFrom(subject))
+			if(subject == null || subjectID == null)
+			{
+				continue;
+			} else if(subtypes && !target.isAssignableFrom(subject))
 			{
 				continue; // This is not the intended target or sub-type
-			} else if(!subtypes && !EntityList.getEntityString(entity).equals(idName))
+			} else if(!subtypes && !subjectID.equals(targetID))
 			{
 				continue; // This isn't the exact target required
 			}
@@ -182,7 +187,7 @@ public class TaskMeeting implements ITask, ITickableTask
 			return;
 		}
 		
-		idName = JsonHelper.GetString(json, "target", "Villager");
+		idName = JsonHelper.GetString(json, "target", "minecraft:villager");
 		range = JsonHelper.GetNumber(json, "range", 4).intValue();
 		amount = JsonHelper.GetNumber(json, "amount", 1).intValue();
 		subtypes = JsonHelper.GetBoolean(json, "subtypes", true);
