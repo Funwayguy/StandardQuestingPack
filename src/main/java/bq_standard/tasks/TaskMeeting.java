@@ -125,11 +125,15 @@ public class TaskMeeting implements ITask, ITickableTask
 		for(Entity entity : list)
 		{
 			Class<? extends Entity> subject = entity.getClass();
+			String subjectID = subject == null? null : (String)EntityList.classToStringMapping.get(subject);
 			
-			if(subtypes && !target.isAssignableFrom(subject))
+			if(subject == null || subjectID == null)
+			{
+				continue;
+			} else if(subtypes && !target.isAssignableFrom(subject))
 			{
 				continue; // This is not the intended target or sub-type
-			} else if(!subtypes && !EntityList.getEntityString(entity).equals(idName))
+			} else if(!subtypes && !subjectID.equals(idName))
 			{
 				continue; // This isn't the exact target required
 			}
