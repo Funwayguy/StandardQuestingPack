@@ -42,7 +42,7 @@ public class RewardXP implements IReward
 	@Override
 	public void claimReward(EntityPlayer player, IQuest quest)
 	{
-		XPHelper.AddXP(player, !levels? amount : XPHelper.getLevelXP(amount));
+		XPHelper.addXP(player, !levels? amount : XPHelper.getLevelXP(amount));
 	}
 	
 	@Override

@@ -80,7 +80,7 @@ public class GuiTaskRetrieval extends GuiElement implements IGuiEmbedded
 	public void drawBackground(int mx, int my, float partialTick)
 	{
 		String sCon = (task.consume? TextFormatting.RED : TextFormatting.GREEN) + I18n.format(task.consume? "gui.yes" : "gui.no");
-		mc.fontRendererObj.drawString(I18n.format("bq_standard.btn.consume", sCon), posX, posY, getTextColor(), false);
+		mc.fontRenderer.drawString(I18n.format("bq_standard.btn.consume", sCon), posX, posY, getTextColor(), false);
 		scrollList.drawBackground(mx, my, partialTick);
 	}
 

@@ -61,7 +61,7 @@ public class GuiHuntEditor extends GuiScreenThemed implements IVolatileScreen, I
 			entity.readFromNBT(NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(data, "targetNBT"), new NBTTagCompound(), true));
 		}
 		
-		numField = new GuiNumberField(mc.fontRendererObj, guiLeft + sizeX/2 + 1, guiTop + sizeY/2 + 1, 98, 18);
+		numField = new GuiNumberField(mc.fontRenderer, guiLeft + sizeX/2 + 1, guiTop + sizeY/2 + 1, 98, 18);
 		numField.setText("" + JsonHelper.GetNumber(data, "required", 1).intValue());
 		this.buttonList.add(new GuiButtonThemed(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 20, 200, 20, I18n.format("bq_standard.btn.select_mob")));
 		this.buttonList.add(new GuiButtonThemed(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 40, 200, 20, I18n.format("betterquesting.btn.advanced")));
@@ -102,7 +102,7 @@ public class GuiHuntEditor extends GuiScreenThemed implements IVolatileScreen, I
 		}
 		
 		String txt = I18n.format("bq_standard.gui.amount") + ": ";
-		mc.fontRendererObj.drawString(txt, guiLeft + sizeX/2 - mc.fontRendererObj.getStringWidth(txt), guiTop + sizeY/2 + 6, getTextColor());
+		mc.fontRenderer.drawString(txt, guiLeft + sizeX/2 - mc.fontRenderer.getStringWidth(txt), guiTop + sizeY/2 + 6, getTextColor());
 		numField.drawTextBox();
 	}
 	

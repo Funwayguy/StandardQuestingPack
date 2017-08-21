@@ -2,11 +2,11 @@ package bq_standard.core.proxies;
 
 import java.awt.Color;
 import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import betterquesting.api.api.ApiReference;
@@ -81,7 +81,8 @@ public class ClientProxy extends CommonProxy
 		    ModelBakery.registerItemVariants(item, model);
 		}
 		
-	    Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, meta, model);
+		ModelLoader.setCustomModelResourceLocation(item, meta, model);
+	    //Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, meta, model);
 	}
 	
 	@SideOnly(Side.CLIENT)
@@ -116,6 +117,7 @@ public class ClientProxy extends CommonProxy
 		    ModelBakery.registerItemVariants(item, model);
 		}
 		
-	    Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, meta, model);
+		ModelLoader.setCustomModelResourceLocation(item, meta, model);
+	    //Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, meta, model);
 	}
 }

@@ -37,8 +37,8 @@ public class GuiTaskScoreboard extends GuiElement implements IGuiEmbedded
 		GlStateManager.translate(posX + sizeX/2, posY + sizeY/2, 0F);
 		GlStateManager.scale(2F, 2F, 1F);
 		
-		int tw1 = mc.fontRendererObj.getStringWidth(TextFormatting.BOLD + task.scoreName);
-		mc.fontRendererObj.drawString(TextFormatting.BOLD + task.scoreDisp, -tw1/2, -12, getTextColor(), false);
+		int tw1 = mc.fontRenderer.getStringWidth(TextFormatting.BOLD + task.scoreName);
+		mc.fontRenderer.drawString(TextFormatting.BOLD + task.scoreDisp, -tw1/2, -12, getTextColor(), false);
 		int score = ScoreboardBQ.getScore(QuestingAPI.getQuestingUUID(mc.player), task.scoreName);
 		DecimalFormat df = new DecimalFormat("0.##");
 		String value = df.format(score/task.conversion) + task.suffix;
@@ -53,8 +53,8 @@ public class GuiTaskScoreboard extends GuiElement implements IGuiEmbedded
 			txt = TextFormatting.RED + txt;
 		}
 		
-		int tw2 = mc.fontRendererObj.getStringWidth(txt);
-		mc.fontRendererObj.drawString(txt, -tw2/2, 1, getTextColor(), false);
+		int tw2 = mc.fontRenderer.getStringWidth(txt);
+		mc.fontRenderer.drawString(txt, -tw2/2, 1, getTextColor(), false);
 		GlStateManager.popMatrix();
 	}
 

@@ -46,8 +46,8 @@ public class GuiRewardScoreboard extends GuiElement implements IGuiEmbedded
 		
 		GlStateManager.pushMatrix();
 		GlStateManager.scale(1.5F, 1.5F, 1F);
-		mc.fontRendererObj.drawString(txt1, (int)((posX + sizeX/2 - mc.fontRendererObj.getStringWidth(txt1)/1.5F)/1.5F), (int)((posY + sizeY/2 - 16)/1.5F), getTextColor(), false);
-		mc.fontRendererObj.drawString(txt2, (int)((posX + sizeX/2 - mc.fontRendererObj.getStringWidth(txt2)/1.5F)/1.5F), (int)((posY + sizeY/2)/1.5F), getTextColor(), false);
+		mc.fontRenderer.drawString(txt1, (int)((posX + sizeX/2 - mc.fontRenderer.getStringWidth(txt1)/1.5F)/1.5F), (int)((posY + sizeY/2 - 16)/1.5F), getTextColor(), false);
+		mc.fontRenderer.drawString(txt2, (int)((posX + sizeX/2 - mc.fontRenderer.getStringWidth(txt2)/1.5F)/1.5F), (int)((posY + sizeY/2)/1.5F), getTextColor(), false);
 		GlStateManager.popMatrix();
 	}
 

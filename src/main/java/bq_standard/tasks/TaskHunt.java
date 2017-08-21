@@ -100,7 +100,7 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	
 	public void onKilledByPlayer(IQuest quest, EntityLivingBase entity, DamageSource source)
 	{
-		EntityPlayer player = (EntityPlayer)source.getEntity();
+		EntityPlayer player = (EntityPlayer)source.getTrueSource();
 		
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		

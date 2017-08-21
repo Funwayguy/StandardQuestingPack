@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
@@ -50,7 +51,7 @@ public class GuiLootChest extends GuiScreen
 		this.drawTexturedModalRect(width/2 - cw/2, height/2, 0, 0, cw, ch);
 		
 		String txt = TextFormatting.BOLD + "" + TextFormatting.UNDERLINE + I18n.format(title);
-		mc.fontRendererObj.drawString(txt, width/2 - mc.fontRendererObj.getStringWidth(txt)/2, height/2 + ch + 8, Color.WHITE.getRGB(), false);
+		mc.fontRenderer.drawString(txt, width/2 - mc.fontRenderer.getStringWidth(txt)/2, height/2 + ch + 8, Color.WHITE.getRGB(), false);
 		
 		// Auto balance row size
 		int rowL = MathHelper.ceil(rewards.size()/8F);
@@ -89,7 +90,7 @@ public class GuiLootChest extends GuiScreen
 		
 		if(ttStack != null)
 		{
-			this.drawHoveringText(ttStack.getBaseStack().getTooltip(mc.player, mc.gameSettings.advancedItemTooltips), mx, my, fontRendererObj);
+			this.drawHoveringText(ttStack.getBaseStack().getTooltip(mc.player, mc.gameSettings.advancedItemTooltips? ITooltipFlag.TooltipFlags.ADVANCED : ITooltipFlag.TooltipFlags.NORMAL), mx, my, fontRenderer);
 		}
 		
 		// TODO: Finish rewards renderer then finish reward registry/editor/importer

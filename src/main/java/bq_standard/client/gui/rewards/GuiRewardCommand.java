@@ -46,8 +46,8 @@ public class GuiRewardCommand extends GuiElement implements IGuiEmbedded
 		GlStateManager.popMatrix();
 		
 		GlStateManager.color(1F, 1F, 1F, 1F);
-		mc.fontRendererObj.drawString(txt1, posX + 40, posY + sizeY/2 - 16, getTextColor());
-		mc.fontRendererObj.drawString(mc.fontRendererObj.trimStringToWidth(txt2, sizeX - (32 + 8)), posX + 40, posY + sizeY/2, getTextColor());
+		mc.fontRenderer.drawString(txt1, posX + 40, posY + sizeY/2 - 16, getTextColor());
+		mc.fontRenderer.drawString(mc.fontRenderer.trimStringToWidth(txt2, sizeX - (32 + 8)), posX + 40, posY + sizeY/2, getTextColor());
 	}
 
 	@Override

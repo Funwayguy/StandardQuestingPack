@@ -29,10 +29,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-public class TaskXP implements ITask, IProgression<Integer>, ITickableTask
+public class TaskXP implements ITask, IProgression<Long>, ITickableTask
 {
 	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
-	public HashMap<UUID, Integer> userProgress = new HashMap<UUID, Integer>();
+	public final HashMap<UUID, Long> userProgress = new HashMap<UUID, Long>();
 	public boolean levels = true;
 	public int amount = 30;
 	public boolean consume = true;
@@ -74,8 +74,8 @@ public class TaskXP implements ITask, IProgression<Integer>, ITickableTask
 				setUserProgress(playerID, XPHelper.getPlayerXP(player));
 			}
 			
-			int rawXP = levels? XPHelper.getLevelXP(amount) : amount;
-			int totalXP = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
+			long rawXP = levels? XPHelper.getLevelXP(amount) : amount;
+			long totalXP = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 			if(totalXP >= rawXP)
 			{
 				setComplete(playerID);
@@ -93,23 +93,23 @@ public class TaskXP implements ITask, IProgression<Integer>, ITickableTask
 			return;
 		}
 		
-		int progress = getUsersProgress(playerID);
-		int rawXP = levels? XPHelper.getLevelXP(amount) : amount;
-		int plrXP = XPHelper.getPlayerXP(player);
-		int remaining = rawXP - progress;
-		int cost = Math.min(remaining, plrXP);
+		long progress = getUsersProgress(playerID);
+		long rawXP = levels? XPHelper.getLevelXP(amount) : amount;
+		long plrXP = XPHelper.getPlayerXP(player);
+		long remaining = rawXP - progress;
+		long cost = Math.min(remaining, plrXP);
 		
 		if(consume)
 		{
 			progress += cost;
 			setUserProgress(playerID, progress);
-			XPHelper.AddXP(player, -cost);
+			XPHelper.addXP(player, -cost);
 		} else
 		{
 			setUserProgress(playerID, plrXP);
 		}
 		
-		int totalXP = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
+		long totalXP = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		if(totalXP >= rawXP)
 		{
 			setComplete(playerID);
@@ -175,7 +175,7 @@ public class TaskXP implements ITask, IProgression<Integer>, ITickableTask
 			}
 		}
 		
-		userProgress = new HashMap<UUID,Integer>();
+		userProgress.clear();
 		for(JsonElement entry : JsonHelper.GetArray(json, "userProgress"))
 		{
 			if(entry == null || !entry.isJsonObject())
@@ -193,7 +193,7 @@ public class TaskXP implements ITask, IProgression<Integer>, ITickableTask
 				continue;
 			}
 			
-			userProgress.put(uuid, JsonHelper.GetNumber(entry.getAsJsonObject(), "value", 0).intValue());
+			userProgress.put(uuid, JsonHelper.GetNumber(entry.getAsJsonObject(), "value", 0).longValue());
 		}
 	}
 	
@@ -207,7 +207,7 @@ public class TaskXP implements ITask, IProgression<Integer>, ITickableTask
 		json.add("completeUsers", jArray);
 		
 		JsonArray progArray = new JsonArray();
-		for(Entry<UUID,Integer> entry : userProgress.entrySet())
+		for(Entry<UUID,Long> entry : userProgress.entrySet())
 		{
 			JsonObject pJson = new JsonObject();
 			pJson.addProperty("uuid", entry.getKey().toString());
@@ -236,7 +236,7 @@ public class TaskXP implements ITask, IProgression<Integer>, ITickableTask
 	@Override
 	public float getParticipation(UUID uuid)
 	{
-		int rawXP = !levels? amount : XPHelper.getLevelXP(amount);
+		long rawXP = !levels? amount : XPHelper.getLevelXP(amount);
 		
 		if(rawXP <= 0)
 		{
@@ -259,28 +259,28 @@ public class TaskXP implements ITask, IProgression<Integer>, ITickableTask
 	}
 	
 	@Override
-	public void setUserProgress(UUID uuid, Integer progress)
+	public void setUserProgress(UUID uuid, Long progress)
 	{
 		userProgress.put(uuid, progress);
 	}
 	
 	@Override
-	public Integer getUsersProgress(UUID... users)
+	public Long getUsersProgress(UUID... users)
 	{
-		int i = 0;
+		long i = 0;
 		
 		for(UUID uuid : users)
 		{
-			Integer n = userProgress.get(uuid);
+			Long n = userProgress.get(uuid);
 			i += n == null? 0 : n;
 		}
 		
 		return i;
 	}
 
-	public Integer getPartyProgress(UUID uuid)
+	public Long getPartyProgress(UUID uuid)
 	{
-		int total = 0;
+		long total = 0;
 		
 		IParty party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getUserParty(uuid);
 		
@@ -304,11 +304,11 @@ public class TaskXP implements ITask, IProgression<Integer>, ITickableTask
 	}
 	
 	@Override
-	public Integer getGlobalProgress()
+	public Long getGlobalProgress()
 	{
-		int total = 0;
+		long total = 0;
 		
-		for(Integer i : userProgress.values())
+		for(Long i : userProgress.values())
 		{
 			total += i == null? 0 : 1;
 		}

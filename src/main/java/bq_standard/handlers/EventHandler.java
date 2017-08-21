@@ -33,7 +33,7 @@ public class EventHandler
 		
 		if(event.craftMatrix instanceof InventoryCrafting)
 		{
-			actStack = CraftingManager.getInstance().findMatchingRecipe((InventoryCrafting)event.craftMatrix, event.player.world);
+			actStack = CraftingManager.findMatchingResult((InventoryCrafting)event.craftMatrix, event.player.world);
 		}
 		
 		for(Entry<TaskCrafting,IQuest> entry : QuestCache.INSTANCE.getActiveTasks(QuestingAPI.getQuestingUUID(event.player), TaskCrafting.class).entrySet())
@@ -59,12 +59,12 @@ public class EventHandler
 	@SubscribeEvent
 	public void onEntityKilled(LivingDeathEvent event)
 	{
-		if(event.getSource() == null || !(event.getSource().getEntity() instanceof EntityPlayer) || event.getSource().getEntity().world.isRemote)
+		if(event.getSource() == null || !(event.getSource().getTrueSource() instanceof EntityPlayer) || event.getSource().getTrueSource().world.isRemote)
 		{
 			return;
 		}
 		
-		EntityPlayer player = (EntityPlayer)event.getSource().getEntity();
+		EntityPlayer player = (EntityPlayer)event.getSource().getTrueSource();
 		
 		for(Entry<TaskHunt,IQuest> entry : QuestCache.INSTANCE.getActiveTasks(QuestingAPI.getQuestingUUID(player), TaskHunt.class).entrySet())
 		{

@@ -50,29 +50,29 @@ public class GuiTaskLocation extends GuiElement implements IGuiEmbedded
 		// Text offset
 		int i = sizeY/2 - radius;
 		
-		mc.fontRendererObj.drawString(task.name, posX, posY + i, getTextColor(), false);
+		mc.fontRenderer.drawString(task.name, posX, posY + i, getTextColor(), false);
 		i += 12;
 		
 		if(!task.hideInfo)
 		{
 			if(task.range >= 0)
 			{
-				mc.fontRendererObj.drawString(I18n.format("bq_standard.gui.location", "(" + task.x + ", " + task.y + ", " + task.z + ")"), posX, posY + i, getTextColor(), false);
+				mc.fontRenderer.drawString(I18n.format("bq_standard.gui.location", "(" + task.x + ", " + task.y + ", " + task.z + ")"), posX, posY + i, getTextColor(), false);
 				i += 12;
-				mc.fontRendererObj.drawString(I18n.format("bq_standard.gui.distance", (int)mc.player.getDistance(task.x, task.y, task.z) + "m"), posX, posY + i, getTextColor(), false);
+				mc.fontRenderer.drawString(I18n.format("bq_standard.gui.distance", (int)mc.player.getDistance(task.x, task.y, task.z) + "m"), posX, posY + i, getTextColor(), false);
 				i += 12;
 			}
 			
-			mc.fontRendererObj.drawString(I18n.format("bq_standard.gui.dimension", getDimName(task.dim)), posX, posY + i, getTextColor(), false);
+			mc.fontRenderer.drawString(I18n.format("bq_standard.gui.dimension", getDimName(task.dim)), posX, posY + i, getTextColor(), false);
 			i += 12;
 		}
 		
 		if(task.isComplete(QuestingAPI.getQuestingUUID(mc.player)))
 		{
-			mc.fontRendererObj.drawString(I18n.format("bq_standard.gui.found"), posX, posY + i, Color.GREEN.getRGB(), false);
+			mc.fontRenderer.drawString(I18n.format("bq_standard.gui.found"), posX, posY + i, Color.GREEN.getRGB(), false);
 		} else
 		{
-			mc.fontRendererObj.drawString(TextFormatting.BOLD + I18n.format("bq_standard.gui.undiscovered"), posX, posY + i, Color.RED.getRGB(), true);
+			mc.fontRenderer.drawString(TextFormatting.BOLD + I18n.format("bq_standard.gui.undiscovered"), posX, posY + i, Color.RED.getRGB(), true);
 		}
 		
 		Gui.drawRect(cx - radius, cy - radius, cx + radius, cy + radius, Color.BLACK.getRGB());
@@ -80,16 +80,16 @@ public class GuiTaskLocation extends GuiElement implements IGuiEmbedded
 		RenderUtils.DrawLine(cx - radius, cy - radius, cx - radius, cy + radius, 4, Color.WHITE.getRGB());
 		RenderUtils.DrawLine(cx + radius, cy + radius, cx + radius, cy - radius, 4, Color.WHITE.getRGB());
 		RenderUtils.DrawLine(cx + radius, cy + radius, cx - radius, cy + radius, 4, Color.WHITE.getRGB());
-		mc.fontRendererObj.drawString(TextFormatting.BOLD + "N", cx - 4, cy - radius - 9, getTextColor());
-		mc.fontRendererObj.drawString(TextFormatting.BOLD + "S", cx - 4, cy + radius + 2, getTextColor());
-		mc.fontRendererObj.drawString(TextFormatting.BOLD + "E", cx + radius + 2, cy - 4, getTextColor());
-		mc.fontRendererObj.drawString(TextFormatting.BOLD + "W", cx - radius - 8, cy - 4, getTextColor());
+		mc.fontRenderer.drawString(TextFormatting.BOLD + "N", cx - 4, cy - radius - 9, getTextColor());
+		mc.fontRenderer.drawString(TextFormatting.BOLD + "S", cx - 4, cy + radius + 2, getTextColor());
+		mc.fontRenderer.drawString(TextFormatting.BOLD + "E", cx + radius + 2, cy - 4, getTextColor());
+		mc.fontRenderer.drawString(TextFormatting.BOLD + "W", cx - radius - 8, cy - 4, getTextColor());
 		
 		if(task.hideInfo || task.range < 0 || mc.player.dimension != task.dim)
 		{
 			GlStateManager.pushMatrix();
 			GlStateManager.scale(2F, 2F, 2F);
-			mc.fontRendererObj.drawString(TextFormatting.BOLD + "?", cx/2 - 4, cy/2 - 4 , Color.RED.getRGB());
+			mc.fontRenderer.drawString(TextFormatting.BOLD + "?", cx/2 - 4, cy/2 - 4 , Color.RED.getRGB());
 			GlStateManager.popMatrix();
 		} else
 		{

@@ -75,7 +75,7 @@ public class GuiTaskMeeting extends GuiElement implements IGuiEmbedded
 		
 		String tnm = !task.ignoreNBT && target != null? target.getName() : task.idName;
 		String txt = I18n.format("bq_standard.gui.meet", tnm) + " x" + task.amount;
-		mc.fontRendererObj.drawString(txt, posX + sizeX/2 - mc.fontRendererObj.getStringWidth(txt)/2, posY, getTextColor());
+		mc.fontRenderer.drawString(txt, posX + sizeX/2 - mc.fontRenderer.getStringWidth(txt)/2, posY, getTextColor());
 	}
 
 	@Override

@@ -57,10 +57,10 @@ public class GuiLootGroupEditor extends GuiScreenThemed implements IVolatileScre
 		int btnWidth = sizeX/2 - 16;
 		int sx = sizeX - 32;
 		
-		lineTitle = new GuiTextField(0, mc.fontRendererObj, guiLeft + sizeX/2 + 9, height/2 - 59, btnWidth - 18, 18);
+		lineTitle = new GuiTextField(0, mc.fontRenderer, guiLeft + sizeX/2 + 9, height/2 - 59, btnWidth - 18, 18);
 		lineTitle.setMaxStringLength(Integer.MAX_VALUE);
 		
-		lineWeight = new GuiNumberField(mc.fontRendererObj, guiLeft + sizeX/2 + 9, height/2 - 19, btnWidth/2 - 10, 18);
+		lineWeight = new GuiNumberField(mc.fontRenderer, guiLeft + sizeX/2 + 9, height/2 - 19, btnWidth/2 - 10, 18);
 		lineWeight.setMaxStringLength(Integer.MAX_VALUE);
 		 
 		this.buttonList.add(new GuiButtonThemed(1, guiLeft + 16 + sx/4 - 50, guiTop + sizeY - 48, 100, 20, I18n.format("betterquesting.btn.new")));
@@ -110,12 +110,12 @@ public class GuiLootGroupEditor extends GuiScreenThemed implements IVolatileScre
 		
 		RenderUtils.DrawLine(width/2, guiTop + 32, width/2, guiTop + sizeY - 48, 2F, this.getTextColor());
 		
-		mc.fontRendererObj.drawString(I18n.format("betterquesting.gui.name"), guiLeft + sizeX/2 + 8, guiTop + sizeY/2 - 72, this.getTextColor(), false);
-		mc.fontRendererObj.drawString(I18n.format("bq_standard.gui.weight"), guiLeft + sizeX/2 + 8, guiTop + sizeY/2 - 32, this.getTextColor(), false);
+		mc.fontRenderer.drawString(I18n.format("betterquesting.gui.name"), guiLeft + sizeX/2 + 8, guiTop + sizeY/2 - 72, this.getTextColor(), false);
+		mc.fontRenderer.drawString(I18n.format("bq_standard.gui.weight"), guiLeft + sizeX/2 + 8, guiTop + sizeY/2 - 32, this.getTextColor(), false);
 		
 		if(selected != null)
 		{
-			mc.fontRendererObj.drawString("" + new DecimalFormat("0.##").format((float)selected.weight/(float)LootRegistry.getTotalWeight() * 100F) + "%", guiLeft + 16 + (sizeX - 32)/4*3 + 8, guiTop + sizeY/2 - 14, this.getTextColor(), false);
+			mc.fontRenderer.drawString("" + new DecimalFormat("0.##").format((float)selected.weight/(float)LootRegistry.getTotalWeight() * 100F) + "%", guiLeft + 16 + (sizeX - 32)/4*3 + 8, guiTop + sizeY/2 - 14, this.getTextColor(), false);
 		}
 		
 		lineTitle.drawTextBox();
