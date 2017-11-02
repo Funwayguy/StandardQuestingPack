@@ -19,12 +19,9 @@ import betterquesting.api.client.gui.controls.GuiNumberField;
 import betterquesting.api.client.gui.misc.IVolatileScreen;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.misc.ICallback;
-import betterquesting.api.utils.JsonHelper;
-import betterquesting.api.utils.NBTConverter;
 import betterquesting.api.utils.RenderUtils;
 import bq_standard.client.gui.editors.callback.JsonSaveLoadCallback;
 import bq_standard.tasks.TaskHunt;
-import com.google.gson.JsonObject;
 
 public class GuiHuntEditor extends GuiScreenThemed implements IVolatileScreen, ICallback<Entity>
 {
@@ -32,15 +29,15 @@ public class GuiHuntEditor extends GuiScreenThemed implements IVolatileScreen, I
 	GuiNumberField numField;
 	int amount = 1;
 	String idName = "Zombie";
-	private final JsonObject data;
+	private final NBTTagCompound data;
 	Entity entity;
 	
 	public GuiHuntEditor(GuiScreen parent, TaskHunt task)
 	{
 		super(parent, "bq_standard.title.edit_hunt");
 		this.task = task;
-		this.data = task.writeToJson(new JsonObject(), EnumSaveType.CONFIG);
-		idName = JsonHelper.GetString(data, "target", "Zombie");
+		this.data = task.writeToNBT(new NBTTagCompound(), EnumSaveType.CONFIG);
+		idName = data.getString("target");
 	}
 	
 	@Override
@@ -48,28 +45,20 @@ public class GuiHuntEditor extends GuiScreenThemed implements IVolatileScreen, I
 	{
 		super.initGui();
 		
-		/*if(lastEdit != null)
-		{
-			data.addProperty("target", JsonHelper.GetString(lastEdit, "id:8", "Zombie"));
-			data.add("targetNBT", lastEdit);
-			
-			lastEdit = null;
-		}*/
-		
-		entity = EntityList.createEntityByName(JsonHelper.GetString(data, "target", "Zombie"), mc.theWorld);
+		entity = EntityList.createEntityByName(data.getString("target"), mc.theWorld);
 		
 		if(entity == null)
 		{
 			entity = new EntityZombie(mc.theWorld);
-			data.addProperty("target", "Zombie");
-			data.add("targetNBT", new JsonObject());
+			data.setString("target", "Zombie");
+			data.setTag("targetNBT", new NBTTagCompound());
 		} else
 		{
-			entity.readFromNBT(NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(data, "targetNBT"), new NBTTagCompound(), true));
+			entity.readFromNBT(data.getCompoundTag("targetNBT"));
 		}
 		
 		numField = new GuiNumberField(mc.fontRendererObj, guiLeft + sizeX/2 + 1, guiTop + sizeY/2 + 1, 98, 18);
-		numField.setText("" + JsonHelper.GetNumber(data, "required", 1).intValue());
+		numField.setText("" + data.getInteger("required"));
 		this.buttonList.add(new GuiButtonThemed(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 20, 200, 20, I18n.format("bq_standard.btn.select_mob")));
 		this.buttonList.add(new GuiButtonThemed(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 40, 200, 20, I18n.format("betterquesting.btn.advanced")));
 	}
@@ -120,7 +109,7 @@ public class GuiHuntEditor extends GuiScreenThemed implements IVolatileScreen, I
 		
 		if(button.id == 0)
 		{
-			task.readFromJson(data, EnumSaveType.CONFIG);
+			task.readFromNBT(data, EnumSaveType.CONFIG);
 		} else if(button.id == 1)
 		{
 			if(entity != null)
@@ -130,7 +119,7 @@ public class GuiHuntEditor extends GuiScreenThemed implements IVolatileScreen, I
 		} else if(button.id == 2)
 		{
 			//mc.displayGuiScreen(new GuiJsonObject(this, data, null));
-			QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(this, new JsonSaveLoadCallback<JsonObject>(task), data, task.getDocumentation());
+			QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(this, new JsonSaveLoadCallback<NBTTagCompound>(task), data, task.getDocumentation());
 		}
 	}
 	
@@ -154,7 +143,7 @@ public class GuiHuntEditor extends GuiScreenThemed implements IVolatileScreen, I
         super.keyTyped(character, keyCode);
         
         numField.textboxKeyTyped(character, keyCode);
-		data.addProperty("required", numField.getNumber().intValue());
+		data.setInteger("required", numField.getNumber().intValue());
     }
 
 	@Override
@@ -168,9 +157,9 @@ public class GuiHuntEditor extends GuiScreenThemed implements IVolatileScreen, I
 			this.entity = value;
 		}
 		
-		data.addProperty("target", EntityList.getEntityString(entity));
+		data.setString("target", EntityList.getEntityString(entity));
 		NBTTagCompound tTag = new NBTTagCompound();
 		entity.writeToNBTOptional(tTag);
-		data.add("targetNBT", NBTConverter.NBTtoJSON_Compound(tTag, new JsonObject(), true));
+		data.setTag("targetNBT", tTag);
 	}
 }

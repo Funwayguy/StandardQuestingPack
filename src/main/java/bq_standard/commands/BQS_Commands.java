@@ -6,10 +6,12 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import betterquesting.api.utils.JsonHelper;
+import betterquesting.api.utils.NBTConverter;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootRegistry;
 import com.google.gson.JsonObject;
@@ -41,18 +43,18 @@ public class BQS_Commands extends CommandBase
 		{
 			if(args[1].equalsIgnoreCase("save"))
 			{
-				JsonObject jsonQ = new JsonObject();
+				NBTTagCompound jsonQ = new NBTTagCompound();
 				LootRegistry.writeToJson(jsonQ);
-				JsonHelper.WriteToFile(new File(server.getFile("config/betterquesting/"), "DefaultLoot.json"), jsonQ);
+				JsonHelper.WriteToFile(new File(server.getFile("config/betterquesting/"), "DefaultLoot.json"), NBTConverter.NBTtoJSON_Compound(jsonQ, new JsonObject(), true));
 				sender.addChatMessage(new TextComponentString("Loot database set as global default"));
 			} else if(args[1].equalsIgnoreCase("load"))
 			{
 		    	File f1 = new File("config/betterquesting/DefaultLoot.json");
-				JsonObject j1 = new JsonObject();
+				NBTTagCompound j1 = new NBTTagCompound();
 				
 				if(f1.exists())
 				{
-					j1 = JsonHelper.ReadFromFile(f1);
+					j1 = NBTConverter.JSONtoNBT_Object(JsonHelper.ReadFromFile(f1), new NBTTagCompound(), true);
 					LootRegistry.readFromJson(j1);
 					LootRegistry.updateClients();
 					sender.addChatMessage(new TextComponentString("Reloaded default loot database"));

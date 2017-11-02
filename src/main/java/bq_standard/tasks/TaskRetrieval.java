@@ -7,6 +7,11 @@ import java.util.UUID;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -29,10 +34,6 @@ import betterquesting.api.utils.JsonHelper;
 import bq_standard.client.gui.tasks.GuiTaskRetrieval;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskRetrieval;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 
 public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITickableTask
 {
@@ -71,10 +72,6 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITi
 			completeUsers.add(uuid);
 		}
 	}
-	
-	@Override
-	@Deprecated
-	public void update(EntityPlayer player, IQuest quest){}
 	
 	@Override
 	public void updateTask(EntityPlayer player, IQuest quest)
@@ -196,7 +193,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITi
 	}
 
 	@Override
-	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
@@ -206,24 +203,24 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITi
 			return json;
 		}
 		
-		json.addProperty("partialMatch", partialMatch);
-		json.addProperty("ignoreNBT", ignoreNBT);
-		json.addProperty("consume", consume);
-		json.addProperty("groupDetect", !idvDetect);
-		json.addProperty("autoConsume", autoConsume);
+		json.setBoolean("partialMatch", partialMatch);
+		json.setBoolean("ignoreNBT", ignoreNBT);
+		json.setBoolean("consume", consume);
+		json.setBoolean("groupDetect", !idvDetect);
+		json.setBoolean("autoConsume", autoConsume);
 		
-		JsonArray itemArray = new JsonArray();
+		NBTTagList itemArray = new NBTTagList();
 		for(BigItemStack stack : this.requiredItems)
 		{
-			itemArray.add(JsonHelper.ItemStackToJson(stack, new JsonObject()));
+			itemArray.appendTag(JsonHelper.ItemStackToJson(stack, new NBTTagCompound()));
 		}
-		json.add("requiredItems", itemArray);
+		json.setTag("requiredItems", itemArray);
 		
 		return json;
 	}
 
 	@Override
-	public void readFromJson(JsonObject json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
@@ -234,21 +231,24 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITi
 			return;
 		}
 		
-		partialMatch = JsonHelper.GetBoolean(json, "partialMatch", partialMatch);
-		ignoreNBT = JsonHelper.GetBoolean(json, "ignoreNBT", ignoreNBT);
-		consume = JsonHelper.GetBoolean(json, "consume", true);
-		idvDetect = !JsonHelper.GetBoolean(json, "groupDetect", true);
-		autoConsume = JsonHelper.GetBoolean(json, "autoConsume", false);
+		partialMatch = json.hasKey("partialMatch", 1) ? json.getBoolean("partialMatch") : true;
+		ignoreNBT = json.getBoolean("ignoreNBT");
+		consume = json.hasKey("consume", 1) ? json.getBoolean("consume") : true;
+		idvDetect = json.hasKey("groupDetect", 1) ? json.getBoolean("groupDetect") : true;
+		autoConsume = json.getBoolean("autoConsume");
 		
 		requiredItems = new ArrayList<BigItemStack>();
-		for(JsonElement entry : JsonHelper.GetArray(json, "requiredItems"))
+		NBTTagList iList = json.getTagList("requiredItems", 10);
+		for(int i = 0; i < iList.tagCount(); i++)
 		{
-			if(entry == null || !entry.isJsonObject())
+			NBTBase entry = iList.get(i);
+			
+			if(entry == null || entry.getId() != 10)
 			{
 				continue;
 			}
 			
-			BigItemStack item = JsonHelper.JsonToItemStack(entry.getAsJsonObject());
+			BigItemStack item = JsonHelper.JsonToItemStack((NBTTagCompound)entry);
 			
 			if(item != null)
 			{
@@ -260,19 +260,22 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITi
 		}
 	}
 	
-	public void readProgressFromJson(JsonObject json)
+	public void readProgressFromJson(NBTTagCompound json)
 	{
 		completeUsers = new ArrayList<UUID>();
-		for(JsonElement entry : JsonHelper.GetArray(json, "completeUsers"))
+		NBTTagList cList = json.getTagList("completeUsers", 8);
+		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			if(entry == null || !entry.isJsonPrimitive())
+			NBTBase entry = cList.get(i);
+			
+			if(entry == null || entry.getId() != 8)
 			{
 				continue;
 			}
 			
 			try
 			{
-				completeUsers.add(UUID.fromString(entry.getAsString()));
+				completeUsers.add(UUID.fromString(((NBTTagString)entry).getString()));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
@@ -280,17 +283,21 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITi
 		}
 		
 		userProgress = new HashMap<UUID,int[]>();
-		for(JsonElement entry : JsonHelper.GetArray(json, "userProgress"))
+		NBTTagList pList = json.getTagList("userProgress", 8);
+		for(int n = 0; n < pList.tagCount(); n++)
 		{
-			if(entry == null || !entry.isJsonObject())
+			NBTBase entry = pList.get(n);
+			
+			if(entry == null || entry.getId() != 10)
 			{
 				continue;
 			}
 			
+			NBTTagCompound pTag = (NBTTagCompound)entry;
 			UUID uuid;
 			try
 			{
-				uuid = UUID.fromString(JsonHelper.GetString(entry.getAsJsonObject(), "uuid", ""));
+				uuid = UUID.fromString(pTag.getString("uuid"));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load user progress for task", e);
@@ -298,12 +305,12 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITi
 			}
 			
 			int[] data = new int[requiredItems.size()];
-			JsonArray dJson = JsonHelper.GetArray(entry.getAsJsonObject(), "data");
-			for(int i = 0; i < data.length && i < dJson.size(); i++)
+			NBTTagList dJson = pTag.getTagList("data", 3);
+			for(int i = 0; i < data.length && i < dJson.tagCount(); i++)
 			{
 				try
 				{
-					data[i] = dJson.get(i).getAsInt();
+					data[i] = dJson.getIntAt(i);
 				} catch(Exception e)
 				{
 					BQ_Standard.logger.log(Level.ERROR, "Incorrect task progress format", e);
@@ -314,29 +321,29 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITi
 		}
 	}
 	
-	public JsonObject writeProgressToJson(JsonObject json)
+	public NBTTagCompound writeProgressToJson(NBTTagCompound json)
 	{
-		JsonArray jArray = new JsonArray();
+		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
 		{
-			jArray.add(new JsonPrimitive(uuid.toString()));
+			jArray.appendTag(new NBTTagString(uuid.toString()));
 		}
-		json.add("completeUsers", jArray);
+		json.setTag("completeUsers", jArray);
 		
-		JsonArray progArray = new JsonArray();
+		NBTTagList progArray = new NBTTagList();
 		for(Entry<UUID,int[]> entry : userProgress.entrySet())
 		{
-			JsonObject pJson = new JsonObject();
-			pJson.addProperty("uuid", entry.getKey().toString());
-			JsonArray pArray = new JsonArray();
+			NBTTagCompound pJson = new NBTTagCompound();
+			pJson.setString("uuid", entry.getKey().toString());
+			NBTTagList pArray = new NBTTagList();
 			for(int i : entry.getValue())
 			{
-				pArray.add(new JsonPrimitive(i));
+				pArray.appendTag(new NBTTagInt(i));
 			}
-			pJson.add("data", pArray);
-			progArray.add(pJson);
+			pJson.setTag("data", pArray);
+			progArray.appendTag(pJson);
 		}
-		json.add("userProgress", progArray);
+		json.setTag("userProgress", progArray);
 		
 		return json;
 	}

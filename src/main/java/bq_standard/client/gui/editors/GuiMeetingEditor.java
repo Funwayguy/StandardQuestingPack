@@ -17,26 +17,23 @@ import betterquesting.api.client.gui.controls.GuiButtonThemed;
 import betterquesting.api.client.gui.misc.IVolatileScreen;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.misc.ICallback;
-import betterquesting.api.utils.JsonHelper;
-import betterquesting.api.utils.NBTConverter;
 import betterquesting.api.utils.RenderUtils;
 import bq_standard.client.gui.editors.callback.JsonSaveLoadCallback;
 import bq_standard.tasks.TaskMeeting;
-import com.google.gson.JsonObject;
 
 public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen, ICallback<Entity>
 {
 	private final TaskMeeting task;
 	String idName = "Villager";
-	JsonObject data;
+	NBTTagCompound data;
 	Entity entity;
 	
 	public GuiMeetingEditor(GuiScreen parent, TaskMeeting task)
 	{
 		super(parent, "bq_standard.title.edit_meeting");
 		this.task = task;
-		this.data = task.writeToJson(new JsonObject(), EnumSaveType.CONFIG);
-		idName = JsonHelper.GetString(data, "target", "Villager");
+		this.data = task.writeToNBT(new NBTTagCompound(), EnumSaveType.CONFIG);
+		idName = data.getString("target");
 	}
 	
 	@Override
@@ -52,16 +49,16 @@ public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen
 			lastEdit = null;
 		}*/
 		
-		entity = EntityList.createEntityByName(JsonHelper.GetString(data, "target", "Villager"), mc.theWorld);
+		entity = EntityList.createEntityByName(data.getString("target"), mc.theWorld);
 		
 		if(entity == null)
 		{
 			entity = new EntityVillager(mc.theWorld);
-			data.addProperty("target", "Villager");
-			data.add("targetNBT", new JsonObject());
+			data.setString("target", "Villager");
+			data.setTag("targetNBT", new NBTTagCompound());
 		} else
 		{
-			entity.readFromNBT(NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(data, "targetNBT"), new NBTTagCompound(), true));
+			entity.readFromNBT(data.getCompoundTag("targetNBT"));
 		}
 		
 		this.buttonList.add(new GuiButtonThemed(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 20, 200, 20, I18n.format("bq_standard.btn.select_mob")));
@@ -110,22 +107,16 @@ public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen
 		
 		if(button.id == 0)
 		{
-			task.readFromJson(data, EnumSaveType.CONFIG);
+			task.readFromNBT(data, EnumSaveType.CONFIG);
 		} else if(button.id == 1)
 		{
 			if(entity != null)
 			{
-				/*NBTTagCompound eTags = new NBTTagCompound();
-				entity.writeToNBTOptional(eTags);
-				lastEdit = NBTConverter.NBTtoJSON_Compound(eTags, new JsonObject(), true);*/
-				
-				//mc.displayGuiScreen(new GuiJsonEntitySelection(this, this, entity));
 				QuestingAPI.getAPI(ApiReference.GUI_HELPER).openEntityEditor(this, this, entity);
 			}
 		} else if(button.id == 2)
 		{
-			//mc.displayGuiScreen(new GuiJsonObject(this, data, null));
-			QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(this, new JsonSaveLoadCallback<JsonObject>(task), data, task.getDocumentation());
+			QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(this, new JsonSaveLoadCallback<NBTTagCompound>(task), data, task.getDocumentation());
 		}
 	}
 
@@ -140,9 +131,9 @@ public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen
 			this.entity = value;
 		}
 		
-		data.addProperty("target", EntityList.getEntityString(entity));
+		data.setString("target", EntityList.getEntityString(entity));
 		NBTTagCompound tTag = new NBTTagCompound();
 		entity.writeToNBTOptional(tTag);
-		data.add("targetNBT", NBTConverter.NBTtoJSON_Compound(tTag, new JsonObject()));
+		data.setTag("targetNBT", tTag);
 	}
 }

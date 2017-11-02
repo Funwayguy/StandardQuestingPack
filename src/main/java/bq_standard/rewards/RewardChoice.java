@@ -6,6 +6,9 @@ import java.util.UUID;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -22,9 +25,6 @@ import bq_standard.NBTReplaceUtil;
 import bq_standard.client.gui.rewards.GuiRewardChoice;
 import bq_standard.core.BQ_Standard;
 import bq_standard.rewards.factory.FactoryRewardChoice;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 public class RewardChoice implements IReward
 {
@@ -120,17 +120,20 @@ public class RewardChoice implements IReward
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
 		choices = new ArrayList<BigItemStack>();
-		for(JsonElement entry : JsonHelper.GetArray(json, "choices"))
+		NBTTagList cList = json.getTagList("choices", 10);
+		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			if(entry == null || !entry.isJsonObject())
+			NBTBase entry = cList.get(i);
+			
+			if(entry == null || entry.getId() != 10)
 			{
 				continue;
 			}
 			
-			BigItemStack item = JsonHelper.JsonToItemStack(entry.getAsJsonObject());
+			BigItemStack item = JsonHelper.JsonToItemStack((NBTTagCompound)entry);
 			
 			if(item != null)
 			{
@@ -143,14 +146,14 @@ public class RewardChoice implements IReward
 	}
 
 	@Override
-	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
-		JsonArray rJson = new JsonArray();
+		NBTTagList rJson = new NBTTagList();
 		for(BigItemStack stack : choices)
 		{
-			rJson.add(JsonHelper.ItemStackToJson(stack, new JsonObject()));
+			rJson.appendTag(JsonHelper.ItemStackToJson(stack, new NBTTagCompound()));
 		}
-		json.add("choices", rJson);
+		json.setTag("choices", rJson);
 		return json;
 	}
 

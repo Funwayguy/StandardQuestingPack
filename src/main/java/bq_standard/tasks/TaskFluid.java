@@ -7,7 +7,11 @@ import java.util.UUID;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidStack;
@@ -29,14 +33,9 @@ import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api.utils.JsonHelper;
-import betterquesting.api.utils.NBTConverter;
 import bq_standard.client.gui.tasks.GuiTaskFluid;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskFluid;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 
 @SuppressWarnings("deprecation")
 public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int[]>, ITickableTask
@@ -73,10 +72,6 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 			completeUsers.add(uuid);
 		}
 	}
-	
-	@Override
-	@Deprecated
-	public void update(EntityPlayer player, IQuest quest){}
 	
 	@Override
 	public void updateTask(EntityPlayer player, IQuest quest)
@@ -235,7 +230,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 	}
 	
 	@Override
-	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
@@ -245,21 +240,21 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 			return json;
 		}
 		
-		json.addProperty("consume", consume);
-		json.addProperty("autoConsume", autoConsume);
+		json.setBoolean("consume", consume);
+		json.setBoolean("autoConsume", autoConsume);
 		
-		JsonArray itemArray = new JsonArray();
+		NBTTagList itemArray = new NBTTagList();
 		for(FluidStack stack : this.requiredFluids)
 		{
-			itemArray.add(NBTConverter.NBTtoJSON_Compound(stack.writeToNBT(new NBTTagCompound()), new JsonObject()));
+			itemArray.appendTag(stack.writeToNBT(new NBTTagCompound()));
 		}
-		json.add("requiredFluids", itemArray);
+		json.setTag("requiredFluids", itemArray);
 		
 		return json;
 	}
 
 	@Override
-	public void readFromJson(JsonObject json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
@@ -270,18 +265,21 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 			return;
 		}
 		
-		consume = JsonHelper.GetBoolean(json, "consume", true);
-		autoConsume = JsonHelper.GetBoolean(json, "autoConsume", false);
+		consume = json.getBoolean("consume");
+		autoConsume = json.getBoolean("autoConsume");
 		
 		requiredFluids = new ArrayList<FluidStack>();
-		for(JsonElement entry : JsonHelper.GetArray(json, "requiredFluids"))
+		NBTTagList fList = json.getTagList("requiredFluids", 10);
+		for(int i = 0; i < fList.tagCount(); i++)
 		{
-			if(entry == null || !entry.isJsonObject())
+			NBTBase entry = fList.get(i);
+			
+			if(entry == null || entry.getId() != 10)
 			{
 				continue;
 			}
 			
-			FluidStack fluid = JsonHelper.JsonToFluidStack(entry.getAsJsonObject());
+			FluidStack fluid = JsonHelper.JsonToFluidStack((NBTTagCompound)entry);
 			
 			if(fluid != null)
 			{
@@ -293,19 +291,22 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		}
 	}
 	
-	private void readProgressFromJson(JsonObject json)
+	private void readProgressFromJson(NBTTagCompound json)
 	{
 		completeUsers = new ArrayList<UUID>();
-		for(JsonElement entry : JsonHelper.GetArray(json, "completeUsers"))
+		NBTTagList cList = json.getTagList("completeUsers", 8);
+		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			if(entry == null || !entry.isJsonPrimitive())
+			NBTBase entry = cList.get(i);
+			
+			if(entry == null || entry.getId() != 8)
 			{
 				continue;
 			}
 			
 			try
 			{
-				completeUsers.add(UUID.fromString(entry.getAsString()));
+				completeUsers.add(UUID.fromString(((NBTTagString)entry).getString()));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
@@ -313,17 +314,21 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		}
 		
 		userProgress = new HashMap<UUID, int[]>();
-		for(JsonElement entry : JsonHelper.GetArray(json, "userProgress"))
+		NBTTagList pList = json.getTagList("userProgress", 10);
+		for(int n = 0; n < pList.tagCount(); n++)
 		{
-			if(entry == null || !entry.isJsonObject())
+			NBTBase entry = pList.get(n);
+			
+			if(entry == null || entry.getId() != 10)
 			{
 				continue;
 			}
 			
+			NBTTagCompound pTag = (NBTTagCompound)entry;
 			UUID uuid;
 			try
 			{
-				uuid = UUID.fromString(JsonHelper.GetString(entry.getAsJsonObject(), "uuid", ""));
+				uuid = UUID.fromString(pTag.getString("uuid"));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load user progress for task", e);
@@ -331,12 +336,12 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 			}
 			
 			int[] data = new int[requiredFluids.size()];
-			JsonArray dJson = JsonHelper.GetArray(entry.getAsJsonObject(), "data");
-			for(int i = 0; i < data.length && i < dJson.size(); i++)
+			NBTTagList dJson = pTag.getTagList("data", 3);
+			for(int i = 0; i < data.length && i < dJson.tagCount(); i++)
 			{
 				try
 				{
-					data[i] = dJson.get(i).getAsInt();
+					data[i] = dJson.getIntAt(i);
 				} catch(Exception e)
 				{
 					BQ_Standard.logger.log(Level.ERROR, "Incorrect task progress format", e);
@@ -347,29 +352,29 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		}
 	}
 	
-	private JsonObject writeProgressToJson(JsonObject json)
+	private NBTTagCompound writeProgressToJson(NBTTagCompound json)
 	{
-		JsonArray jArray = new JsonArray();
+		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
 		{
-			jArray.add(new JsonPrimitive(uuid.toString()));
+			jArray.appendTag(new NBTTagString(uuid.toString()));
 		}
-		json.add("completeUsers", jArray);
+		json.setTag("completeUsers", jArray);
 		
-		JsonArray progArray = new JsonArray();
+		NBTTagList progArray = new NBTTagList();
 		for(Entry<UUID,int[]> entry : userProgress.entrySet())
 		{
-			JsonObject pJson = new JsonObject();
-			pJson.addProperty("uuid", entry.getKey().toString());
-			JsonArray pArray = new JsonArray();
+			NBTTagCompound pJson = new NBTTagCompound();
+			pJson.setString("uuid", entry.getKey().toString());
+			NBTTagList pArray = new NBTTagList();
 			for(int i : entry.getValue())
 			{
-				pArray.add(new JsonPrimitive(i));
+				pArray.appendTag(new NBTTagInt(i));
 			}
-			pJson.add("data", pArray);
-			progArray.add(pJson);
+			pJson.setTag("data", pArray);
+			progArray.appendTag(pJson);
 		}
-		json.add("userProgress", progArray);
+		json.setTag("userProgress", progArray);
 		
 		return json;
 	}

@@ -8,11 +8,9 @@ import net.minecraft.util.text.TextFormatting;
 import org.apache.logging.log4j.Level;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.network.IPacketHandler;
-import betterquesting.api.utils.NBTConverter;
 import bq_standard.core.BQ_Standard;
 import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.loot.LootRegistry;
-import com.google.gson.JsonObject;
 
 public class PktHandlerLootDatabase implements IPacketHandler
 {
@@ -28,14 +26,14 @@ public class PktHandlerLootDatabase implements IPacketHandler
 		
 		BQ_Standard.logger.log(Level.INFO, "Player " + sender.getName() + " edited loot chests");
 		
-		LootRegistry.readFromJson(NBTConverter.NBTtoJSON_Compound(data.getCompoundTag("Database"), new JsonObject()));
+		LootRegistry.readFromJson(data.getCompoundTag("Database"));
 		LootRegistry.updateClients();
 	}
 	
 	@Override
 	public void handleClient(NBTTagCompound data)
 	{
-		LootRegistry.readFromJson(NBTConverter.NBTtoJSON_Compound(data.getCompoundTag("Database"), new JsonObject()));
+		LootRegistry.readFromJson(data.getCompoundTag("Database"));
 	}
 
 	@Override

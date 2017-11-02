@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.nbt.NBTTagCompound;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiScreenThemed;
@@ -12,16 +13,14 @@ import betterquesting.api.client.gui.controls.GuiButtonThemed;
 import betterquesting.api.client.gui.controls.GuiNumberField;
 import betterquesting.api.client.gui.misc.IVolatileScreen;
 import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.utils.JsonHelper;
 import bq_standard.client.gui.editors.callback.JsonSaveLoadCallback;
 import bq_standard.tasks.TaskScoreboard;
 import bq_standard.tasks.TaskScoreboard.ScoreOperation;
-import com.google.gson.JsonObject;
 
 public class GuiScoreEditor extends GuiScreenThemed implements IVolatileScreen
 {
 	private final TaskScoreboard task;
-	private final JsonObject data;
+	private final NBTTagCompound data;
 	
 	private GuiTextField txtField;
 	private GuiNumberField numField;
@@ -31,8 +30,8 @@ public class GuiScoreEditor extends GuiScreenThemed implements IVolatileScreen
 	{
 		super(parent, "bq_standard.title.edit_hunt");
 		this.task = task;
-		this.data = task.writeToJson(new JsonObject(), EnumSaveType.CONFIG);
-		operation = ScoreOperation.valueOf(JsonHelper.GetString(data, "operation", "MORE_OR_EQUAL").toUpperCase());
+		this.data = task.writeToNBT(new NBTTagCompound(), EnumSaveType.CONFIG);
+		operation = ScoreOperation.valueOf(data.hasKey("operation", 8) ? data.getString("operation") : "MORE_OR_EQUAL");
 		operation = operation != null? operation : ScoreOperation.MORE_OR_EQUAL;
 	}
 	
@@ -42,9 +41,9 @@ public class GuiScoreEditor extends GuiScreenThemed implements IVolatileScreen
 		super.initGui();
 		
 		txtField = new GuiTextField(0, mc.fontRendererObj, guiLeft + sizeX/2 - 99, guiTop + sizeY/2 - 19, 198, 18);
-		txtField.setText(JsonHelper.GetString(data, "scoreName", "Score"));
+		txtField.setText(data.getString("scoreName"));
 		numField = new GuiNumberField(mc.fontRendererObj, guiLeft + sizeX/2 + 1, guiTop + sizeY/2 + 1, 98, 18);
-		numField.setText("" + JsonHelper.GetNumber(data, "target", 1).intValue());
+		numField.setText("" + data.getInteger("target"));
 		this.buttonList.add(new GuiButtonThemed(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2, 100, 20, operation.GetText()));
 		this.buttonList.add(new GuiButtonThemed(buttonList.size(), guiLeft + sizeX/2 - 100, guiTop + sizeY/2 + 20, 200, 20, I18n.format("betterquesting.btn.advanced")));
 	}
@@ -66,17 +65,17 @@ public class GuiScoreEditor extends GuiScreenThemed implements IVolatileScreen
 		
 		if(button.id == 0)
 		{
-			task.readFromJson(data, EnumSaveType.CONFIG);
+			task.readFromNBT(data, EnumSaveType.CONFIG);
 		} else if(button.id == 1)
 		{
 			int i = operation.ordinal();
 			operation = ScoreOperation.values()[(i + 1)%ScoreOperation.values().length];
 			button.displayString = operation.GetText();
-			data.addProperty("operation", operation.name());
+			data.setString("operation", operation.name());
 		} else if(button.id == 2)
 		{
 			//mc.displayGuiScreen(new GuiJsonObject(this, data, null));
-			QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(this, new JsonSaveLoadCallback<JsonObject>(task), data, task.getDocumentation());
+			QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(this, new JsonSaveLoadCallback<NBTTagCompound>(task), data, task.getDocumentation());
 		}
 	}
 	
@@ -101,9 +100,9 @@ public class GuiScoreEditor extends GuiScreenThemed implements IVolatileScreen
         super.keyTyped(character, keyCode);
         
         numField.textboxKeyTyped(character, keyCode);
-		data.addProperty("target", numField.getNumber().intValue());
+		data.setInteger("target", numField.getNumber().intValue());
 		
 		txtField.textboxKeyTyped(character, keyCode);
-		data.addProperty("scoreName", txtField.getText());
+		data.setString("scoreName", txtField.getText());
     }
 }

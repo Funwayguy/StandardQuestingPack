@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.CommandBlockBaseLogic;
 import net.minecraft.util.ResourceLocation;
@@ -16,11 +17,9 @@ import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
-import betterquesting.api.utils.JsonHelper;
 import bq_standard.AdminExecute;
 import bq_standard.client.gui.rewards.GuiRewardCommand;
 import bq_standard.rewards.factory.FactoryRewardCommand;
-import com.google.gson.JsonObject;
 
 public class RewardCommand implements IReward
 {
@@ -84,19 +83,19 @@ public class RewardCommand implements IReward
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
-		command = JsonHelper.GetString(json, "command", "/say VAR_NAME Claimed a reward");
-		hideCmd = JsonHelper.GetBoolean(json, "hideCommand", false);
-		viaPlayer = JsonHelper.GetBoolean(json, "viaPlayer", false);
+		command = json.getString("command");
+		hideCmd = json.getBoolean("hideCommand");
+		viaPlayer = json.getBoolean("viaPlayer");
 	}
 	
 	@Override
-	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
-		json.addProperty("command", command);
-		json.addProperty("hideCommand", hideCmd);
-		json.addProperty("viaPlayer", viaPlayer);
+		json.setString("command", command);
+		json.setBoolean("hideCommand", hideCmd);
+		json.setBoolean("viaPlayer", viaPlayer);
 		return json;
 	}
 	

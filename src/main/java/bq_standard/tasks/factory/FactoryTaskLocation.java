@@ -1,11 +1,11 @@
 package bq_standard.tasks.factory;
 
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.misc.IFactory;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskLocation;
-import com.google.gson.JsonObject;
 
 public final class FactoryTaskLocation implements IFactory<TaskLocation>
 {
@@ -28,10 +28,10 @@ public final class FactoryTaskLocation implements IFactory<TaskLocation>
 	}
 
 	@Override
-	public TaskLocation loadFromJson(JsonObject json)
+	public TaskLocation loadFromNBT(NBTTagCompound json)
 	{
 		TaskLocation task = new TaskLocation();
-		task.readFromJson(json, EnumSaveType.CONFIG);
+		task.readFromNBT(json, EnumSaveType.CONFIG);
 		return task;
 	}
 	
