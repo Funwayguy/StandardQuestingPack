@@ -160,9 +160,9 @@ public class TaskScoreboard implements ITask, ITickableTask
 			return;
 		}
 		
-		scoreName = json.hasKey("scoreName", 8) ? json.getString("scoreName") : "Score";
+		scoreName = json.getString("scoreName");
 		scoreName.replaceAll(" ", "_");
-		scoreDisp = json.hasKey("scoreDisp", 8) ? json.getString("scoreDisp") : scoreName;
+		scoreDisp = json.getString("scoreDisp");
 		type = json.hasKey("type", 8) ? json.getString("type") : "dummy";
 		target = json.getInteger("target");
 		conversion = json.getFloat("unitConversion");

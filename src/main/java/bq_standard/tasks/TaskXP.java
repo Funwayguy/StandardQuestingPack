@@ -148,8 +148,8 @@ public class TaskXP implements ITask, IProgression<Long>, ITickableTask
 		}
 		
 		amount = json.hasKey("amount", 99) ? json.getInteger("amount") : 30;
-		levels = json.hasKey("isLevels", 1) ? json.getBoolean("isLevels") : true;
-		consume = json.hasKey("consume") ? json.getBoolean("consume") : true;
+		levels = json.getBoolean("isLevels");
+		consume = json.getBoolean("consume");
 	}
 	
 	public void readProgressFromJson(NBTTagCompound json)
