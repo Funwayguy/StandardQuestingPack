@@ -21,12 +21,10 @@ import betterquesting.api.client.gui.controls.GuiButtonThemed;
 import betterquesting.api.client.gui.controls.GuiNumberField;
 import betterquesting.api.client.gui.misc.IVolatileScreen;
 import betterquesting.api.network.QuestingPacket;
-import betterquesting.api.utils.NBTConverter;
 import betterquesting.api.utils.RenderUtils;
 import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootRegistry;
-import com.google.gson.JsonObject;
 
 @SideOnly(Side.CLIENT)
 public class GuiLootGroupEditor extends GuiScreenThemed implements IVolatileScreen
@@ -124,11 +122,11 @@ public class GuiLootGroupEditor extends GuiScreenThemed implements IVolatileScre
 	
 	public void SendChanges()
 	{
-		JsonObject json = new JsonObject();
+		NBTTagCompound json = new NBTTagCompound();
 		LootRegistry.writeToJson(json);
 		NBTTagCompound tags = new NBTTagCompound();
 		tags.setInteger("ID", 1);
-		tags.setTag("Database", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
+		tags.setTag("Database", json);
 		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags));
 	}
 	

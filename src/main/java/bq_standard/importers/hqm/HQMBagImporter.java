@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.importers.IImporter;
@@ -16,7 +17,6 @@ import betterquesting.api.questing.IQuestDatabase;
 import betterquesting.api.questing.IQuestLineDatabase;
 import betterquesting.api.utils.FileExtensionFilter;
 import betterquesting.api.utils.JsonHelper;
-import betterquesting.api.utils.NBTConverter;
 import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootGroup.LootEntry;
@@ -133,18 +133,18 @@ public class HQMBagImporter implements IImporter
 		}
 		
 		NBTTagCompound tags = new NBTTagCompound();
-		JsonObject base = new JsonObject();
-		JsonArray jAry = new JsonArray();
+		NBTTagCompound base = new NBTTagCompound();
+		NBTTagList jAry = new NBTTagList();
 		
 		for(LootGroup group : hqmLoot)
 		{
-			JsonObject jGrp = new JsonObject();
+			NBTTagCompound jGrp = new NBTTagCompound();
 			group.writeToJson(jGrp);
-			jAry.add(jGrp);
+			jAry.appendTag(jGrp);
 		}
 		
-		base.add("groups", jAry);
-		tags.setTag("data", NBTConverter.JSONtoNBT_Object(base, new NBTTagCompound()));
+		base.setTag("groups", jAry);
+		tags.setTag("data", base);
 		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(StandardPacketType.LOOT_IMPORT.GetLocation(), tags));
 	}
 	

@@ -7,7 +7,10 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -22,16 +25,10 @@ import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api.utils.ItemComparison;
-import betterquesting.api.utils.JsonHelper;
-import betterquesting.api.utils.NBTConverter;
 import bq_standard.client.gui.editors.GuiMeetingEditor;
 import bq_standard.client.gui.tasks.GuiTaskMeeting;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskMeeting;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 
 public class TaskMeeting implements ITask, ITickableTask
 {
@@ -46,7 +43,7 @@ public class TaskMeeting implements ITask, ITickableTask
 	/**
 	 * NBT representation of the intended target. Used only for NBT comparison checks
 	 */
-	public NBTTagCompound targetTags;
+	public NBTTagCompound targetTags = new NBTTagCompound();
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -86,10 +83,6 @@ public class TaskMeeting implements ITask, ITickableTask
 	{
 		completeUsers.clear();
 	}
-	
-	@Override
-	@Deprecated
-	public void update(EntityPlayer player, IQuest quest){}
 	
 	@Override
 	public void updateTask(EntityPlayer player, IQuest quest)
@@ -132,7 +125,7 @@ public class TaskMeeting implements ITask, ITickableTask
 			} else if(subtypes && !target.isAssignableFrom(subject))
 			{
 				continue; // This is not the intended target or sub-type
-			} else if(!subtypes && !subjectID.equals(targetID))
+			} else if(!subtypes && !subjectID.toString().equals(idName))
 			{
 				continue; // This isn't the exact target required
 			}
@@ -155,7 +148,7 @@ public class TaskMeeting implements ITask, ITickableTask
 	}
 	
 	@Override
-	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
@@ -165,18 +158,18 @@ public class TaskMeeting implements ITask, ITickableTask
 			return json;
 		}
 		
-		json.addProperty("target", idName);
-		json.addProperty("range", range);
-		json.addProperty("amount", amount);
-		json.addProperty("subtypes", subtypes);
-		json.addProperty("ignoreNBT", ignoreNBT);
-		json.add("targetNBT", NBTConverter.NBTtoJSON_Compound(targetTags, new JsonObject(), true));
+		json.setString("target", idName);
+		json.setInteger("range", range);
+		json.setInteger("amount", amount);
+		json.setBoolean("subtypes", subtypes);
+		json.setBoolean("ignoreNBT", ignoreNBT);
+		json.setTag("targetNBT", targetTags);
 		
 		return json;
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
@@ -187,39 +180,42 @@ public class TaskMeeting implements ITask, ITickableTask
 			return;
 		}
 		
-		idName = JsonHelper.GetString(json, "target", "minecraft:villager");
-		range = JsonHelper.GetNumber(json, "range", 4).intValue();
-		amount = JsonHelper.GetNumber(json, "amount", 1).intValue();
-		subtypes = JsonHelper.GetBoolean(json, "subtypes", true);
-		ignoreNBT = JsonHelper.GetBoolean(json, "ignoreNBT", true);
-		targetTags = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "targetNBT"), new NBTTagCompound(), true);
+		idName = json.hasKey("target", 8) ? json.getString("target") : "minecraft:villager";
+		range = json.getInteger("range");
+		amount = json.getInteger("amount");
+		subtypes = json.getBoolean("subtypes");
+		ignoreNBT = json.getBoolean("ignoreNBT");
+		targetTags = json.getCompoundTag("targetNBT");
 	}
 
-	private JsonObject writeProgressToJson(JsonObject json)
+	private NBTTagCompound writeProgressToJson(NBTTagCompound json)
 	{
-		JsonArray jArray = new JsonArray();
+		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
 		{
-			jArray.add(new JsonPrimitive(uuid.toString()));
+			jArray.appendTag(new NBTTagString(uuid.toString()));
 		}
-		json.add("completeUsers", jArray);
+		json.setTag("completeUsers", jArray);
 		
 		return json;
 	}
 
-	private void readProgressFromJson(JsonObject json)
+	private void readProgressFromJson(NBTTagCompound json)
 	{
 		completeUsers = new ArrayList<UUID>();
-		for(JsonElement entry : JsonHelper.GetArray(json, "completeUsers"))
+		NBTTagList cList = json.getTagList("completeUsers", 8);
+		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			if(entry == null || !entry.isJsonPrimitive())
+			NBTBase entry = cList.get(i);
+			
+			if(entry == null || entry.getId() != 8)
 			{
 				continue;
 			}
 			
 			try
 			{
-				completeUsers.add(UUID.fromString(entry.getAsString()));
+				completeUsers.add(UUID.fromString(((NBTTagString)entry).getString()));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);

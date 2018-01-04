@@ -80,7 +80,7 @@ public class ClientProxy extends CommonProxy
 		{
 		    ModelBakery.registerItemVariants(item, model);
 		}
-		
+
 		ModelLoader.setCustomModelResourceLocation(item, meta, model);
 	    //Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, meta, model);
 	}

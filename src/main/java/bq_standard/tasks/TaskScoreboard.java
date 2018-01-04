@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.UUID;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.scoreboard.IScoreCriteria;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreCriteria;
@@ -22,16 +26,11 @@ import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.questing.tasks.ITickableTask;
-import betterquesting.api.utils.JsonHelper;
 import bq_standard.ScoreboardBQ;
 import bq_standard.client.gui.editors.GuiScoreEditor;
 import bq_standard.client.gui.tasks.GuiTaskScoreboard;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskScoreboard;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 
 public class TaskScoreboard implements ITask, ITickableTask
 {
@@ -84,10 +83,6 @@ public class TaskScoreboard implements ITask, ITickableTask
 	}
 	
 	@Override
-	@Deprecated
-	public void update(EntityPlayer player, IQuest quest){}
-	
-	@Override
 	public void updateTask(EntityPlayer player, IQuest quest)
 	{
 		if(player.ticksExisted%20 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE)) // Auto-detect once per second
@@ -132,7 +127,7 @@ public class TaskScoreboard implements ITask, ITickableTask
 	}
 	
 	@Override
-	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
@@ -142,19 +137,19 @@ public class TaskScoreboard implements ITask, ITickableTask
 			return json;
 		}
 		
-		json.addProperty("scoreName", scoreName);
-		json.addProperty("scoreDisp", scoreDisp);
-		json.addProperty("type", type);
-		json.addProperty("target", target);
-		json.addProperty("unitConversion", conversion);
-		json.addProperty("unitSuffix", suffix);
-		json.addProperty("operation", operation.name());
+		json.setString("scoreName", scoreName);
+		json.setString("scoreDisp", scoreDisp);
+		json.setString("type", type);
+		json.setInteger("target", target);
+		json.setFloat("unitConversion", conversion);
+		json.setString("unitSuffix", suffix);
+		json.setString("operation", operation.name());
 		
 		return json;
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
@@ -165,42 +160,45 @@ public class TaskScoreboard implements ITask, ITickableTask
 			return;
 		}
 		
-		scoreName = JsonHelper.GetString(json, "scoreName", "Score");
+		scoreName = json.getString("scoreName");
 		scoreName.replaceAll(" ", "_");
-		scoreDisp = JsonHelper.GetString(json, "scoreDisp", scoreDisp);
-		type = JsonHelper.GetString(json, "type", "dummy");
-		target = JsonHelper.GetNumber(json, "target", 1).intValue();
-		conversion = JsonHelper.GetNumber(json, "unitConversion", conversion).floatValue();
-		suffix = JsonHelper.GetString(json, "unitSuffix", suffix);
-		operation = ScoreOperation.valueOf(JsonHelper.GetString(json, "operation", "MORE_OR_EQUAL").toUpperCase());
+		scoreDisp = json.getString("scoreDisp");
+		type = json.hasKey("type", 8) ? json.getString("type") : "dummy";
+		target = json.getInteger("target");
+		conversion = json.getFloat("unitConversion");
+		suffix = json.getString("unitSuffix");
+		operation = ScoreOperation.valueOf(json.hasKey("operation", 8) ? json.getString("operation") : "MORE_OR_EQUAL");
 		operation = operation != null? operation : ScoreOperation.MORE_OR_EQUAL;
 	}
 
-	private JsonObject writeProgressToJson(JsonObject json)
+	private NBTTagCompound writeProgressToJson(NBTTagCompound json)
 	{
-		JsonArray jArray = new JsonArray();
+		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
 		{
-			jArray.add(new JsonPrimitive(uuid.toString()));
+			jArray.appendTag(new NBTTagString(uuid.toString()));
 		}
-		json.add("completeUsers", jArray);
+		json.setTag("completeUsers", jArray);
 		
 		return json;
 	}
 
-	private void readProgressFromJson(JsonObject json)
+	private void readProgressFromJson(NBTTagCompound json)
 	{
 		completeUsers = new ArrayList<UUID>();
-		for(JsonElement entry : JsonHelper.GetArray(json, "completeUsers"))
+		NBTTagList cList = json.getTagList("completeUsers", 8);
+		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			if(entry == null || !entry.isJsonPrimitive())
+			NBTBase entry = cList.get(i);
+			
+			if(entry == null || entry.getId() != 8)
 			{
 				continue;
 			}
 			
 			try
 			{
-				completeUsers.add(UUID.fromString(entry.getAsString()));
+				completeUsers.add(UUID.fromString(((NBTTagString)entry).getString()));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);

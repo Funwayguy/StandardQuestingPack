@@ -92,8 +92,6 @@ public class GuiLootChest extends GuiScreen
 		{
 			this.drawHoveringText(ttStack.getBaseStack().getTooltip(mc.player, mc.gameSettings.advancedItemTooltips? ITooltipFlag.TooltipFlags.ADVANCED : ITooltipFlag.TooltipFlags.NORMAL), mx, my, fontRenderer);
 		}
-		
-		// TODO: Finish rewards renderer then finish reward registry/editor/importer
 	}
 	
 	@Override

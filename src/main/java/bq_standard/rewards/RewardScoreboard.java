@@ -2,6 +2,7 @@ package bq_standard.rewards;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.scoreboard.IScoreCriteria;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreCriteria;
@@ -16,11 +17,9 @@ import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
-import betterquesting.api.utils.JsonHelper;
 import bq_standard.client.gui.rewards.GuiRewardScoreboard;
 import bq_standard.core.BQ_Standard;
 import bq_standard.rewards.factory.FactoryRewardScoreboard;
-import com.google.gson.JsonObject;
 
 public class RewardScoreboard implements IReward
 {
@@ -90,21 +89,21 @@ public class RewardScoreboard implements IReward
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
-		score = JsonHelper.GetString(json, "score", "Reputation");
-		type = JsonHelper.GetString(json, "type", "dummy");
-		value = JsonHelper.GetNumber(json, "value", 1).intValue();
-		relative = JsonHelper.GetBoolean(json, "relative", true);
+		score = json.getString("score");
+		type = json.getString("type");
+		value = json.getInteger("value");
+		relative = json.getBoolean("relative");
 	}
 	
 	@Override
-	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
-		json.addProperty("score", score);
-		json.addProperty("type", "dummy");
-		json.addProperty("value", value);
-		json.addProperty("relative", relative);
+		json.setString("score", score);
+		json.setString("type", "dummy");
+		json.setInteger("value", value);
+		json.setBoolean("relative", relative);
 		return json;
 	}
 

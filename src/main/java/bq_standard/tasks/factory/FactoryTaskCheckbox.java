@@ -1,11 +1,11 @@
 package bq_standard.tasks.factory;
 
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.misc.IFactory;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskCheckbox;
-import com.google.gson.JsonObject;
 
 public final class FactoryTaskCheckbox implements IFactory<TaskCheckbox>
 {
@@ -28,10 +28,10 @@ public final class FactoryTaskCheckbox implements IFactory<TaskCheckbox>
 	}
 
 	@Override
-	public TaskCheckbox loadFromJson(JsonObject json)
+	public TaskCheckbox loadFromNBT(NBTTagCompound json)
 	{
 		TaskCheckbox task = new TaskCheckbox();
-		task.readFromJson(json, EnumSaveType.CONFIG);
+		task.readFromNBT(json, EnumSaveType.CONFIG);
 		return task;
 	}
 	

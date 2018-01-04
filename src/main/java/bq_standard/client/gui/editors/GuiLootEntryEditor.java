@@ -7,6 +7,7 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.relauncher.Side;
@@ -23,10 +24,9 @@ import betterquesting.api.utils.RenderUtils;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootGroup.LootEntry;
 import bq_standard.rewards.loot.LootRegistry;
-import com.google.gson.JsonObject;
 
 @SideOnly(Side.CLIENT)
-public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScreen, ICallback<JsonObject>
+public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScreen, ICallback<NBTTagCompound>
 {
 	LootGroup group;
 	GuiNumberField lineWeight;
@@ -134,10 +134,7 @@ public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScre
 		{
 			if(selected != null)
 			{
-				/*lastEdit = new JsonObject();
-				selected.writeToJson(lastEdit);
-				mc.displayGuiScreen(new GuiJsonObject(this, lastEdit, null));*/
-				JsonObject json = new JsonObject();
+				NBTTagCompound json = new NBTTagCompound();
 				selected.writeToJson(json);
 				QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(this, this, json, null);
 			}
@@ -277,7 +274,7 @@ public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScre
 	}
 
 	@Override
-	public void setValue(JsonObject value)
+	public void setValue(NBTTagCompound value)
 	{
 		if(selected != null)
 		{

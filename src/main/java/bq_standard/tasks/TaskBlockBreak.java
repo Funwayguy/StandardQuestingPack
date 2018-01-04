@@ -11,7 +11,11 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -32,15 +36,9 @@ import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
-import betterquesting.api.utils.JsonHelper;
-import betterquesting.api.utils.NBTConverter;
 import bq_standard.client.gui.tasks.GuiTaskBlockBreak;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskBlockBreak;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 
 public class TaskBlockBreak implements ITask, IProgression<int[]>
 {
@@ -79,10 +77,6 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 	{
 		return "bq_standard.task.block_break";
 	}
-	
-	@Override
-	@Deprecated
-	public void update(EntityPlayer player, IQuest quest){}
 	
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
@@ -152,7 +146,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 	}
 	
 	@Override
-	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
@@ -162,19 +156,19 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 			return json;
 		}
 		
-		JsonArray bAry = new JsonArray();
+		NBTTagList bAry = new NBTTagList();
 		for(JsonBlockType block : blockTypes)
 		{
-			JsonObject jbt = block.writeToJson(new JsonObject());
-			bAry.add(jbt);
+			NBTTagCompound jbt = block.writeToJson(new NBTTagCompound());
+			bAry.appendTag(jbt);
 		}
-		json.add("blocks", bAry);
+		json.setTag("blocks", bAry);
 		
 		return json;
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
@@ -186,25 +180,28 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		}
 		
 		blockTypes.clear();
-		for(JsonElement element : JsonHelper.GetArray(json, "blocks"))
+		NBTTagList bList = json.getTagList("blocks", 10);
+		for(int i = 0; i < bList.tagCount(); i++)
 		{
-			if(element == null || !element.isJsonObject())
+			NBTBase element = bList.get(i);
+			
+			if(element == null || element.getId() != 10)
 			{
 				continue;
 			}
 			
 			JsonBlockType block = new JsonBlockType();
-			block.readFromJson(element.getAsJsonObject());
+			block.readFromJson((NBTTagCompound)element);
 			blockTypes.add(block);
 		}
 		
-		if(json.has("blockID"))
+		if(json.hasKey("blockID", 8))
 		{
-			Block targetBlock = (Block)Block.REGISTRY.getObject(new ResourceLocation(JsonHelper.GetString(json, "blockID", "minecraft:log")));
+			Block targetBlock = (Block)Block.REGISTRY.getObject(new ResourceLocation(json.getString("blockID")));
 			targetBlock = targetBlock != null? targetBlock : Blocks.LOG;
-			int targetMeta = JsonHelper.GetNumber(json, "blockMeta", -1).intValue();
-			NBTTagCompound targetNbt = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "blockNBT"), new NBTTagCompound(), true);
-			int targetNum = JsonHelper.GetNumber(json, "amount", 1).intValue();
+			int targetMeta = json.getInteger("blockMeta");
+			NBTTagCompound targetNbt = json.getCompoundTag("blockNBT");
+			int targetNum = json.getInteger("amount");
 			
 			JsonBlockType leg = new JsonBlockType();
 			leg.b = targetBlock;
@@ -216,19 +213,22 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		}
 	}
 	
-	public void readProgressFromJson(JsonObject json)
+	public void readProgressFromJson(NBTTagCompound json)
 	{
 		completeUsers = new ArrayList<UUID>();
-		for(JsonElement entry : JsonHelper.GetArray(json, "completeUsers"))
+		NBTTagList cList = json.getTagList("completeUsers", 8);
+		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			if(entry == null || !entry.isJsonPrimitive())
+			NBTBase entry = cList.get(i);
+			
+			if(entry == null || entry.getId() != 8)
 			{
 				continue;
 			}
 			
 			try
 			{
-				completeUsers.add(UUID.fromString(entry.getAsString()));
+				completeUsers.add(UUID.fromString(((NBTTagString)entry).getString()));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
@@ -236,17 +236,21 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		}
 		
 		userProgress = new HashMap<UUID,int[]>();
-		for(JsonElement entry : JsonHelper.GetArray(json, "userProgress"))
+		NBTTagList pList = json.getTagList("userProgress", 10);
+		for(int n = 0; n < pList.tagCount(); n++)
 		{
-			if(entry == null || !entry.isJsonObject())
+			NBTBase entry = pList.get(n);
+			
+			if(entry == null || entry.getId() != 10)
 			{
 				continue;
 			}
 			
+			NBTTagCompound pTag = (NBTTagCompound)entry;
 			UUID uuid;
 			try
 			{
-				uuid = UUID.fromString(JsonHelper.GetString(entry.getAsJsonObject(), "uuid", ""));
+				uuid = UUID.fromString(pTag.getString("uuid"));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load user progress for task", e);
@@ -254,12 +258,12 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 			}
 			
 			int[] data = new int[blockTypes.size()];
-			JsonArray dJson = JsonHelper.GetArray(entry.getAsJsonObject(), "data");
-			for(int i = 0; i < data.length && i < dJson.size(); i++)
+			NBTTagList dJson = pTag.getTagList("data", 3);
+			for(int i = 0; i < data.length && i < dJson.tagCount(); i++)
 			{
 				try
 				{
-					data[i] = dJson.get(i).getAsInt();
+					data[i] = dJson.getIntAt(i);
 				} catch(Exception e)
 				{
 					BQ_Standard.logger.log(Level.ERROR, "Incorrect task progress format", e);
@@ -270,29 +274,29 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		}
 	}
 	
-	public JsonObject writeProgressToJson(JsonObject json)
+	public NBTTagCompound writeProgressToJson(NBTTagCompound json)
 	{
-		JsonArray jArray = new JsonArray();
+		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
 		{
-			jArray.add(new JsonPrimitive(uuid.toString()));
+			jArray.appendTag(new NBTTagString(uuid.toString()));
 		}
-		json.add("completeUsers", jArray);
+		json.setTag("completeUsers", jArray);
 		
-		JsonArray progArray = new JsonArray();
+		NBTTagList progArray = new NBTTagList();
 		for(Entry<UUID,int[]> entry : userProgress.entrySet())
 		{
-			JsonObject pJson = new JsonObject();
-			pJson.addProperty("uuid", entry.getKey().toString());
-			JsonArray pArray = new JsonArray();
+			NBTTagCompound pJson = new NBTTagCompound();
+			pJson.setString("uuid", entry.getKey().toString());
+			NBTTagList pArray = new NBTTagList();
 			for(int i : entry.getValue())
 			{
-				pArray.add(new JsonPrimitive(i));
+				pArray.appendTag(new NBTTagInt(i));
 			}
-			pJson.add("data", pArray);
-			progArray.add(pJson);
+			pJson.setTag("data", pArray);
+			progArray.appendTag(pJson);
 		}
-		json.add("userProgress", progArray);
+		json.setTag("userProgress", progArray);
 		
 		return json;
 	}
@@ -433,25 +437,25 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		public int n = 1;
 		public String oreDict = "";
 		
-		public JsonObject writeToJson(JsonObject json)
+		public NBTTagCompound writeToJson(NBTTagCompound json)
 		{
-			json.addProperty("blockID", b.getRegistryName().toString());
-			json.addProperty("meta", m);
-			json.add("nbt", NBTConverter.NBTtoJSON_Compound(tags, new JsonObject(), true));
-			json.addProperty("amount", n);
-			json.addProperty("oreDict", oreDict);
+			json.setString("blockID", b.getRegistryName().toString());
+			json.setInteger("meta", m);
+			json.setTag("nbt", tags);
+			json.setInteger("amount", n);
+			json.setString("oreDict", oreDict);
 			return json;
 		}
 		
-		public void readFromJson(JsonObject json)
+		public void readFromJson(NBTTagCompound json)
 		{
-			b = (Block)Block.REGISTRY.getObject(new ResourceLocation(JsonHelper.GetString(json, "blockID", "minecraft:log")));
+			b = (Block)Block.REGISTRY.getObject(new ResourceLocation(json.getString("blockID")));
 			b = b != null? b : Blocks.LOG;
-			m = JsonHelper.GetNumber(json, "meta", -1).intValue();
+			m = json.getInteger("meta");
 			n = n < 0? OreDictionary.WILDCARD_VALUE : n;
-			tags = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "nbt"), new NBTTagCompound(), true);
-			n = JsonHelper.GetNumber(json, "amount", 1).intValue();
-			oreDict = JsonHelper.GetString(json, "oreDict", "");
+			tags = json.getCompoundTag("nbt");
+			n = json.getInteger("amount");
+			oreDict = json.getString("oreDict");
 		}
 		
 		public BigItemStack getItemStack()

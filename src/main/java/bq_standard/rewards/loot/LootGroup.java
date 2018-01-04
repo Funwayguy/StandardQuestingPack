@@ -2,11 +2,11 @@ package bq_standard.rewards.loot;
 
 import java.util.ArrayList;
 import java.util.Random;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.JsonHelper;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 public class LootGroup implements Comparable<LootGroup>
 {
@@ -44,33 +44,35 @@ public class LootGroup implements Comparable<LootGroup>
 		return i;
 	}
 	
-	public void readFromJson(JsonObject json)
+	public void readFromJson(NBTTagCompound json)
 	{
-		name = JsonHelper.GetString(json, "name", "Loot Group");
-		weight = JsonHelper.GetNumber(json, "weight", 1).intValue();
+		name = json.hasKey("name", 8) ? json.getString("name") : "Loot Group";
+		weight = json.getInteger("weight");;
 		weight = Math.max(1, weight);
 		
 		lootEntry = new ArrayList<LootEntry>();
-		JsonArray jRew = JsonHelper.GetArray(json, "rewards");
-		for(JsonElement entry : jRew)
+		NBTTagList jRew = json.getTagList("rewards", 10);
+		for(int i = 0; i < jRew.tagCount(); i++)
 		{
-			if(entry == null || !entry.isJsonObject())
+			NBTBase entry = jRew.get(i);
+			
+			if(entry == null || entry.getId() != 10)
 			{
 				continue;
 			}
 			
 			LootEntry loot = new LootEntry();
-			loot.readFromJson(entry.getAsJsonObject());
+			loot.readFromJson((NBTTagCompound)entry);
 			lootEntry.add(loot);
 		}
 	}
 	
-	public void writeToJson(JsonObject json)
+	public void writeToJson(NBTTagCompound json)
 	{
-		json.addProperty("name", name);
-		json.addProperty("weight", weight);
+		json.setString("name", name);
+		json.setInteger("weight", weight);
 		
-		JsonArray jRew = new JsonArray();
+		NBTTagList jRew = new NBTTagList();
 		for(LootEntry entry : lootEntry)
 		{
 			if(entry == null)
@@ -78,11 +80,11 @@ public class LootGroup implements Comparable<LootGroup>
 				continue;
 			}
 			
-			JsonObject jLoot = new JsonObject();
+			NBTTagCompound jLoot = new NBTTagCompound();
 			entry.writeToJson(jLoot);
-			jRew.add(jLoot);
+			jRew.appendTag(jLoot);
 		}
-		json.add("rewards", jRew);
+		json.setTag("rewards", jRew);
 	}
 
 	@Override
@@ -96,21 +98,23 @@ public class LootGroup implements Comparable<LootGroup>
 		public int weight = 1;
 		public ArrayList<BigItemStack> items = new ArrayList<BigItemStack>();
 		
-		public void readFromJson(JsonObject json)
+		public void readFromJson(NBTTagCompound json)
 		{
-			weight = JsonHelper.GetNumber(json, "weight", 0).intValue();
+			weight = json.getInteger("weight");
 			weight = Math.max(1, weight);
 			
 			items = new ArrayList<BigItemStack>();
-			JsonArray jItm = JsonHelper.GetArray(json, "items");
-			for(JsonElement entry : jItm)
+			NBTTagList jItm = json.getTagList("items", 10);
+			for(int i = 0; i < jItm.tagCount(); i++)
 			{
-				if(entry == null || !entry.isJsonObject())
+				NBTBase entry = jItm.get(i);
+				
+				if(entry == null || entry.getId() != 10)
 				{
 					continue;
 				}
 				
-				BigItemStack stack = JsonHelper.JsonToItemStack(entry.getAsJsonObject());
+				BigItemStack stack = JsonHelper.JsonToItemStack((NBTTagCompound)entry);
 				
 				if(stack != null)
 				{
@@ -119,16 +123,16 @@ public class LootGroup implements Comparable<LootGroup>
 			}
 		}
 		
-		public void writeToJson(JsonObject json)
+		public void writeToJson(NBTTagCompound json)
 		{
-			json.addProperty("weight", weight);
+			json.setInteger("weight", weight);
 			
-			JsonArray jItm = new JsonArray();
+			NBTTagList jItm = new NBTTagList();
 			for(BigItemStack stack : items)
 			{
-				jItm.add(JsonHelper.ItemStackToJson(stack, new JsonObject()));
+				jItm.appendTag(JsonHelper.ItemStackToJson(stack, new NBTTagCompound()));
 			}
-			json.add("items", jItm);
+			json.setTag("items", jItm);
 		}
 
 		@Override

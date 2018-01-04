@@ -1,15 +1,15 @@
 package bq_standard.client.gui.editors.callback;
 
+import net.minecraft.nbt.NBTBase;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.misc.ICallback;
-import betterquesting.api.misc.IJsonSaveLoad;
-import com.google.gson.JsonElement;
+import betterquesting.api.misc.INBTSaveLoad;
 
-public class JsonSaveLoadCallback<T extends JsonElement> implements ICallback<T>
+public class JsonSaveLoadCallback<T extends NBTBase> implements ICallback<T>
 {
-	private final IJsonSaveLoad<T> saveLoad;
+	private final INBTSaveLoad<T> saveLoad;
 	
-	public JsonSaveLoadCallback(IJsonSaveLoad<T> saveLoad)
+	public JsonSaveLoadCallback(INBTSaveLoad<T> saveLoad)
 	{
 		this.saveLoad = saveLoad;
 	}
@@ -17,6 +17,6 @@ public class JsonSaveLoadCallback<T extends JsonElement> implements ICallback<T>
 	@Override
 	public void setValue(T value)
 	{
-		saveLoad.readFromJson(value, EnumSaveType.CONFIG);
+		saveLoad.readFromNBT(value, EnumSaveType.CONFIG);
 	}
 }

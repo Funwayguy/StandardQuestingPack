@@ -8,7 +8,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.storage.loot.LootContext;
@@ -26,8 +28,6 @@ import betterquesting.api.utils.JsonHelper;
 import betterquesting.api.utils.NBTConverter;
 import bq_standard.core.BQ_Standard;
 import bq_standard.network.StandardPacketType;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class LootRegistry
@@ -110,45 +110,48 @@ public class LootRegistry
 	public static void updateClients()
 	{
 		NBTTagCompound tags = new NBTTagCompound();
-		JsonObject json = new JsonObject();
+		NBTTagCompound json = new NBTTagCompound();
 		LootRegistry.writeToJson(json);
-		tags.setTag("Database", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
+		tags.setTag("Database", json);
 		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToAll(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags));
 	}
 	
 	public static void sendDatabase(EntityPlayerMP player)
 	{
 		NBTTagCompound tags = new NBTTagCompound();
-		JsonObject json = new JsonObject();
+		NBTTagCompound json = new NBTTagCompound();
 		LootRegistry.writeToJson(json);
-		tags.setTag("Database", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
+		tags.setTag("Database", json);
 		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToPlayer(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags), player);
 	}
 	
-	public static void writeToJson(JsonObject json)
+	public static void writeToJson(NBTTagCompound json)
 	{
-		JsonArray jRew = new JsonArray();
+		NBTTagList jRew = new NBTTagList();
 		for(LootGroup entry : lootGroups)
 		{
-			JsonObject jGrp = new JsonObject();
+			NBTTagCompound jGrp = new NBTTagCompound();
 			entry.writeToJson(jGrp);
-			jRew.add(jGrp);
+			jRew.appendTag(jGrp);
 		}
-		json.add("groups", jRew);
+		json.setTag("groups", jRew);
 	}
 	
-	public static void readFromJson(JsonObject json)
+	public static void readFromJson(NBTTagCompound json)
 	{
 		lootGroups.clear();
-		for(JsonElement entry : JsonHelper.GetArray(json, "groups"))
+		NBTTagList list = json.getTagList("groups", 10);
+		for(int i = 0; i < list.tagCount(); i++)
 		{
-			if(entry == null || !entry.isJsonObject())
+			NBTBase entry = list.get(i);
+			
+			if(entry == null || entry.getId() != 10)
 			{
 				continue;
 			}
 			
 			LootGroup group = new LootGroup();
-			group.readFromJson(entry.getAsJsonObject());
+			group.readFromJson((NBTTagCompound)entry);
 			
 			lootGroups.add(group);
 		}
@@ -192,7 +195,7 @@ public class LootRegistry
 			}
 		}
 		
-		readFromJson(j1);
+		readFromJson(NBTConverter.JSONtoNBT_Object(j1, new NBTTagCompound(), true));
 	}
 	
 	@SubscribeEvent
@@ -200,9 +203,9 @@ public class LootRegistry
 	{
 		if(!event.getWorld().isRemote && worldDir != null && event.getWorld().provider.getDimension() == 0)
 		{
-			JsonObject jsonQ = new JsonObject();
+			NBTTagCompound jsonQ = new NBTTagCompound();
 			writeToJson(jsonQ);
-			JsonHelper.WriteToFile(new File(worldDir, "QuestLoot.json"), jsonQ);
+			JsonHelper.WriteToFile(new File(worldDir, "QuestLoot.json"), NBTConverter.NBTtoJSON_Compound(jsonQ, new JsonObject(), true));
 		}
 	}
 	

@@ -2,9 +2,7 @@ package bq_standard.items;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -15,7 +13,6 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -142,19 +139,16 @@ public class ItemLootChest extends Item
      * returns a list of items with the same ID, but different meta (eg: dye returns 16 items)
      */
 	@SideOnly(Side.CLIENT)
-	@Override
-    public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> list)
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void getSubItems(Item item, CreativeTabs tab, List list)
     {
-		if(this.isInCreativeTab(tab))
-		{
-	        list.add(new ItemStack(this, 1, 0));
-	        list.add(new ItemStack(this, 1, 25));
-	        list.add(new ItemStack(this, 1, 50));
-	        list.add(new ItemStack(this, 1, 75));
-	        list.add(new ItemStack(this, 1, 100));
-	        list.add(new ItemStack(this, 1, 101));
-	        list.add(new ItemStack(this, 1, 102));
-		}
+        list.add(new ItemStack(item, 1, 0));
+        list.add(new ItemStack(item, 1, 25));
+        list.add(new ItemStack(item, 1, 50));
+        list.add(new ItemStack(item, 1, 75));
+        list.add(new ItemStack(item, 1, 100));
+        list.add(new ItemStack(item, 1, 101));
+        list.add(new ItemStack(item, 1, 102));
     }
 	
 	@Override
@@ -168,8 +162,8 @@ public class ItemLootChest extends Item
      * allows items to add custom lines of information to the mouseover description
      */
 	@SideOnly(Side.CLIENT)
-	@Override
-    public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> list, ITooltipFlag flags)
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void addInformation(ItemStack stack, EntityPlayer player, List list, boolean advanced)
     {
 		if(stack.getItemDamage() > 101)
 		{

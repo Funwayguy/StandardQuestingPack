@@ -9,7 +9,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
@@ -26,22 +29,16 @@ import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.ItemComparison;
-import betterquesting.api.utils.JsonHelper;
-import betterquesting.api.utils.NBTConverter;
 import bq_standard.client.gui.editors.GuiHuntEditor;
 import bq_standard.client.gui.tasks.GuiTaskHunt;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskHunt;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 
 public class TaskHunt implements ITask, IProgression<Integer>
 {
 	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	public HashMap<UUID, Integer> userProgress = new HashMap<UUID, Integer>();
-	public String idName = "minecraft:zombie";
+	public String idName = "Zombie";
 	public int required = 1;
 	public boolean ignoreNBT = true;
 	public boolean subtypes = true;
@@ -77,10 +74,6 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	{
 		return "bq_standard.task.hunt";
 	}
-	
-	@Override
-	@Deprecated
-	public void update(EntityPlayer player, IQuest quest){}
 	
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
@@ -122,7 +115,7 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		} else if(subtypes && !target.isAssignableFrom(subject))
 		{
 			return; // This is not the intended target or sub-type
-		} else if(!subtypes && !subjectID.equals(targetID))
+		} else if(!subtypes && !subjectID.equals(idName))
 		{
 			return; // This isn't the exact target required
 		}
@@ -140,7 +133,7 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	}
 	
 	@Override
-	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
@@ -150,17 +143,17 @@ public class TaskHunt implements ITask, IProgression<Integer>
 			return json;
 		}
 		
-		json.addProperty("target", idName);
-		json.addProperty("required", required);
-		json.addProperty("subtypes", subtypes);
-		json.addProperty("ignoreNBT", ignoreNBT);
-		json.add("targetNBT", NBTConverter.NBTtoJSON_Compound(targetTags, new JsonObject(), true));
+		json.setString("target", idName);
+		json.setInteger("required", required);
+		json.setBoolean("subtypes", subtypes);
+		json.setBoolean("ignoreNBT", ignoreNBT);
+		json.setTag("targetNBT", targetTags);
 		
 		return json;
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
@@ -171,26 +164,29 @@ public class TaskHunt implements ITask, IProgression<Integer>
 			return;
 		}
 		
-		idName = JsonHelper.GetString(json, "target", "minecraft:zombie");
-		required = JsonHelper.GetNumber(json, "required", 1).intValue();
-		subtypes = JsonHelper.GetBoolean(json, "subtypes", true);
-		ignoreNBT = JsonHelper.GetBoolean(json, "ignoreNBT", true);
-		targetTags = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "targetNBT"), new NBTTagCompound(), true);
+		idName = json.getString("target");
+		required = json.getInteger("required");
+		subtypes = json.getBoolean("subtypes");
+		ignoreNBT = json.getBoolean("ignoreNBT");
+		targetTags = json.getCompoundTag("targetNBT");
 	}
 	
-	private void readProgressFromJson(JsonObject json)
+	private void readProgressFromJson(NBTTagCompound json)
 	{
 		completeUsers = new ArrayList<UUID>();
-		for(JsonElement entry : JsonHelper.GetArray(json, "completeUsers"))
+		NBTTagList cList = json.getTagList("completeUsers", 8);
+		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			if(entry == null || !entry.isJsonPrimitive())
+			NBTBase entry = cList.get(i);
+			
+			if(entry == null || entry.getId() != 8)
 			{
 				continue;
 			}
 			
 			try
 			{
-				completeUsers.add(UUID.fromString(entry.getAsString()));
+				completeUsers.add(UUID.fromString(((NBTTagString)entry).getString()));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
@@ -198,45 +194,49 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		}
 		
 		userProgress = new HashMap<UUID,Integer>();
-		for(JsonElement entry : JsonHelper.GetArray(json, "userProgress"))
+		NBTTagList pList = json.getTagList("userProgress", 10);
+		for(int i = 0; i < pList.tagCount(); i++)
 		{
-			if(entry == null || !entry.isJsonObject())
+			NBTBase entry = pList.get(i);
+			
+			if(entry == null || entry.getId() != 10)
 			{
 				continue;
 			}
 			
+			NBTTagCompound pTag = (NBTTagCompound)entry;
 			UUID uuid;
 			try
 			{
-				uuid = UUID.fromString(JsonHelper.GetString(entry.getAsJsonObject(), "uuid", ""));
+				uuid = UUID.fromString(pTag.getString("uuid"));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load user progress for task", e);
 				continue;
 			}
 			
-			userProgress.put(uuid, JsonHelper.GetNumber(entry.getAsJsonObject(), "value", 0).intValue());
+			userProgress.put(uuid, pTag.getInteger("value"));
 		}
 	}
 	
-	private JsonObject writeProgressToJson(JsonObject json)
+	private NBTTagCompound writeProgressToJson(NBTTagCompound json)
 	{
-		JsonArray jArray = new JsonArray();
+		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
 		{
-			jArray.add(new JsonPrimitive(uuid.toString()));
+			jArray.appendTag(new NBTTagString(uuid.toString()));
 		}
-		json.add("completeUsers", jArray);
+		json.setTag("completeUsers", jArray);
 		
-		JsonArray progArray = new JsonArray();
+		NBTTagList progArray = new NBTTagList();
 		for(Entry<UUID,Integer> entry : userProgress.entrySet())
 		{
-			JsonObject pJson = new JsonObject();
-			pJson.addProperty("uuid", entry.getKey().toString());
-			pJson.addProperty("value", entry.getValue());
-			progArray.add(pJson);
+			NBTTagCompound pJson = new NBTTagCompound();
+			pJson.setString("uuid", entry.getKey().toString());
+			pJson.setInteger("value", entry.getValue());
+			progArray.appendTag(pJson);
 		}
-		json.add("userProgress", progArray);
+		json.setTag("userProgress", progArray);
 		
 		return json;
 	}

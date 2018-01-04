@@ -2,6 +2,7 @@ package bq_standard.rewards;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -10,11 +11,9 @@ import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
-import betterquesting.api.utils.JsonHelper;
 import bq_standard.XPHelper;
 import bq_standard.client.gui.rewards.GuiRewardXP;
 import bq_standard.rewards.factory.FactoryRewardXP;
-import com.google.gson.JsonObject;
 
 public class RewardXP implements IReward
 {
@@ -46,17 +45,17 @@ public class RewardXP implements IReward
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
-		amount = JsonHelper.GetNumber(json, "amount", 1).intValue();
-		levels = JsonHelper.GetBoolean(json, "isLevels", true);
+		amount = json.getInteger("amount");
+		levels = json.getBoolean("isLevels");
 	}
 	
 	@Override
-	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
-		json.addProperty("amount", amount);
-		json.addProperty("isLevels", levels);
+		json.setInteger("amount", amount);
+		json.setBoolean("isLevels", levels);
 		return json;
 	}
 	

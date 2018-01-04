@@ -6,6 +6,10 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
 import betterquesting.api.api.ApiReference;
@@ -19,15 +23,10 @@ import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.questing.tasks.ITickableTask;
-import betterquesting.api.utils.JsonHelper;
 import bq_standard.XPHelper;
 import bq_standard.client.gui.tasks.GuiTaskXP;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskXP;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 
 public class TaskXP implements ITask, IProgression<Long>, ITickableTask
 {
@@ -57,10 +56,6 @@ public class TaskXP implements ITask, IProgression<Long>, ITickableTask
 			completeUsers.add(uuid);
 		}
 	}
-	
-	@Override
-	@Deprecated
-	public void update(EntityPlayer player, IQuest quest){}
 	
 	@Override
 	public void updateTask(EntityPlayer player, IQuest quest)
@@ -110,6 +105,7 @@ public class TaskXP implements ITask, IProgression<Long>, ITickableTask
 		}
 		
 		long totalXP = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
+		
 		if(totalXP >= rawXP)
 		{
 			setComplete(playerID);
@@ -123,7 +119,7 @@ public class TaskXP implements ITask, IProgression<Long>, ITickableTask
 	}
 	
 	@Override
-	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
@@ -133,14 +129,14 @@ public class TaskXP implements ITask, IProgression<Long>, ITickableTask
 			return json;
 		}
 		
-		json.addProperty("amount", amount);
-		json.addProperty("isLevels", levels);
-		json.addProperty("consume", consume);
+		json.setInteger("amount", amount);
+		json.setBoolean("isLevels", levels);
+		json.setBoolean("consume", consume);
 		return json;
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
@@ -151,24 +147,27 @@ public class TaskXP implements ITask, IProgression<Long>, ITickableTask
 			return;
 		}
 		
-		amount = JsonHelper.GetNumber(json, "amount", 30).intValue();
-		levels = JsonHelper.GetBoolean(json, "isLevels", true);
-		consume = JsonHelper.GetBoolean(json, "consume", true);
+		amount = json.hasKey("amount", 99) ? json.getInteger("amount") : 30;
+		levels = json.getBoolean("isLevels");
+		consume = json.getBoolean("consume");
 	}
 	
-	public void readProgressFromJson(JsonObject json)
+	public void readProgressFromJson(NBTTagCompound json)
 	{
 		completeUsers = new ArrayList<UUID>();
-		for(JsonElement entry : JsonHelper.GetArray(json, "completeUsers"))
+		NBTTagList cList = json.getTagList("completeUsers", 8);
+		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			if(entry == null || !entry.isJsonPrimitive())
+			NBTBase entry = cList.get(i);
+			
+			if(entry == null || entry.getId() != 8)
 			{
 				continue;
 			}
 			
 			try
 			{
-				completeUsers.add(UUID.fromString(entry.getAsString()));
+				completeUsers.add(UUID.fromString(((NBTTagString)entry).getString()));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
@@ -176,45 +175,50 @@ public class TaskXP implements ITask, IProgression<Long>, ITickableTask
 		}
 		
 		userProgress.clear();
-		for(JsonElement entry : JsonHelper.GetArray(json, "userProgress"))
+		NBTTagList pList = json.getTagList("userProgress", 10);
+		for(int i = 0; i < pList.tagCount(); i++)
 		{
-			if(entry == null || !entry.isJsonObject())
+			NBTBase entry = pList.get(i);
+			
+			if(entry == null || entry.getId() != 10)
 			{
 				continue;
 			}
 			
+			NBTTagCompound pTag = (NBTTagCompound)entry;
+			
 			UUID uuid;
 			try
 			{
-				uuid = UUID.fromString(JsonHelper.GetString(entry.getAsJsonObject(), "uuid", ""));
+				uuid = UUID.fromString(pTag.getString("uuid"));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load user progress for task", e);
 				continue;
 			}
 			
-			userProgress.put(uuid, JsonHelper.GetNumber(entry.getAsJsonObject(), "value", 0).longValue());
+			userProgress.put(uuid, pTag.getLong("value"));
 		}
 	}
 	
-	public JsonObject writeProgressToJson(JsonObject json)
+	public NBTTagCompound writeProgressToJson(NBTTagCompound json)
 	{
-		JsonArray jArray = new JsonArray();
+		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
 		{
-			jArray.add(new JsonPrimitive(uuid.toString()));
+			jArray.appendTag(new NBTTagString(uuid.toString()));
 		}
-		json.add("completeUsers", jArray);
+		json.setTag("completeUsers", jArray);
 		
-		JsonArray progArray = new JsonArray();
+		NBTTagList progArray = new NBTTagList();
 		for(Entry<UUID,Long> entry : userProgress.entrySet())
 		{
-			JsonObject pJson = new JsonObject();
-			pJson.addProperty("uuid", entry.getKey().toString());
-			pJson.addProperty("value", entry.getValue());
-			progArray.add(pJson);
+			NBTTagCompound pJson = new NBTTagCompound();
+			pJson.setString("uuid", entry.getKey().toString());
+			pJson.setLong("value", entry.getValue());
+			progArray.appendTag(pJson);
 		}
-		json.add("userProgress", progArray);
+		json.setTag("userProgress", progArray);
 		
 		return json;
 	}

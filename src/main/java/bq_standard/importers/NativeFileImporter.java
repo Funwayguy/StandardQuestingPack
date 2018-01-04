@@ -2,12 +2,14 @@ package bq_standard.importers;
 
 import java.io.File;
 import java.io.FileFilter;
+import net.minecraft.nbt.NBTTagCompound;
 import betterquesting.api.client.importers.IImporter;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.questing.IQuestDatabase;
 import betterquesting.api.questing.IQuestLineDatabase;
 import betterquesting.api.utils.FileExtensionFilter;
 import betterquesting.api.utils.JsonHelper;
+import betterquesting.api.utils.NBTConverter;
 import com.google.gson.JsonObject;
 
 public class NativeFileImporter implements IImporter
@@ -45,12 +47,13 @@ public class NativeFileImporter implements IImporter
 			}
 			
 			JsonObject json = JsonHelper.ReadFromFile(selected);
+			NBTTagCompound nbt = NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound(), true);
 			
 			ImportedQuests impQ = new ImportedQuests(questDB);
 			ImportedQuestLines impL = new ImportedQuestLines(lineDB);
 			
-			impQ.readFromJson(JsonHelper.GetArray(json, "questDatabase"), EnumSaveType.CONFIG);
-			impL.readFromJson(JsonHelper.GetArray(json, "questLines"), EnumSaveType.CONFIG);
+			impQ.readFromNBT(nbt.getTagList("questDatabase", 10), EnumSaveType.CONFIG);
+			impL.readFromNBT(nbt.getTagList("questLines", 10), EnumSaveType.CONFIG);
 			
 			mergeUtil.merge(impQ, impL);
 		}

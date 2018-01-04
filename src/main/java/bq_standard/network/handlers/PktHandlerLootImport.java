@@ -1,21 +1,19 @@
 package bq_standard.network.handlers;
 
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import org.apache.logging.log4j.Level;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.network.IPacketHandler;
-import betterquesting.api.utils.JsonHelper;
-import betterquesting.api.utils.NBTConverter;
 import bq_standard.core.BQ_Standard;
 import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootRegistry;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 public class PktHandlerLootImport implements IPacketHandler
 {
@@ -42,17 +40,19 @@ public class PktHandlerLootImport implements IPacketHandler
 			return; // Player is not operator. Do nothing
 		}
 		
-		JsonObject base = NBTConverter.NBTtoJSON_Compound(tag.getCompoundTag("data"), new JsonObject());
+		NBTTagList list = tag.getCompoundTag("data").getTagList("groups", 10);
 		
-		for(JsonElement je : JsonHelper.GetArray(base, "groups"))
+		for(int i = 0; i < list.tagCount(); i++)
 		{
-			if(je == null || !je.isJsonObject())
+			NBTBase je = list.get(i);
+			
+			if(je == null || je.getId() != 10)
 			{
 				continue;
 			}
 			
 			LootGroup group = new LootGroup();
-			group.readFromJson(je.getAsJsonObject());
+			group.readFromJson((NBTTagCompound)je);
 			LootRegistry.registerGroup(group);
 		}
 		

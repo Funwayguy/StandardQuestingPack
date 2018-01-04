@@ -1,11 +1,11 @@
 package bq_standard.rewards.factory;
 
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.misc.IFactory;
 import bq_standard.core.BQ_Standard;
 import bq_standard.rewards.RewardChoice;
-import com.google.gson.JsonObject;
 
 public class FactoryRewardChoice implements IFactory<RewardChoice>
 {
@@ -28,10 +28,10 @@ public class FactoryRewardChoice implements IFactory<RewardChoice>
 	}
 
 	@Override
-	public RewardChoice loadFromJson(JsonObject json)
+	public RewardChoice loadFromNBT(NBTTagCompound json)
 	{
 		RewardChoice reward = new RewardChoice();
-		reward.readFromJson(json, EnumSaveType.CONFIG);
+		reward.readFromNBT(json, EnumSaveType.CONFIG);
 		return reward;
 	}
 	
