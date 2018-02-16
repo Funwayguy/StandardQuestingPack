@@ -2,9 +2,6 @@ package bq_standard.handlers;
 
 import java.util.Map.Entry;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.InventoryCrafting;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.CraftingManager;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
@@ -29,16 +26,9 @@ public class EventHandler
 			return;
 		}
 		
-		ItemStack actStack = event.crafting.copy();
-		
-		if(event.craftMatrix instanceof InventoryCrafting)
-		{
-			actStack = CraftingManager.findMatchingResult((InventoryCrafting)event.craftMatrix, event.player.world);
-		}
-		
 		for(Entry<TaskCrafting,IQuest> entry : QuestCache.INSTANCE.getActiveTasks(QuestingAPI.getQuestingUUID(event.player), TaskCrafting.class).entrySet())
 		{
-			entry.getKey().onItemCrafted(entry.getValue(), event.player, actStack);
+			entry.getKey().onItemCrafted(entry.getValue(), event.player, event.crafting.copy());
 		}
 	}
 	
