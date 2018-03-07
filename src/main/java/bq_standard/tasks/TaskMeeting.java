@@ -105,7 +105,7 @@ public class TaskMeeting implements ITask, ITickableTask
 		
 		List<Entity> list = player.world.getEntitiesWithinAABBExcludingEntity(player, player.getEntityBoundingBox().expand(range, range, range));
 		ResourceLocation targetID = new ResourceLocation(idName);
-		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.getClass(targetID);
+		Class<? extends Entity> target = EntityList.getClass(targetID);
 		
 		if(target == null)
 		{
@@ -117,15 +117,15 @@ public class TaskMeeting implements ITask, ITickableTask
 		for(Entity entity : list)
 		{
 			Class<? extends Entity> subject = entity.getClass();
-			ResourceLocation subjectID = subject == null? null : EntityList.getKey(subject);
+			ResourceLocation subjectID = EntityList.getKey(subject);
 			
-			if(subject == null || subjectID == null)
+			if(subjectID == null)
 			{
 				continue;
 			} else if(subtypes && !target.isAssignableFrom(subject))
 			{
 				continue; // This is not the intended target or sub-type
-			} else if(!subtypes && !subjectID.toString().equals(idName))
+			} else if(!subtypes && !subjectID.equals(targetID))
 			{
 				continue; // This isn't the exact target required
 			}

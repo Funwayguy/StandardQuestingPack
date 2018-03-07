@@ -27,18 +27,15 @@ import bq_standard.tasks.TaskHunt;
 public class GuiHuntEditor extends GuiScreenThemed implements IVolatileScreen, ICallback<Entity>
 {
 	private TaskHunt task;
-	GuiNumberField numField;
-	int amount = 1;
-	String idName = "Zombie";
+	private GuiNumberField numField;
 	private final NBTTagCompound data;
-	Entity entity;
+	private Entity entity;
 	
 	public GuiHuntEditor(GuiScreen parent, TaskHunt task)
 	{
 		super(parent, "bq_standard.title.edit_hunt");
 		this.task = task;
 		this.data = task.writeToNBT(new NBTTagCompound(), EnumSaveType.CONFIG);
-		idName = data.getString("target");
 	}
 	
 	@Override
@@ -51,7 +48,7 @@ public class GuiHuntEditor extends GuiScreenThemed implements IVolatileScreen, I
 		if(entity == null)
 		{
 			entity = new EntityZombie(mc.world);
-			data.setString("target", "Zombie");
+			data.setString("target", "minecraft:zombie");
 			data.setTag("targetNBT", new NBTTagCompound());
 		} else
 		{
@@ -119,8 +116,7 @@ public class GuiHuntEditor extends GuiScreenThemed implements IVolatileScreen, I
 			}
 		} else if(button.id == 2)
 		{
-			//mc.displayGuiScreen(new GuiJsonObject(this, data, null));
-			QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(this, new JsonSaveLoadCallback<NBTTagCompound>(task), data, task.getDocumentation());
+			QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(this, new JsonSaveLoadCallback<>(task), data, task.getDocumentation());
 		}
 	}
 	
@@ -150,7 +146,7 @@ public class GuiHuntEditor extends GuiScreenThemed implements IVolatileScreen, I
 	@Override
 	public void setValue(Entity value)
 	{
-		if(value == null)
+		if(value == null || EntityList.getKey(value) == null)
 		{
 			this.entity = new EntityZombie(mc.world);
 		} else
@@ -158,7 +154,7 @@ public class GuiHuntEditor extends GuiScreenThemed implements IVolatileScreen, I
 			this.entity = value;
 		}
 		
-		data.setString("target", EntityList.getEntityString(entity));
+		data.setString("target", EntityList.getKey(entity).toString());
 		NBTTagCompound tTag = new NBTTagCompound();
 		entity.writeToNBTOptional(tTag);
 		data.setTag("targetNBT", tTag);

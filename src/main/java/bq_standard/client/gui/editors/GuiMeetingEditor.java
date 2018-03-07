@@ -25,16 +25,14 @@ import bq_standard.tasks.TaskMeeting;
 public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen, ICallback<Entity>
 {
 	private final TaskMeeting task;
-	String idName = "Villager";
-	NBTTagCompound data;
-	Entity entity;
+	private NBTTagCompound data;
+	private Entity entity;
 	
 	public GuiMeetingEditor(GuiScreen parent, TaskMeeting task)
 	{
 		super(parent, "bq_standard.title.edit_meeting");
 		this.task = task;
 		this.data = task.writeToNBT(new NBTTagCompound(), EnumSaveType.CONFIG);
-		idName = data.getString("target");
 	}
 	
 	@Override
@@ -42,20 +40,12 @@ public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen
 	{
 		super.initGui();
 		
-		/*if(lastEdit != null)
-		{
-			data.addProperty("target", JsonHelper.GetString(lastEdit, "id:8", "Villager"));
-			data.add("targetNBT", lastEdit);
-			
-			lastEdit = null;
-		}*/
-		
 		entity = EntityList.createEntityByIDFromName(new ResourceLocation(data.getString("target")), mc.world);
 		
 		if(entity == null)
 		{
 			entity = new EntityVillager(mc.world);
-			data.setString("target", "Villager");
+			data.setString("target", "minecraft:villager");
 			data.setTag("targetNBT", new NBTTagCompound());
 		} else
 		{
@@ -117,7 +107,7 @@ public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen
 			}
 		} else if(button.id == 2)
 		{
-			QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(this, new JsonSaveLoadCallback<NBTTagCompound>(task), data, task.getDocumentation());
+			QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(this, new JsonSaveLoadCallback<>(task), data, task.getDocumentation());
 		}
 	}
 
@@ -132,7 +122,7 @@ public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen
 			this.entity = value;
 		}
 		
-		data.setString("target", EntityList.getEntityString(entity));
+		data.setString("target", EntityList.getKey(entity).toString());
 		NBTTagCompound tTag = new NBTTagCompound();
 		entity.writeToNBTOptional(tTag);
 		data.setTag("targetNBT", tTag);
