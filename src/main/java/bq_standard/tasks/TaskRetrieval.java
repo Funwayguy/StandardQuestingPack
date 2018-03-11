@@ -234,7 +234,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITi
 		partialMatch = json.getBoolean("partialMatch");
 		ignoreNBT = json.getBoolean("ignoreNBT");
 		consume = json.getBoolean("consume");
-		idvDetect = json.getBoolean("groupDetect");
+		idvDetect = !json.getBoolean("groupDetect");
 		autoConsume = json.getBoolean("autoConsume");
 		
 		requiredItems = new ArrayList<BigItemStack>();
