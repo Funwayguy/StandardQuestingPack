@@ -38,14 +38,13 @@ public class GuiRewardCommand extends GuiElement implements IGuiEmbedded
 		
 		mc.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 		TextureAtlasSprite blockSprite = mc.getTextureMapBlocks().getAtlasSprite("minecraft:blocks/command_block_front");
-		blockSprite = blockSprite != null? blockSprite : mc.getTextureMapBlocks().getAtlasSprite("missingno");
 		
 		GlStateManager.pushMatrix();
+		GlStateManager.color(1F, 1F, 1F, 1F);
 		GlStateManager.scale(2F, 2F, 1F);
 		drawTexturedModelRectFromIcon(posX/2, (posY + sizeY/2 - 16)/2, blockSprite, 16, 16);
 		GlStateManager.popMatrix();
 		
-		GlStateManager.color(1F, 1F, 1F, 1F);
 		mc.fontRenderer.drawString(txt1, posX + 40, posY + sizeY/2 - 16, getTextColor());
 		mc.fontRenderer.drawString(mc.fontRenderer.trimStringToWidth(txt2, sizeX - (32 + 8)), posX + 40, posY + sizeY/2, getTextColor());
 	}

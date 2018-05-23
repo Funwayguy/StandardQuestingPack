@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
+import betterquesting.api2.storage.DBEntry;
+import betterquesting.api2.storage.SimpleDatabase;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -13,10 +14,9 @@ import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.questing.IQuestLine;
 import betterquesting.api.questing.IQuestLineDatabase;
 
-public class ImportedQuestLines implements IQuestLineDatabase
+public class ImportedQuestLines extends SimpleDatabase<IQuestLine> implements IQuestLineDatabase
 {
-	private final HashMap<Integer, IQuestLine> questLines = new HashMap<Integer, IQuestLine>();
-	private final List<Integer> lineOrder = new ArrayList<Integer>();
+	private final List<Integer> lineOrder = new ArrayList<>();
 	private final IQuestLineDatabase parent;
 	
 	public ImportedQuestLines(IQuestLineDatabase parent)
@@ -27,7 +27,7 @@ public class ImportedQuestLines implements IQuestLineDatabase
 	@Override
 	public int getOrderIndex(int lineID)
 	{
-		if(!questLines.containsKey(lineID))
+		if(getValue(lineID) == null)
 		{
 			return -1;
 		} else if(!lineOrder.contains(lineID))
@@ -46,87 +46,6 @@ public class ImportedQuestLines implements IQuestLineDatabase
 	}
 	
 	@Override
-	public Integer nextKey()
-	{
-		int id = 0;
-		
-		while(questLines.containsKey(id))
-		{
-			id += 1;
-		}
-		
-		return id;
-	}
-	
-	@Override
-	public boolean add(IQuestLine value, Integer key)
-	{
-		if(key < 0 || value == null || questLines.containsValue(value) || questLines.containsKey(key))
-		{
-			return false;
-		}
-		
-		questLines.put(key, value);
-		return true;
-	}
-	
-	@Override
-	public boolean removeKey(Integer key)
-	{
-		return questLines.remove(key) != null;
-	}
-	
-	@Override
-	public boolean removeValue(IQuestLine value)
-	{
-		return removeKey(getKey(value));
-	}
-	
-	@Override
-	public IQuestLine getValue(Integer key)
-	{
-		return questLines.get(key);
-	}
-	
-	@Override
-	public Integer getKey(IQuestLine value)
-	{
-		for(Entry<Integer,IQuestLine> entry  : questLines.entrySet())
-		{
-			if(entry.getValue() == value)
-			{
-				return entry.getKey();
-			}
-		}
-		
-		return -1;
-	}
-	
-	@Override
-	public int size()
-	{
-		return questLines.size();
-	}
-	
-	@Override
-	public void reset()
-	{
-		questLines.clear();
-	}
-	
-	@Override
-	public List<IQuestLine> getAllValues()
-	{
-		return new ArrayList<IQuestLine>(questLines.values());
-	}
-	
-	@Override
-	public List<Integer> getAllKeys()
-	{
-		return new ArrayList<Integer>(questLines.keySet());
-	}
-	
-	@Override
 	public NBTTagList writeToNBT(NBTTagList json, EnumSaveType saveType)
 	{
 		if(saveType != EnumSaveType.CONFIG)
@@ -134,14 +53,14 @@ public class ImportedQuestLines implements IQuestLineDatabase
 			return json;
 		}
 		
-		for(Entry<Integer,IQuestLine> entry : questLines.entrySet())
+		for(DBEntry<IQuestLine> entry : getEntries())
 		{
 			if(entry.getValue() == null)
 			{
 				continue;
 			}
 			
-			int id = entry.getKey();
+			int id = entry.getID();
 			
 			NBTTagCompound jObj = entry.getValue().writeToNBT(new NBTTagCompound(), saveType);
 			jObj.setInteger("lineID", id);
@@ -160,15 +79,15 @@ public class ImportedQuestLines implements IQuestLineDatabase
 			return;
 		}
 		
-		questLines.clear();
+		reset();
 		
-		HashMap<Integer,Integer> orderMap = new HashMap<Integer,Integer>();
+		HashMap<Integer,Integer> orderMap = new HashMap<>();
 		
 		for(int i = 0; i < json.tagCount(); i++)
 		{
 			NBTBase entry = json.get(i);
 			
-			if(entry == null || entry.getId() != 10)
+			if(entry.getId() != 10)
 			{
 				continue;
 			}
@@ -178,13 +97,13 @@ public class ImportedQuestLines implements IQuestLineDatabase
 			int id = jql.hasKey("lineID", 99) ? jql.getInteger("lineID") : -1;
 			int order = jql.hasKey("order", 99) ? jql.getInteger("order") : -1;
 			
-			IQuestLine line = this.createNew();
-			line.readFromNBT(jql, saveType);
-			
-			if(id >= 0)
+			if(id < 0)
 			{
-				questLines.put(id, line);
+				continue;
 			}
+			
+			IQuestLine line = this.createNew(id);
+			line.readFromNBT(jql, saveType);
 			
 			if(order >= 0)
 			{
@@ -192,7 +111,7 @@ public class ImportedQuestLines implements IQuestLineDatabase
 			}
 		}
 		
-		List<Integer> orderKeys = new ArrayList<Integer>(orderMap.keySet());
+		List<Integer> orderKeys = new ArrayList<>(orderMap.keySet());
 		Collections.sort(orderKeys);
 		
 		lineOrder.clear();
@@ -216,15 +135,19 @@ public class ImportedQuestLines implements IQuestLineDatabase
 	@Override
 	public void removeQuest(int questID)
 	{
-		for(IQuestLine ql : getAllValues())
+		for(DBEntry<IQuestLine> ql : getEntries())
 		{
-			ql.removeKey(questID);
+			ql.getValue().removeID(questID);
 		}
 	}
 	
 	@Override
-	public IQuestLine createNew()
+	public IQuestLine createNew(int id)
 	{
-		return this.parent.createNew();
+		IQuestLine ql = parent.createNew(id);
+		parent.removeID(id);
+		add(id, ql);
+		ql.setParentDatabase(this);
+		return ql;
 	}
 }

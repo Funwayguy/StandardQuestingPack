@@ -40,7 +40,7 @@ public class GuiTaskLocation extends GuiElement implements IGuiEmbedded
 	public void drawBackground(int mx, int my, float partialTick)
 	{
 		// Calculate compass direction
-		double la = Math.atan2(task.y - mc.player.posY, task.x - mc.player.posX);
+		double la = Math.atan2(task.z - mc.player.posZ, task.x - mc.player.posX);
 		int radius = Math.min(sizeY/2, sizeX/4) - 12;
 		int dx = (int)(Math.cos(la) * radius);
 		int dy = (int)(Math.sin(la) * -radius);
@@ -93,7 +93,7 @@ public class GuiTaskLocation extends GuiElement implements IGuiEmbedded
 			GlStateManager.popMatrix();
 		} else
 		{
-			RenderUtils.DrawLine(cx, cy, cx + dx, cy + dy, 4, Color.RED.getRGB());
+			RenderUtils.DrawLine(cx, cy, cx + dx, cy - dy, 4, Color.RED.getRGB());
 		}
 	}
 	

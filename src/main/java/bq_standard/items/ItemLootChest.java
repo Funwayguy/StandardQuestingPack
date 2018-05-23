@@ -172,7 +172,6 @@ public class ItemLootChest extends Item
      */
     @Override
 	@SideOnly(Side.CLIENT)
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn)
     {
 		if(stack.getItemDamage() > 101)

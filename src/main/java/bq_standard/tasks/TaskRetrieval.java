@@ -445,15 +445,11 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITi
 
 			int remaining = rStack.stackSize - progress[j];
 			
-			System.out.println("Current progress (" + rStack.getBaseStack().getDisplayName() + "): " + progress[j] + "/" + rStack.stackSize);
-			
 			if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.oreDict, rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
 			{
 				int removed = Math.min(stack.getCount(), remaining);
 				stack.shrink(removed);
 				progress[j] += removed;
-				
-				System.out.println("Consumed " + removed + " items. New total = " + progress[j]);
 				
 				if(stack.getCount() <= 0)
 				{

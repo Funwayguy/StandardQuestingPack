@@ -36,8 +36,8 @@ public class GuiRewardChoice extends GuiElement implements IGuiEmbedded
 		this.posY = posY;
 		this.sizeY = sizeY;
 		
-		this.qID = QuestingAPI.getAPI(ApiReference.QUEST_DB).getKey(quest);
-		this.rID = quest.getRewards().getKey(reward);
+		this.qID = QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest);
+		this.rID = quest.getRewards().getID(reward);
 		
 		this.itemScroll = new GuiScrollingItemsSmall(mc, posX + 40, posY, sizeX - 40, sizeY);
 		

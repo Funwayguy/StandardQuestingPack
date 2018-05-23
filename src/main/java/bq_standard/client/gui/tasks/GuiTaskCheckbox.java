@@ -1,5 +1,6 @@
 package bq_standard.client.gui.tasks;
 
+import betterquesting.api2.storage.DBEntry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.text.TextFormatting;
@@ -30,14 +31,14 @@ public class GuiTaskCheckbox extends GuiElement implements IGuiEmbedded
 			btn.enabled = false;
 		} else if(task != null)
 		{
-			for(IQuest q : QuestingAPI.getAPI(ApiReference.QUEST_DB).getAllValues())
+			for(DBEntry<IQuest> q : QuestingAPI.getAPI(ApiReference.QUEST_DB).getEntries())
 			{
-				int tmp = q.getTasks().getKey(task);
+				int tmp = q.getValue().getTasks().getID(task);
 				
 				if(tmp >= 0)
 				{
 					tId = tmp;
-					qId = QuestingAPI.getAPI(ApiReference.QUEST_DB).getKey(q);
+					qId = q.getID();
 					break;
 				}
 			}

@@ -10,7 +10,6 @@ import betterquesting.api.questing.IQuestLineDatabase;
 import betterquesting.api.utils.FileExtensionFilter;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api.utils.NBTConverter;
-import com.google.gson.JsonObject;
 
 public class NativeFileImporter implements IImporter
 {
@@ -46,8 +45,7 @@ public class NativeFileImporter implements IImporter
 				continue;
 			}
 			
-			JsonObject json = JsonHelper.ReadFromFile(selected);
-			NBTTagCompound nbt = NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound(), true);
+			NBTTagCompound nbt = NBTConverter.JSONtoNBT_Object(JsonHelper.ReadFromFile(selected), new NBTTagCompound(), true);
 			
 			ImportedQuests impQ = new ImportedQuests(questDB);
 			ImportedQuestLines impL = new ImportedQuestLines(lineDB);

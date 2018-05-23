@@ -6,7 +6,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+
+import betterquesting.api2.storage.IDatabaseNBT;
 import net.minecraft.init.Items;
+import net.minecraft.nbt.NBTTagList;
 import org.apache.logging.log4j.Level;
 import betterquesting.api.client.importers.IImporter;
 import betterquesting.api.properties.IPropertyContainer;
@@ -18,7 +21,6 @@ import betterquesting.api.questing.IQuestLineDatabase;
 import betterquesting.api.questing.IQuestLineEntry;
 import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api.questing.tasks.ITask;
-import betterquesting.api.storage.IRegStorageBase;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.FileExtensionFilter;
 import betterquesting.api.utils.JsonHelper;
@@ -41,12 +43,12 @@ public class HQMQuestImporter implements IImporter
 {
 	public static HQMQuestImporter instance = new HQMQuestImporter();
 	
-	public static HashMap<String, HQMTask> taskConverters = new HashMap<String, HQMTask>();
-	public static HashMap<String, HQMReward> rewardConverters = new HashMap<String, HQMReward>();
+	private static HashMap<String, HQMTask> taskConverters = new HashMap<>();
+	private static HashMap<String, HQMReward> rewardConverters = new HashMap<>();
 	
-	public HashMap<Integer, String> reputations = new HashMap<Integer, String>();
+	public HashMap<Integer, String> reputations = new HashMap<>();
 	
-	public HashMap<String, IQuest> idMap = new HashMap<String, IQuest>(); // Use this to remap old IDs to new ones
+	private HashMap<String, IQuest> idMap = new HashMap<>(); // Use this to remap old IDs to new ones
 	
 	@Override
 	public FileFilter getFileFilter()
@@ -101,10 +103,7 @@ public class HQMQuestImporter implements IImporter
 			
 			JsonObject jRep = e.getAsJsonObject();
 			
-			if(!jRep.has("name"))
-			{
-				continue;
-			} else
+			if(jRep.has("name"))
 			{
 				reputations.put(i, JsonHelper.GetString(jRep, "name", "Reputation(" + i + ")"));
 			}
@@ -118,8 +117,7 @@ public class HQMQuestImporter implements IImporter
 			return idMap.get(oldID);
 		} else
 		{
-			IQuest quest = qdb.createNew();
-			qdb.add(quest, qdb.nextKey());
+			IQuest quest = qdb.createNew(qdb.nextID());
 			idMap.put(oldID, quest);
 			return quest;
 		}
@@ -127,7 +125,7 @@ public class HQMQuestImporter implements IImporter
 	
 	private void ImportQuestLine(IQuestDatabase questDB, IQuestLineDatabase lineDB, JsonObject json)
 	{
-		IQuestLine questLine = lineDB.createNew();
+		IQuestLine questLine = lineDB.createNew(lineDB.nextID());
 		IPropertyContainer qlProps = questLine.getProperties();
 		qlProps.setProperty(NativeProps.NAME, JsonHelper.GetString(json, "name", "HQM Quest Line"));
 		qlProps.setProperty(NativeProps.DESC, JsonHelper.GetString(json, "description", "No description"));
@@ -136,7 +134,7 @@ public class HQMQuestImporter implements IImporter
 		
 		JsonArray qlJson = JsonHelper.GetArray(json, "quests");
 		
-		ArrayList<String> loadedQuests = new ArrayList<String>(); // Just in case we have duplicate named quests
+		List<String> loadedQuests = new ArrayList<>(); // Just in case we have duplicate named quests
 		
 		for(int i = 0; i < qlJson.size(); i++)
 		{
@@ -234,10 +232,10 @@ public class HQMQuestImporter implements IImporter
 				
 				if(tsks != null && tsks.size() > 0)
 				{
-					IRegStorageBase<Integer,ITask> taskReg = quest.getTasks();
+					IDatabaseNBT<ITask, NBTTagList> taskReg = quest.getTasks();
 					for(ITask t : tsks)
 					{
-						taskReg.add(t, taskReg.nextKey());
+						taskReg.add(taskReg.nextID(), t);
 					}
 				}
 			}
@@ -253,26 +251,23 @@ public class HQMQuestImporter implements IImporter
 				
 				if(rews != null && rews.size() > 0)
 				{
-					IRegStorageBase<Integer,IReward> rewardReg = quest.getRewards();
+					IDatabaseNBT<IReward, NBTTagList> rewardReg = quest.getRewards();
 					for(IReward r : rews)
 					{
-						rewardReg.add(r, rewardReg.nextKey());
+						rewardReg.add(rewardReg.nextID(), r);
 					}
 				}
 			}
 			
-			if(questLine.getValue(questDB.getKey(quest)) != null)
+			if(questLine.getValue(questDB.getID(quest)) != null)
 			{
 				BQ_Standard.logger.log(Level.WARN, "Tried to add duplicate quest " + quest + " to quest line " + questLine.getUnlocalisedName());
 			} else
 			{
-				IQuestLineEntry qle = questLine.createNewEntry();
+				IQuestLineEntry qle = questLine.createNewEntry(questDB.getID(quest));
 				qle.setPosition(JsonHelper.GetNumber(jQuest, "x", 0).intValue(), JsonHelper.GetNumber(jQuest, "y", 0).intValue());
-				questLine.add(qle, questDB.getKey(quest));
 			}
 		}
-		
-		lineDB.add(questLine, lineDB.nextKey());
 	}
 	
 	static
