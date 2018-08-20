@@ -1,15 +1,15 @@
 package bq_standard.client.gui.tasks;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.fluids.FluidStack;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.lists.GuiScrollingFluids;
 import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import bq_standard.tasks.TaskFluid;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.fluids.FluidStack;
 
 public class GuiTaskFluid implements IGuiEmbedded
 {

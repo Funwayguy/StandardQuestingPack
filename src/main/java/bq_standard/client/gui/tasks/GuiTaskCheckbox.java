@@ -1,9 +1,5 @@
 package bq_standard.client.gui.tasks;
 
-import betterquesting.api2.storage.DBEntry;
-import net.minecraft.client.Minecraft;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.text.TextFormatting;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiElement;
@@ -11,8 +7,12 @@ import betterquesting.api.client.gui.controls.GuiButtonThemed;
 import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.questing.IQuest;
+import betterquesting.api2.storage.DBEntry;
 import bq_standard.network.StandardPacketType;
 import bq_standard.tasks.TaskCheckbox;
+import net.minecraft.client.Minecraft;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.text.TextFormatting;
 
 public class GuiTaskCheckbox extends GuiElement implements IGuiEmbedded
 {

@@ -1,14 +1,15 @@
 package bq_standard.client.gui.tasks;
 
-import java.text.DecimalFormat;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.util.text.TextFormatting;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import bq_standard.ScoreboardBQ;
 import bq_standard.tasks.TaskScoreboard;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.text.TextFormatting;
+
+import java.text.DecimalFormat;
 
 public class GuiTaskScoreboard extends GuiElement implements IGuiEmbedded
 {
@@ -37,7 +38,7 @@ public class GuiTaskScoreboard extends GuiElement implements IGuiEmbedded
 		GlStateManager.translate(posX + sizeX/2, posY + sizeY/2, 0F);
 		GlStateManager.scale(2F, 2F, 1F);
 		
-		int tw1 = mc.fontRenderer.getStringWidth(TextFormatting.BOLD + task.scoreName);
+		int tw1 = mc.fontRenderer.getStringWidth(TextFormatting.BOLD + task.scoreDisp);
 		mc.fontRenderer.drawString(TextFormatting.BOLD + task.scoreDisp, -tw1/2, -12, getTextColor(), false);
 		int score = ScoreboardBQ.getScore(QuestingAPI.getQuestingUUID(mc.player), task.scoreName);
 		DecimalFormat df = new DecimalFormat("0.##");

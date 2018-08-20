@@ -1,15 +1,16 @@
 package bq_standard.network.handlers;
 
-import java.util.ArrayList;
+import betterquesting.api.network.IPacketHandler;
+import betterquesting.api.utils.BigItemStack;
+import bq_standard.client.gui.GuiLootChest;
+import bq_standard.network.StandardPacketType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
-import betterquesting.api.network.IPacketHandler;
-import betterquesting.api.utils.BigItemStack;
-import bq_standard.client.gui.GuiLootChest;
-import bq_standard.network.StandardPacketType;
+
+import java.util.ArrayList;
 
 public class PktHandlerLootClaim implements IPacketHandler
 {

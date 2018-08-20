@@ -1,14 +1,14 @@
 package bq_standard.client.gui.rewards;
 
+import betterquesting.api.client.gui.GuiElement;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import bq_standard.rewards.RewardCommand;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;
-import betterquesting.api.client.gui.GuiElement;
-import betterquesting.api.client.gui.misc.IGuiEmbedded;
-import bq_standard.rewards.RewardCommand;
 
 public class GuiRewardCommand extends GuiElement implements IGuiEmbedded
 {

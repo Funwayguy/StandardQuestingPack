@@ -1,9 +1,5 @@
 package bq_standard.client.gui.tasks;
 
-import java.util.UUID;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.util.text.TextFormatting;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.lists.GuiScrollingItems;
@@ -12,6 +8,11 @@ import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.utils.BigItemStack;
 import bq_standard.tasks.TaskBlockBreak;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.util.text.TextFormatting;
+
+import java.util.UUID;
 
 public class GuiTaskBlockBreak extends GuiElement implements IGuiEmbedded
 {

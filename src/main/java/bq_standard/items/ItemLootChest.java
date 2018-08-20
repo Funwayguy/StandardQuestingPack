@@ -1,7 +1,14 @@
 package bq_standard.items;
 
-import java.util.ArrayList;
-import java.util.List;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.network.QuestingPacket;
+import betterquesting.api.properties.NativeProps;
+import betterquesting.api.utils.BigItemStack;
+import bq_standard.core.BQ_Standard;
+import bq_standard.network.StandardPacketType;
+import bq_standard.rewards.loot.LootGroup;
+import bq_standard.rewards.loot.LootRegistry;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
@@ -20,17 +27,9 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.network.QuestingPacket;
-import betterquesting.api.properties.NativeProps;
-import betterquesting.api.utils.BigItemStack;
-import bq_standard.core.BQ_Standard;
-import bq_standard.network.StandardPacketType;
-import bq_standard.rewards.loot.LootGroup;
-import bq_standard.rewards.loot.LootRegistry;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class ItemLootChest extends Item
 {

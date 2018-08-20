@@ -1,11 +1,12 @@
 package bq_standard;
 
-import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.UUID;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.UUID;
 
 public class ScoreBQ
 {

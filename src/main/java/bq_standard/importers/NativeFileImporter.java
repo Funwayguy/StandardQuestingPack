@@ -1,8 +1,5 @@
 package bq_standard.importers;
 
-import java.io.File;
-import java.io.FileFilter;
-import net.minecraft.nbt.NBTTagCompound;
 import betterquesting.api.client.importers.IImporter;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.questing.IQuestDatabase;
@@ -10,6 +7,10 @@ import betterquesting.api.questing.IQuestLineDatabase;
 import betterquesting.api.utils.FileExtensionFilter;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api.utils.NBTConverter;
+import net.minecraft.nbt.NBTTagCompound;
+
+import java.io.File;
+import java.io.FileFilter;
 
 public class NativeFileImporter implements IImporter
 {

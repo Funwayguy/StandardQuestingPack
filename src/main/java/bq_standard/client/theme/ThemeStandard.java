@@ -1,9 +1,10 @@
 package bq_standard.client.theme;
 
-import java.awt.Color;
-import net.minecraft.util.ResourceLocation;
 import betterquesting.api.client.themes.ITheme;
 import betterquesting.api.client.themes.IThemeRenderer;
+import net.minecraft.util.ResourceLocation;
+
+import java.awt.*;
 
 public class ThemeStandard implements ITheme
 {

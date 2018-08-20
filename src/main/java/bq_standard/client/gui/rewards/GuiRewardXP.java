@@ -1,12 +1,12 @@
 package bq_standard.client.gui.rewards;
 
+import betterquesting.api.client.gui.GuiElement;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import bq_standard.rewards.RewardXP;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;
-import betterquesting.api.client.gui.GuiElement;
-import betterquesting.api.client.gui.misc.IGuiEmbedded;
-import bq_standard.rewards.RewardXP;
 
 public class GuiRewardXP extends GuiElement implements IGuiEmbedded
 {

@@ -218,8 +218,10 @@ pip-log.txt
 ## IntelliJ
 #############
 
+*.iml
 .gradle/
 .idea/
 jars/
 classes/
 out/
+libs/

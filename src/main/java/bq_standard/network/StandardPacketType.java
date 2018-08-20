@@ -1,7 +1,7 @@
 package bq_standard.network;
 
-import net.minecraft.util.ResourceLocation;
 import bq_standard.core.BQ_Standard;
+import net.minecraft.util.ResourceLocation;
 
 public enum StandardPacketType
 {

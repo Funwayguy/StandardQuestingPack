@@ -1,5 +1,10 @@
 package bq_standard.client.gui;
 
+import betterquesting.api.client.gui.GuiElement;
+import betterquesting.api.client.gui.lists.GuiScrollingBase;
+import betterquesting.api.client.gui.lists.IScrollingEntry;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.RenderUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.util.ITooltipFlag;
@@ -8,11 +13,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraftforge.oredict.OreDictionary;
-import betterquesting.api.client.gui.GuiElement;
-import betterquesting.api.client.gui.lists.GuiScrollingBase;
-import betterquesting.api.client.gui.lists.IScrollingEntry;
-import betterquesting.api.utils.BigItemStack;
-import betterquesting.api.utils.RenderUtils;
 
 public class GuiScrollingItemsSmall extends GuiScrollingBase<GuiScrollingItemsSmall.ScrollingEntryItem>
 {

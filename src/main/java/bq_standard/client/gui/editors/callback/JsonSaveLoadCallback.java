@@ -1,9 +1,9 @@
 package bq_standard.client.gui.editors.callback;
 
-import net.minecraft.nbt.NBTBase;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.misc.ICallback;
 import betterquesting.api.misc.INBTSaveLoad;
+import net.minecraft.nbt.NBTBase;
 
 public class JsonSaveLoadCallback<T extends NBTBase> implements ICallback<T>
 {

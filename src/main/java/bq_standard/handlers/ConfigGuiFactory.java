@@ -1,10 +1,11 @@
 package bq_standard.handlers;
 
-import java.util.Set;
+import bq_standard.client.gui.GuiBQSConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.fml.client.IModGuiFactory;
-import bq_standard.client.gui.GuiBQSConfig;
+
+import java.util.Set;
 
 public class ConfigGuiFactory implements IModGuiFactory
 {

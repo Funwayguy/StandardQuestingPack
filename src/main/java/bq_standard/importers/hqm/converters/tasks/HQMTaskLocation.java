@@ -1,12 +1,13 @@
 package bq_standard.importers.hqm.converters.tasks;
 
-import java.util.ArrayList;
-import java.util.List;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.JsonHelper;
 import bq_standard.tasks.TaskLocation;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class HQMTaskLocation implements HQMTask
 {

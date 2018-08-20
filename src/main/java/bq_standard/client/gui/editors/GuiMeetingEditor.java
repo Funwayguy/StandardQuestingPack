@@ -1,5 +1,15 @@
 package bq_standard.client.gui.editors;
 
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.gui.GuiScreenThemed;
+import betterquesting.api.client.gui.controls.GuiButtonThemed;
+import betterquesting.api.client.gui.misc.IVolatileScreen;
+import betterquesting.api.enums.EnumSaveType;
+import betterquesting.api.misc.ICallback;
+import betterquesting.api.utils.RenderUtils;
+import bq_standard.client.gui.editors.callback.JsonSaveLoadCallback;
+import bq_standard.tasks.TaskMeeting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -11,16 +21,6 @@ import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.client.gui.GuiScreenThemed;
-import betterquesting.api.client.gui.controls.GuiButtonThemed;
-import betterquesting.api.client.gui.misc.IVolatileScreen;
-import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.misc.ICallback;
-import betterquesting.api.utils.RenderUtils;
-import bq_standard.client.gui.editors.callback.JsonSaveLoadCallback;
-import bq_standard.tasks.TaskMeeting;
 
 public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen, ICallback<Entity>
 {
@@ -67,7 +67,7 @@ public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen
 			
 			GlStateManager.color(1F, 1F, 1F, 1F);
 			
-			float angle = ((float)Minecraft.getSystemTime()%30000F)/30000F * 360F;
+			float angle = (float)(Minecraft.getSystemTime()%30000D /30000D * 360D);
 			float scale = 64F;
 			
 			if(entity.height * scale > (sizeY/2 - 52))
@@ -80,12 +80,7 @@ public class GuiMeetingEditor extends GuiScreenThemed implements IVolatileScreen
 				scale = sizeX/entity.width;
 			}
 			
-			try
-			{
-				RenderUtils.RenderEntity(guiLeft + sizeX/2, guiTop + sizeY/4 + MathHelper.ceil(entity.height/2F*scale) + 16, (int)scale, angle, 0F, entity);
-			} catch(Exception e)
-			{
-			}
+			RenderUtils.RenderEntity(guiLeft + sizeX/2, guiTop + sizeY/4 + MathHelper.ceil(entity.height/2F*scale) + 16, (int)scale, angle, 0F, entity);
 			
 			GlStateManager.popMatrix();
 		}

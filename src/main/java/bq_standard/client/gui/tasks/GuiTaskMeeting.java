@@ -1,5 +1,9 @@
 package bq_standard.client.gui.tasks;
 
+import betterquesting.api.client.gui.GuiElement;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import betterquesting.api.utils.RenderUtils;
+import bq_standard.tasks.TaskMeeting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
@@ -7,21 +11,17 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
-import betterquesting.api.client.gui.GuiElement;
-import betterquesting.api.client.gui.misc.IGuiEmbedded;
-import betterquesting.api.utils.RenderUtils;
-import bq_standard.tasks.TaskMeeting;
 
 public class GuiTaskMeeting extends GuiElement implements IGuiEmbedded
 {
-	TaskMeeting task;
-	Entity target;
-	private Minecraft mc;
+	private final TaskMeeting task;
+	private final Minecraft mc;
+	private Entity target;
 	
-	private int posX = 0;
-	private int posY = 0;
-	private int sizeX = 0;
-	private int sizeY = 0;
+	private final int posX;
+	private final int posY;
+	private final int sizeX;
+	private final int sizeY;
 	
 	public GuiTaskMeeting(TaskMeeting task, int posX, int posY, int sizeX, int sizeY)
 	{
@@ -43,7 +43,7 @@ public class GuiTaskMeeting extends GuiElement implements IGuiEmbedded
 			GlStateManager.scale(1F, 1F, 1F);
 			GlStateManager.color(1F, 1F, 1F, 1F);
 			
-			float angle = ((float)Minecraft.getSystemTime()%30000F)/30000F * 360F;
+			float angle = (float)(Minecraft.getSystemTime()%30000D / 30000D * 360D);
 			float scale = 64F;
 			
 			if(target.height * scale > (sizeY - 48))
@@ -56,12 +56,7 @@ public class GuiTaskMeeting extends GuiElement implements IGuiEmbedded
 				scale = sizeX/target.width;
 			}
 			
-			try
-			{
-				RenderUtils.RenderEntity(posX + sizeX/2, posY + sizeY/2 + MathHelper.ceil(target.height/2F*scale) + 8, (int)scale, angle, 0F, target);
-			} catch(Exception e)
-			{
-			}
+			RenderUtils.RenderEntity(posX + sizeX/2, posY + sizeY/2 + MathHelper.ceil(target.height/2F*scale) + 8, (int)scale, angle, 0F, target);
 			
 			GlStateManager.popMatrix();
 		} else

@@ -1,8 +1,5 @@
 package bq_standard.client.gui.rewards;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.nbt.NBTTagCompound;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiElement;
@@ -14,6 +11,9 @@ import betterquesting.api.utils.RenderUtils;
 import bq_standard.client.gui.GuiScrollingItemsSmall;
 import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.RewardChoice;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.nbt.NBTTagCompound;
 
 public class GuiRewardChoice extends GuiElement implements IGuiEmbedded
 {

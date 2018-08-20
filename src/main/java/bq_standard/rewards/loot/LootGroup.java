@@ -1,12 +1,13 @@
 package bq_standard.rewards.loot;
 
-import java.util.ArrayList;
-import java.util.Random;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.JsonHelper;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import betterquesting.api.utils.BigItemStack;
-import betterquesting.api.utils.JsonHelper;
+
+import java.util.ArrayList;
+import java.util.Random;
 
 public class LootGroup implements Comparable<LootGroup>
 {

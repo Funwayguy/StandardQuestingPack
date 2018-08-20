@@ -1,11 +1,11 @@
 package bq_standard.network.handlers;
 
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ResourceLocation;
 import betterquesting.api.network.IPacketHandler;
 import bq_standard.ScoreboardBQ;
 import bq_standard.network.StandardPacketType;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
 public class PktHandlerScoreboard implements IPacketHandler
 {

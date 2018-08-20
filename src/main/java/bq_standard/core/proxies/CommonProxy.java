@@ -1,6 +1,5 @@
 package bq_standard.core.proxies;
 
-import net.minecraftforge.common.MinecraftForge;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.network.IPacketRegistry;
@@ -8,27 +7,11 @@ import betterquesting.api.questing.rewards.IRewardRegistry;
 import betterquesting.api.questing.tasks.ITaskRegistry;
 import bq_standard.core.BQ_Standard;
 import bq_standard.handlers.EventHandler;
-import bq_standard.network.handlers.PktHandlerCheckbox;
-import bq_standard.network.handlers.PktHandlerChoice;
-import bq_standard.network.handlers.PktHandlerLootDatabase;
-import bq_standard.network.handlers.PktHandlerLootImport;
-import bq_standard.network.handlers.PktHandlerScoreboard;
-import bq_standard.rewards.factory.FactoryRewardChoice;
-import bq_standard.rewards.factory.FactoryRewardCommand;
-import bq_standard.rewards.factory.FactoryRewardItem;
-import bq_standard.rewards.factory.FactoryRewardScoreboard;
-import bq_standard.rewards.factory.FactoryRewardXP;
+import bq_standard.network.handlers.*;
+import bq_standard.rewards.factory.*;
 import bq_standard.rewards.loot.LootRegistry;
-import bq_standard.tasks.factory.FactoryTaskBlockBreak;
-import bq_standard.tasks.factory.FactoryTaskCheckbox;
-import bq_standard.tasks.factory.FactoryTaskCrafting;
-import bq_standard.tasks.factory.FactoryTaskFluid;
-import bq_standard.tasks.factory.FactoryTaskHunt;
-import bq_standard.tasks.factory.FactoryTaskLocation;
-import bq_standard.tasks.factory.FactoryTaskMeeting;
-import bq_standard.tasks.factory.FactoryTaskRetrieval;
-import bq_standard.tasks.factory.FactoryTaskScoreboard;
-import bq_standard.tasks.factory.FactoryTaskXP;
+import bq_standard.tasks.factory.*;
+import net.minecraftforge.common.MinecraftForge;
 
 public class CommonProxy
 {

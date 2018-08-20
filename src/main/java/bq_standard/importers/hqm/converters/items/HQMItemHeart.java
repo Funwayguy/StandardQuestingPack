@@ -1,9 +1,9 @@
 package bq_standard.importers.hqm.converters.items;
 
+import betterquesting.api.utils.BigItemStack;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import betterquesting.api.utils.BigItemStack;
 
 public class HQMItemHeart implements HQMItem
 {

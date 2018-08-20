@@ -1,6 +1,14 @@
 package bq_standard.importers.hqm;
 
-import java.util.HashMap;
+import betterquesting.api.placeholders.FluidPlaceholder;
+import betterquesting.api.placeholders.ItemPlaceholder;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.JsonHelper;
+import bq_standard.core.BQ_Standard;
+import bq_standard.importers.hqm.converters.items.HQMItem;
+import bq_standard.importers.hqm.converters.items.HQMItemBag;
+import bq_standard.importers.hqm.converters.items.HQMItemHeart;
+import com.google.gson.JsonObject;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTBase;
@@ -11,15 +19,8 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.placeholders.FluidPlaceholder;
-import betterquesting.api.placeholders.ItemPlaceholder;
-import betterquesting.api.utils.BigItemStack;
-import betterquesting.api.utils.JsonHelper;
-import bq_standard.core.BQ_Standard;
-import bq_standard.importers.hqm.converters.items.HQMItem;
-import bq_standard.importers.hqm.converters.items.HQMItemBag;
-import bq_standard.importers.hqm.converters.items.HQMItemHeart;
-import com.google.gson.JsonObject;
+
+import java.util.HashMap;
 
 public class HQMUtilities
 {

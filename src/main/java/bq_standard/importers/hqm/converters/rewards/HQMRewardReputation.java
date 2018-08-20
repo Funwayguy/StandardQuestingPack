@@ -1,12 +1,13 @@
 package bq_standard.importers.hqm.converters.rewards;
 
-import java.util.ArrayList;
-import java.util.List;
 import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api.utils.JsonHelper;
 import bq_standard.importers.hqm.HQMQuestImporter;
 import bq_standard.rewards.RewardScoreboard;
 import com.google.gson.JsonElement;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class HQMRewardReputation implements HQMReward
 {

@@ -1,7 +1,7 @@
 package bq_standard.client.gui;
 
-import java.awt.Color;
-import java.util.ArrayList;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.RenderUtils;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
@@ -13,8 +13,9 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
-import betterquesting.api.utils.BigItemStack;
-import betterquesting.api.utils.RenderUtils;
+
+import java.awt.*;
+import java.util.ArrayList;
 
 public class GuiLootChest extends GuiScreen
 {

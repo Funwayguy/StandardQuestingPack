@@ -1,7 +1,10 @@
 package bq_standard.client.gui.tasks;
 
-import java.awt.Color;
-import java.util.HashMap;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.gui.GuiElement;
+import betterquesting.api.client.gui.misc.IGuiEmbedded;
+import betterquesting.api.utils.RenderUtils;
+import bq_standard.tasks.TaskLocation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
@@ -9,11 +12,9 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.WorldProvider;
 import net.minecraftforge.common.DimensionManager;
-import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.client.gui.GuiElement;
-import betterquesting.api.client.gui.misc.IGuiEmbedded;
-import betterquesting.api.utils.RenderUtils;
-import bq_standard.tasks.TaskLocation;
+
+import java.awt.*;
+import java.util.HashMap;
 
 public class GuiTaskLocation extends GuiElement implements IGuiEmbedded
 {

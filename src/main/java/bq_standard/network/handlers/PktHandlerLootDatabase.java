@@ -1,16 +1,16 @@
 package bq_standard.network.handlers;
 
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.network.IPacketHandler;
+import bq_standard.core.BQ_Standard;
+import bq_standard.network.StandardPacketType;
+import bq_standard.rewards.loot.LootRegistry;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.network.IPacketHandler;
-import bq_standard.core.BQ_Standard;
-import bq_standard.network.StandardPacketType;
-import bq_standard.rewards.loot.LootRegistry;
 
 public class PktHandlerLootDatabase implements IPacketHandler
 {

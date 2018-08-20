@@ -1,43 +1,31 @@
 package bq_standard.importers.hqm;
 
+import betterquesting.api.client.importers.IImporter;
+import betterquesting.api.properties.IPropertyContainer;
+import betterquesting.api.properties.NativeProps;
+import betterquesting.api.questing.*;
+import betterquesting.api.questing.rewards.IReward;
+import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.FileExtensionFilter;
+import betterquesting.api.utils.JsonHelper;
+import betterquesting.api2.storage.IDatabaseNBT;
+import bq_standard.core.BQ_Standard;
+import bq_standard.importers.hqm.converters.rewards.*;
+import bq_standard.importers.hqm.converters.tasks.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import net.minecraft.init.Items;
+import net.minecraft.nbt.NBTTagList;
+import org.apache.logging.log4j.Level;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
-
-import betterquesting.api2.storage.IDatabaseNBT;
-import net.minecraft.init.Items;
-import net.minecraft.nbt.NBTTagList;
-import org.apache.logging.log4j.Level;
-import betterquesting.api.client.importers.IImporter;
-import betterquesting.api.properties.IPropertyContainer;
-import betterquesting.api.properties.NativeProps;
-import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.IQuestDatabase;
-import betterquesting.api.questing.IQuestLine;
-import betterquesting.api.questing.IQuestLineDatabase;
-import betterquesting.api.questing.IQuestLineEntry;
-import betterquesting.api.questing.rewards.IReward;
-import betterquesting.api.questing.tasks.ITask;
-import betterquesting.api.utils.BigItemStack;
-import betterquesting.api.utils.FileExtensionFilter;
-import betterquesting.api.utils.JsonHelper;
-import bq_standard.core.BQ_Standard;
-import bq_standard.importers.hqm.converters.rewards.HQMReward;
-import bq_standard.importers.hqm.converters.rewards.HQMRewardChoice;
-import bq_standard.importers.hqm.converters.rewards.HQMRewardCommand;
-import bq_standard.importers.hqm.converters.rewards.HQMRewardReputation;
-import bq_standard.importers.hqm.converters.rewards.HQMRewardStandard;
-import bq_standard.importers.hqm.converters.tasks.HQMTask;
-import bq_standard.importers.hqm.converters.tasks.HQMTaskCraft;
-import bq_standard.importers.hqm.converters.tasks.HQMTaskDetect;
-import bq_standard.importers.hqm.converters.tasks.HQMTaskKill;
-import bq_standard.importers.hqm.converters.tasks.HQMTaskLocation;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 public class HQMQuestImporter implements IImporter
 {

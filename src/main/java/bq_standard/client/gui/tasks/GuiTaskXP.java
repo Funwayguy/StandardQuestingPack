@@ -1,12 +1,5 @@
 package bq_standard.client.gui.tasks;
 
-import java.awt.Color;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.TextFormatting;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.misc.IGuiEmbedded;
@@ -15,6 +8,14 @@ import betterquesting.api.questing.IQuest;
 import betterquesting.api.utils.RenderUtils;
 import bq_standard.XPHelper;
 import bq_standard.tasks.TaskXP;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.TextFormatting;
+
+import java.awt.*;
 
 public class GuiTaskXP extends GuiElement implements IGuiEmbedded
 {

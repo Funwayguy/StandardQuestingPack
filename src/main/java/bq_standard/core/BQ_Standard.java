@@ -1,5 +1,10 @@
 package bq_standard.core;
 
+import bq_standard.commands.BQS_Commands;
+import bq_standard.core.proxies.CommonProxy;
+import bq_standard.handlers.ConfigHandler;
+import bq_standard.handlers.GuiHandler;
+import bq_standard.items.ItemLootChest;
 import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.item.Item;
@@ -16,11 +21,6 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import org.apache.logging.log4j.Logger;
-import bq_standard.commands.BQS_Commands;
-import bq_standard.core.proxies.CommonProxy;
-import bq_standard.handlers.ConfigHandler;
-import bq_standard.handlers.GuiHandler;
-import bq_standard.items.ItemLootChest;
 
 @Mod(modid = BQ_Standard.MODID, name = BQ_Standard.NAME, guiFactory = "bq_standard.handlers.ConfigGuiFactory")
 public class BQ_Standard

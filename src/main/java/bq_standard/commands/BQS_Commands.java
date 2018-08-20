@@ -1,6 +1,10 @@
 package bq_standard.commands;
 
-import java.io.File;
+import betterquesting.api.utils.JsonHelper;
+import betterquesting.api.utils.NBTConverter;
+import bq_standard.rewards.loot.LootGroup;
+import bq_standard.rewards.loot.LootRegistry;
+import com.google.gson.JsonObject;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -10,11 +14,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
-import betterquesting.api.utils.JsonHelper;
-import betterquesting.api.utils.NBTConverter;
-import bq_standard.rewards.loot.LootGroup;
-import bq_standard.rewards.loot.LootRegistry;
-import com.google.gson.JsonObject;
+
+import java.io.File;
 
 public class BQS_Commands extends CommandBase
 {

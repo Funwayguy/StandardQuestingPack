@@ -1,15 +1,15 @@
 package bq_standard.client.gui.rewards;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.RenderUtils;
 import bq_standard.client.gui.GuiScrollingItemsSmall;
 import bq_standard.rewards.RewardItem;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemStack;
 
 public class GuiRewardItem extends GuiElement implements IGuiEmbedded
 {

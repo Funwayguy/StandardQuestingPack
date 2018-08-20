@@ -1,8 +1,5 @@
 package bq_standard.client.gui.tasks;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.util.text.TextFormatting;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.lists.GuiScrollingItems;
@@ -11,6 +8,9 @@ import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.utils.BigItemStack;
 import bq_standard.tasks.TaskRetrieval;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.util.text.TextFormatting;
 
 public class GuiTaskRetrieval extends GuiElement implements IGuiEmbedded
 {

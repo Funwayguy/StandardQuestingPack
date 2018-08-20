@@ -1,14 +1,14 @@
 package bq_standard.network.handlers;
 
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ResourceLocation;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.network.IPacketHandler;
 import betterquesting.api.questing.tasks.ITask;
 import bq_standard.network.StandardPacketType;
 import bq_standard.tasks.TaskCheckbox;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
 public class PktHandlerCheckbox implements IPacketHandler
 {
