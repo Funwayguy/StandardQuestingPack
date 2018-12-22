@@ -90,6 +90,13 @@ public class GuiRewardChoice extends GuiElement implements IGuiEmbedded
 			retTags.setInteger("selection", idx);
 			QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(StandardPacketType.CHOICE.GetLocation(), retTags));
 		}
+		itemScroll.onMouseClick(mx, my, button);
+	}
+	
+	@Override
+	public void onMouseRelease(int mx, int my, int click)
+	{
+		itemScroll.onMouseRelease(mx, my, click);
 	}
 
 	@Override

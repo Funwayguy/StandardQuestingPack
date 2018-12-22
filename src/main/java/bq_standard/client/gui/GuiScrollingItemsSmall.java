@@ -5,6 +5,7 @@ import betterquesting.api.client.gui.lists.GuiScrollingBase;
 import betterquesting.api.client.gui.lists.IScrollingEntry;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.RenderUtils;
+import betterquesting.handlers.JEIHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.util.ITooltipFlag;
@@ -159,7 +160,14 @@ public class GuiScrollingItemsSmall extends GuiScrollingBase<GuiScrollingItemsSm
 		@Override
 		public void onMouseClick(int mx, int my, int px, int py, int click, int index)
 		{
-			// JEI/NEI support here
+		}
+		
+		@Override
+		public void onMouseRelease(int mx, int my, int px, int py, int click, int index) {
+			if(stack != null && isWithin(mx, my, px + 1, py + 1, 16, 16))
+			{
+				JEIHandler.show(stack.getBaseStack(), click != 1);
+			}
 		}
 
 		@Override
