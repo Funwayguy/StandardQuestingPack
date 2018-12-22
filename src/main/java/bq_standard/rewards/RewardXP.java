@@ -1,10 +1,12 @@
 package bq_standard.rewards;
 
-import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
+import betterquesting.api2.client.gui.misc.GuiRectangle;
+import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
 import bq_standard.XPHelper;
 import bq_standard.client.gui.rewards.GuiRewardXP;
 import bq_standard.rewards.factory.FactoryRewardXP;
@@ -61,9 +63,9 @@ public class RewardXP implements IReward
 	
 	@Override
 	@SideOnly(Side.CLIENT)
-	public IGuiEmbedded getRewardGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	public IGuiPanel getRewardGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
 	{
-		return new GuiRewardXP(this, posX, posY, sizeX, sizeY);
+		return new PanelLegacyEmbed<>(new GuiRectangle(posX, posY, sizeX, sizeY), new GuiRewardXP(this, posX, posY, sizeX, sizeY));
 	}
 	
 	@Override

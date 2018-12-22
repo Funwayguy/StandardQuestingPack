@@ -2,13 +2,15 @@ package bq_standard.tasks;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.questing.tasks.ITickableTask;
+import betterquesting.api2.client.gui.misc.GuiRectangle;
+import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
 import bq_standard.ScoreboardBQ;
 import bq_standard.client.gui.editors.GuiScoreEditor;
 import bq_standard.client.gui.tasks.GuiTaskScoreboard;
@@ -251,9 +253,9 @@ public class TaskScoreboard implements ITask, ITickableTask
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public IGuiEmbedded getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	public IGuiPanel getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
 	{
-		return new GuiTaskScoreboard(this, posX, posY, sizeX, sizeY);
+		return new PanelLegacyEmbed<>(new GuiRectangle(posX, posY, sizeX, sizeY), new GuiTaskScoreboard(this, posX, posY, sizeX, sizeY));
 	}
 	
 	@Override

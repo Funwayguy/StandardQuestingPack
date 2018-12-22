@@ -2,7 +2,6 @@ package bq_standard.tasks;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.properties.NativeProps;
@@ -10,6 +9,9 @@ import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.*;
 import betterquesting.api.utils.JsonHelper;
+import betterquesting.api2.client.gui.misc.GuiRectangle;
+import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
 import bq_standard.client.gui.tasks.GuiTaskFluid;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskFluid;
@@ -25,19 +27,18 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.UUID;
 
 public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int[]>, ITickableTask
 {
-	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
-	public ArrayList<FluidStack> requiredFluids = new ArrayList<FluidStack>();
-	public HashMap<UUID, int[]> userProgress = new HashMap<UUID, int[]>();
+	private List<UUID> completeUsers = new ArrayList<>();
+	public List<FluidStack> requiredFluids = new ArrayList<>();
+	public Map<UUID, int[]> userProgress = new HashMap<>();
 	public boolean consume = true;
 	public boolean autoConsume = false;
+	public boolean ignoreNbt = false;
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -117,7 +118,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		{
 			ItemStack stack = player.inventory.getStackInSlot(i);
 			
-			if(stack == null || stack.isEmpty())
+			if(stack.isEmpty())
 			{
 				continue;
 			}
@@ -141,18 +142,25 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 				
 				int remaining = rStack.amount - progress[j];
 				
-				FluidStack fluid = handler.drain(new FluidStack(rStack.getFluid(), remaining), consume);
+				FluidStack drain = rStack.copy();
+				drain.amount = remaining;
+				
+				if(ignoreNbt)
+				{
+					drain.tag = null;
+				}
+				
+				FluidStack fluid = handler.drain(drain, consume);
 				
 				if(fluid == null || fluid.amount <= 0)
 				{
 					continue;
 				} else if(consume)
 				{
-					stack = handler.getContainer();
-					player.inventory.setInventorySlotContents(i, stack);
+					player.inventory.setInventorySlotContents(i, handler.getContainer());
 				}
 				
-				progress[j] += Math.min(remaining, fluid == null? 0 : fluid.amount);
+				progress[j] += Math.min(remaining, fluid.amount);
 			}
 		}
 		
@@ -197,6 +205,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		
 		json.setBoolean("consume", consume);
 		json.setBoolean("autoConsume", autoConsume);
+		json.setBoolean("ignoreNBT", ignoreNbt);
 		
 		NBTTagList itemArray = new NBTTagList();
 		for(FluidStack stack : this.requiredFluids)
@@ -222,8 +231,9 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		
 		consume = json.getBoolean("consume");
 		autoConsume = json.getBoolean("autoConsume");
+		ignoreNbt = json.getBoolean("ignoreNBT");
 		
-		requiredFluids = new ArrayList<FluidStack>();
+		requiredFluids = new ArrayList<>();
 		NBTTagList fList = json.getTagList("requiredFluids", 10);
 		for(int i = 0; i < fList.tagCount(); i++)
 		{
@@ -239,16 +249,13 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 			if(fluid != null)
 			{
 				requiredFluids.add(fluid);
-			} else
-			{
-				continue;
 			}
 		}
 	}
 	
 	private void readProgressFromJson(NBTTagCompound json)
 	{
-		completeUsers = new ArrayList<UUID>();
+		completeUsers = new ArrayList<>();
 		NBTTagList cList = json.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
@@ -268,7 +275,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 			}
 		}
 		
-		userProgress = new HashMap<UUID, int[]>();
+		userProgress = new HashMap<>();
 		NBTTagList pList = json.getTagList("userProgress", 10);
 		for(int n = 0; n < pList.tagCount(); n++)
 		{
@@ -375,9 +382,9 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public IGuiEmbedded getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	public IGuiPanel getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
 	{
-		return new GuiTaskFluid(this, quest, posX, posY, sizeX, sizeY);
+		return new PanelLegacyEmbed<>(new GuiRectangle(posX, posY, sizeX, sizeY), new GuiTaskFluid(this, quest, posX, posY, sizeX, sizeY));
 	}
 	
 	@Override

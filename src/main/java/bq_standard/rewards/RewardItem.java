@@ -1,13 +1,15 @@
 package bq_standard.rewards;
 
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.JsonHelper;
+import betterquesting.api2.client.gui.misc.GuiRectangle;
+import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
 import bq_standard.NBTReplaceUtil;
 import bq_standard.client.gui.rewards.GuiRewardItem;
 import bq_standard.core.BQ_Standard;
@@ -113,9 +115,9 @@ public class RewardItem implements IReward
 	}
 
 	@Override
-	public IGuiEmbedded getRewardGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	public IGuiPanel getRewardGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
 	{
-		return new GuiRewardItem(this, posX, posY, sizeX, sizeY);
+		return new PanelLegacyEmbed<>(new GuiRectangle(posX, posY, sizeX, sizeY), new GuiRewardItem(this, posX, posY, sizeX, sizeY));
 	}
 	
 	@Override
