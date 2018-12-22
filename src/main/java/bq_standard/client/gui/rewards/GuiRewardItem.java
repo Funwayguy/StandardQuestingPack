@@ -57,6 +57,13 @@ public class GuiRewardItem extends GuiElement implements IGuiEmbedded
 	@Override
 	public void onMouseClick(int mx, int my, int button)
 	{
+		itemScroll.onMouseClick(mx, my, button);
+	}
+	
+	@Override
+	public void onMouseRelease(int mx, int my, int click)
+	{
+		itemScroll.onMouseRelease(mx, my, click);
 	}
 	
 	@Override

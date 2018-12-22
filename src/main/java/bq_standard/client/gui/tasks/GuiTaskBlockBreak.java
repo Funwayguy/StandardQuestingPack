@@ -81,6 +81,13 @@ public class GuiTaskBlockBreak extends GuiElement implements IGuiEmbedded
 	@Override
 	public void onMouseClick(int mx, int my, int click)
 	{
+		scrollList.onMouseClick(mx, my, click);
+	}
+	
+	@Override
+	public void onMouseRelease(int mx, int my, int click)
+	{
+		scrollList.onMouseRelease(mx, my, click);
 	}
 
 	@Override
