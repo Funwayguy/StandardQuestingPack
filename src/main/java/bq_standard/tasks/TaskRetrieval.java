@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 
@@ -194,7 +195,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITi
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
-			return this.writeProgressToJson(json);
+			return this.writeProgressToJson(json, null);
 		} else if(saveType != EnumSaveType.CONFIG)
 		{
 			return json;
@@ -319,11 +320,14 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITi
 		}
 	}
 	
-	public NBTTagCompound writeProgressToJson(NBTTagCompound json)
+	@Override
+	public NBTTagCompound writeProgressToJson(NBTTagCompound json, List<UUID> userFilter)
 	{
 		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
 		{
+			if(userFilter != null && !userFilter.contains(uuid)) continue;
+			
 			jArray.appendTag(new NBTTagString(uuid.toString()));
 		}
 		json.setTag("completeUsers", jArray);
@@ -331,6 +335,8 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITi
 		NBTTagList progArray = new NBTTagList();
 		for(Entry<UUID,int[]> entry : userProgress.entrySet())
 		{
+			if(userFilter != null && !userFilter.contains(entry.getKey())) continue;
+			
 			NBTTagCompound pJson = new NBTTagCompound();
 			pJson.setString("uuid", entry.getKey().toString());
 			NBTTagList pArray = new NBTTagList();

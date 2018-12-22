@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 
@@ -138,7 +139,7 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
-			return this.writeProgressToJson(json);
+			return this.writeProgressToJson(json, null);
 		} else if(saveType != EnumSaveType.CONFIG)
 		{
 			return json;
@@ -220,11 +221,14 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		}
 	}
 	
-	private NBTTagCompound writeProgressToJson(NBTTagCompound json)
+	@Override
+	public NBTTagCompound writeProgressToJson(NBTTagCompound json, List<UUID> userFilter)
 	{
 		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
 		{
+			if(userFilter != null && !userFilter.contains(uuid)) continue;
+			
 			jArray.appendTag(new NBTTagString(uuid.toString()));
 		}
 		json.setTag("completeUsers", jArray);
@@ -232,6 +236,8 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		NBTTagList progArray = new NBTTagList();
 		for(Entry<UUID,Integer> entry : userProgress.entrySet())
 		{
+			if(userFilter != null && !userFilter.contains(entry.getKey())) continue;
+			
 			NBTTagCompound pJson = new NBTTagCompound();
 			pJson.setString("uuid", entry.getKey().toString());
 			pJson.setInteger("value", entry.getValue());
