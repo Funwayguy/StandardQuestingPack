@@ -9,7 +9,7 @@ import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api.utils.ItemComparison;
-import betterquesting.api2.client.gui.misc.GuiRectangle;
+import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
 import bq_standard.client.gui.editors.GuiMeetingEditor;
@@ -240,9 +240,9 @@ public class TaskMeeting implements ITask, ITickableTask
 	}
 
 	@Override
-	public IGuiPanel getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-		return new PanelLegacyEmbed<>(new GuiRectangle(posX, posY, sizeX, sizeY), new GuiTaskMeeting(this, posX, posY, sizeX, sizeY));
+		return new PanelLegacyEmbed<>(rect, new GuiTaskMeeting(this, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
 	}
 
 	@Override

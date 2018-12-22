@@ -10,7 +10,7 @@ import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.questing.tasks.ITickableTask;
-import betterquesting.api2.client.gui.misc.GuiRectangle;
+import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
 import bq_standard.XPHelper;
@@ -243,7 +243,7 @@ public class TaskXP implements ITask, IProgression<Long>, ITickableTask
 	public void resetAll()
 	{
 		completeUsers.clear();
-		userProgress.clear();;
+		userProgress.clear();
 	}
 	
 	@Override
@@ -260,9 +260,9 @@ public class TaskXP implements ITask, IProgression<Long>, ITickableTask
 	}
 	
 	@Override
-	public IGuiPanel getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-		return new PanelLegacyEmbed<>(new GuiRectangle(posX, posY, sizeX, sizeY), new GuiTaskXP(this, quest, posX, posY, sizeX, sizeY));
+		return new PanelLegacyEmbed<>(rect, new GuiTaskXP(this, quest, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
 	}
 	
 	@Override

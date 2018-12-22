@@ -9,7 +9,7 @@ import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.*;
 import betterquesting.api.utils.JsonHelper;
-import betterquesting.api2.client.gui.misc.GuiRectangle;
+import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
 import bq_standard.client.gui.tasks.GuiTaskFluid;
@@ -382,9 +382,9 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public IGuiPanel getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-		return new PanelLegacyEmbed<>(new GuiRectangle(posX, posY, sizeX, sizeY), new GuiTaskFluid(this, quest, posX, posY, sizeX, sizeY));
+		return new PanelLegacyEmbed<>(rect, new GuiTaskFluid(this, quest, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
 	}
 	
 	@Override
