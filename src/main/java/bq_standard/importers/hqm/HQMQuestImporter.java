@@ -1,6 +1,7 @@
 package bq_standard.importers.hqm;
 
 import betterquesting.api.client.importers.IImporter;
+import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.properties.IPropertyContainer;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.*;
@@ -17,6 +18,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.init.Items;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import org.apache.logging.log4j.Level;
 
@@ -252,8 +254,61 @@ public class HQMQuestImporter implements IImporter
 				BQ_Standard.logger.log(Level.WARN, "Tried to add duplicate quest " + quest + " to quest line " + questLine.getUnlocalisedName());
 			} else
 			{
-				IQuestLineEntry qle = questLine.createNewEntry(questDB.getID(quest));
-				qle.setPosition(JsonHelper.GetNumber(jQuest, "x", 0).intValue(), JsonHelper.GetNumber(jQuest, "y", 0).intValue());
+			    // TODO: Find a better way of doing this.
+			    final int qleX = JsonHelper.GetNumber(jQuest, "x", 0).intValue();
+			    final int qleY = JsonHelper.GetNumber(jQuest, "y", 0).intValue();
+				questLine.add(questDB.getID(quest), new IQuestLineEntry()
+                {
+                    @Override
+                    public int getSize()
+                    {
+                        return 24;
+                    }
+    
+                    @Override
+                    public int getPosX()
+                    {
+                        return qleX;
+                    }
+    
+                    @Override
+                    public int getPosY()
+                    {
+                        return qleY;
+                    }
+    
+                    @Override
+                    public void setPosition(int posX, int posY)
+                    {
+        
+                    }
+    
+                    @Override
+                    public void setSize(int size)
+                    {
+        
+                    }
+    
+                    @Override
+                    public NBTTagCompound writeToNBT(NBTTagCompound nbt, EnumSaveType saveType)
+                    {
+                        if(saveType != EnumSaveType.CONFIG)
+                        {
+                            return nbt;
+                        }
+                        
+                        nbt.setInteger("size", 24);
+                        nbt.setInteger("x", qleX);
+                        nbt.setInteger("y", qleY);
+                        return nbt;
+                    }
+    
+                    @Override
+                    public void readFromNBT(NBTTagCompound nbt, EnumSaveType saveType)
+                    {
+        
+                    }
+                });
 			}
 		}
 	}
