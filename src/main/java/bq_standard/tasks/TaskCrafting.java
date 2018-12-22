@@ -12,10 +12,9 @@ import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api.utils.JsonHelper;
-import betterquesting.api2.client.gui.misc.GuiRectangle;
+import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
-import bq_standard.client.gui.tasks.GuiTaskCrafting;
+import bq_standard.client.gui2.tasks.PanelTaskCrafting;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskCrafting;
 import net.minecraft.client.gui.GuiScreen;
@@ -349,9 +348,10 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	}
 
 	@Override
-	public IGuiPanel getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-		return new PanelLegacyEmbed<>(new GuiRectangle(posX, posY, sizeX, sizeY), new GuiTaskCrafting(this, quest, posX, posY, sizeX, sizeY));
+	    return new PanelTaskCrafting(rect, quest, this);
+		//return new PanelLegacyEmbed<>(new GuiRectangle(posX, posY, sizeX, sizeY), new GuiTaskCrafting(this, quest, posX, posY, sizeX, sizeY));
 	}
 	
 	@Override

@@ -7,7 +7,7 @@ import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.JsonHelper;
-import betterquesting.api2.client.gui.misc.GuiRectangle;
+import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
 import bq_standard.NBTReplaceUtil;
@@ -162,9 +162,9 @@ public class RewardChoice implements IReward
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public IGuiPanel getRewardGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	public IGuiPanel getRewardGui(IGuiRect rect, IQuest quest)
 	{
-		return new PanelLegacyEmbed<>(new GuiRectangle(posX, posY, sizeX, sizeY), new GuiRewardChoice(this, quest, posX, posY, sizeX, sizeY));
+		return new PanelLegacyEmbed<>(rect, new GuiRewardChoice(this, quest, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
 	}
 	
 	@Override

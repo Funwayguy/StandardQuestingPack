@@ -12,7 +12,7 @@ import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
-import betterquesting.api2.client.gui.misc.GuiRectangle;
+import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
 import bq_standard.client.gui.tasks.GuiTaskBlockBreak;
@@ -334,9 +334,9 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public IGuiPanel getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-		return new PanelLegacyEmbed<>(new GuiRectangle(posX, posY, sizeX, sizeY), new GuiTaskBlockBreak(this, quest, posX, posY, sizeX, sizeY));
+		return new PanelLegacyEmbed<>(rect, new GuiTaskBlockBreak(this, quest, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
 	}
 	
 	@Override
