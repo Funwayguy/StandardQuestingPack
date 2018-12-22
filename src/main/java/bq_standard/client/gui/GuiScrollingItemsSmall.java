@@ -1,11 +1,12 @@
 package bq_standard.client.gui;
 
+import java.util.function.BiConsumer;
+
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.lists.GuiScrollingBase;
 import betterquesting.api.client.gui.lists.IScrollingEntry;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.RenderUtils;
-import betterquesting.handlers.JEIHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.util.ITooltipFlag;
@@ -26,14 +27,16 @@ public class GuiScrollingItemsSmall extends GuiScrollingBase<GuiScrollingItemsSm
 		this.allowDragScroll(true);
 	}
 	
-	public void addItem(BigItemStack stack)
+	public ScrollingEntryItem addItem(BigItemStack stack)
 	{
-		addItem(stack, stack.getBaseStack().getDisplayName());
+		return addItem(stack, stack.getBaseStack().getDisplayName());
 	}
 	
-	public void addItem(BigItemStack stack, String description)
+	public ScrollingEntryItem addItem(BigItemStack stack, String description)
 	{
-		this.getEntryList().add(new ScrollingEntryItem(mc, stack, description));
+		ScrollingEntryItem item = new ScrollingEntryItem(mc, stack, description);
+		this.getEntryList().add(item);
+		return item;
 	}
 	
 	public static class ScrollingEntryItem extends GuiElement implements IScrollingEntry
@@ -41,6 +44,7 @@ public class GuiScrollingItemsSmall extends GuiScrollingBase<GuiScrollingItemsSm
 		private final Minecraft mc;
 		private BigItemStack stack;
 		private String desc = "";
+		private BiConsumer<BigItemStack, Integer> clickHandler;
 		
 		private NonNullList<ItemStack> subStacks = NonNullList.<ItemStack>create();
 		
@@ -166,7 +170,7 @@ public class GuiScrollingItemsSmall extends GuiScrollingBase<GuiScrollingItemsSm
 		public void onMouseRelease(int mx, int my, int px, int py, int click, int index) {
 			if(stack != null && isWithin(mx, my, px + 1, py + 1, 16, 16))
 			{
-				JEIHandler.show(stack.getBaseStack(), click != 1);
+				clickHandler.accept(stack, click);
 			}
 		}
 
@@ -180,6 +184,11 @@ public class GuiScrollingItemsSmall extends GuiScrollingBase<GuiScrollingItemsSm
 		public boolean canDrawOutsideBox(boolean isForeground)
 		{
 			return isForeground;
+		}
+
+		public void setClickHandler(BiConsumer<BigItemStack, Integer> clickHandler)
+		{
+			this.clickHandler = clickHandler;
 		}
 	}
 }
