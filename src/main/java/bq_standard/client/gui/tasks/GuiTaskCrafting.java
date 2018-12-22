@@ -7,6 +7,7 @@ import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.utils.BigItemStack;
+import bq_standard.client.integration.JEIIntegration;
 import bq_standard.tasks.TaskCrafting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
@@ -58,7 +59,7 @@ public class GuiTaskCrafting extends GuiElement implements IGuiEmbedded
 				txt += "\n" + TextFormatting.RED + I18n.format("betterquesting.tooltip.incomplete");
 			}
 			
-			scrollList.addItem(stack, txt);
+			scrollList.addItem(stack, txt).setClickHandler((s, button) -> JEIIntegration.showJEI(s.getBaseStack(), button));
 		}
 	}
 
@@ -76,6 +77,13 @@ public class GuiTaskCrafting extends GuiElement implements IGuiEmbedded
 	@Override
 	public void onMouseClick(int mx, int my, int click)
 	{
+		scrollList.onMouseClick(mx, my, click);
+	}
+	
+	@Override
+	public void onMouseRelease(int mx, int my, int click)
+	{
+		scrollList.onMouseRelease(mx, my, click);
 	}
 
 	@Override

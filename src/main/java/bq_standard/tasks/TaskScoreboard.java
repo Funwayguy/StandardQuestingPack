@@ -29,6 +29,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class TaskScoreboard implements ITask, ITickableTask
@@ -130,7 +131,7 @@ public class TaskScoreboard implements ITask, ITickableTask
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
-			return this.writeProgressToJson(json);
+			return this.writeProgressToJson(json, null);
 		} else if(saveType != EnumSaveType.CONFIG)
 		{
 			return json;
@@ -170,11 +171,14 @@ public class TaskScoreboard implements ITask, ITickableTask
 		operation = operation != null? operation : ScoreOperation.MORE_OR_EQUAL;
 	}
 
-	private NBTTagCompound writeProgressToJson(NBTTagCompound json)
+	@Override
+	public NBTTagCompound writeProgressToJson(NBTTagCompound json, List<UUID> userFilter)
 	{
 		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
 		{
+			if(userFilter != null && !userFilter.contains(uuid)) continue;
+			
 			jArray.appendTag(new NBTTagString(uuid.toString()));
 		}
 		json.setTag("completeUsers", jArray);

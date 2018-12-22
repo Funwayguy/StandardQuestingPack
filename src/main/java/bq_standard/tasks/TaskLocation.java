@@ -26,6 +26,7 @@ import net.minecraft.util.math.Vec3d;
 import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class TaskLocation implements ITask, ITickableTask
@@ -126,7 +127,7 @@ public class TaskLocation implements ITask, ITickableTask
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
-			return this.writeProgressToJson(json);
+			return this.writeProgressToJson(json, null);
 		} else if(saveType != EnumSaveType.CONFIG)
 		{
 			return json;
@@ -166,11 +167,14 @@ public class TaskLocation implements ITask, ITickableTask
 		hideInfo = json.getBoolean("hideInfo");
 	}
 
-	private NBTTagCompound writeProgressToJson(NBTTagCompound json)
+	@Override
+	public NBTTagCompound writeProgressToJson(NBTTagCompound json, List<UUID> userFilter)
 	{
 		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
 		{
+			if(userFilter != null && !userFilter.contains(uuid)) continue;
+			
 			jArray.appendTag(new NBTTagString(uuid.toString()));
 		}
 		json.setTag("completeUsers", jArray);

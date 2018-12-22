@@ -5,6 +5,7 @@ import betterquesting.api.client.gui.lists.GuiScrollingFluids;
 import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
+import bq_standard.client.integration.JEIIntegration;
 import bq_standard.tasks.TaskFluid;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
@@ -54,7 +55,7 @@ public class GuiTaskFluid implements IGuiEmbedded
 				txt += "\n" + TextFormatting.RED + I18n.format("betterquesting.tooltip.incomplete");
 			}
 			
-			scrollList.addFluid(stack, txt);
+			scrollList.addFluid(stack, txt).setClickHandler((s, button) -> JEIIntegration.showJEI(s, button));
 		}
 	}
 
@@ -73,6 +74,13 @@ public class GuiTaskFluid implements IGuiEmbedded
 	@Override
 	public void onMouseClick(int mx, int my, int click)
 	{
+		scrollList.onMouseClick(mx, my, click);
+	}
+	
+	@Override
+	public void onMouseRelease(int mx, int my, int click)
+	{
+		scrollList.onMouseRelease(mx, my, click);
 	}
 
 	@Override
