@@ -28,6 +28,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
 import java.util.*;
+import java.util.List;
 import java.util.Map.Entry;
 
 public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int[]>, ITickableTask
@@ -196,7 +197,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
-			return this.writeProgressToJson(json);
+			return this.writeProgressToJson(json, null);
 		} else if(saveType != EnumSaveType.CONFIG)
 		{
 			return json;
@@ -313,11 +314,14 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		}
 	}
 	
-	private NBTTagCompound writeProgressToJson(NBTTagCompound json)
+	@Override
+	public NBTTagCompound writeProgressToJson(NBTTagCompound json, List<UUID> userFilter)
 	{
 		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
 		{
+			if(userFilter != null && !userFilter.contains(uuid)) continue;
+			
 			jArray.appendTag(new NBTTagString(uuid.toString()));
 		}
 		json.setTag("completeUsers", jArray);
@@ -325,6 +329,8 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		NBTTagList progArray = new NBTTagList();
 		for(Entry<UUID,int[]> entry : userProgress.entrySet())
 		{
+			if(userFilter != null && !userFilter.contains(entry.getKey())) continue;
+			
 			NBTTagCompound pJson = new NBTTagCompound();
 			pJson.setString("uuid", entry.getKey().toString());
 			NBTTagList pArray = new NBTTagList();

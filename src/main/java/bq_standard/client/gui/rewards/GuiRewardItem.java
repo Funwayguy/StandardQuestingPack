@@ -5,6 +5,7 @@ import betterquesting.api.client.gui.misc.IGuiEmbedded;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.RenderUtils;
 import bq_standard.client.gui.GuiScrollingItemsSmall;
+import bq_standard.client.integration.JEIIntegration;
 import bq_standard.rewards.RewardItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -31,7 +32,8 @@ public class GuiRewardItem extends GuiElement implements IGuiEmbedded
 		
 		for(BigItemStack stack : reward.items)
 		{
-			this.itemScroll.addItem(new BigItemStack(stack.getBaseStack()), stack.stackSize + " " + stack.getBaseStack().getDisplayName());
+			this.itemScroll.addItem(new BigItemStack(stack.getBaseStack()), stack.stackSize + " " + stack.getBaseStack().getDisplayName())
+				.setClickHandler((s, button) -> JEIIntegration.showJEI(s.getBaseStack(), button));
 		}
 	}
 	
@@ -57,6 +59,13 @@ public class GuiRewardItem extends GuiElement implements IGuiEmbedded
 	@Override
 	public void onMouseClick(int mx, int my, int button)
 	{
+		itemScroll.onMouseClick(mx, my, button);
+	}
+	
+	@Override
+	public void onMouseRelease(int mx, int my, int click)
+	{
+		itemScroll.onMouseRelease(mx, my, click);
 	}
 	
 	@Override
