@@ -9,7 +9,6 @@ import betterquesting.api.questing.IQuest;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.RenderUtils;
 import bq_standard.client.gui.GuiScrollingItemsSmall;
-import bq_standard.client.integration.JEIIntegration;
 import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.RewardChoice;
 import net.minecraft.client.Minecraft;
@@ -44,8 +43,7 @@ public class GuiRewardChoice extends GuiElement implements IGuiEmbedded
 		
 		for(BigItemStack stack : reward.choices)
 		{
-			this.itemScroll.addItem(new BigItemStack(stack.getBaseStack()), stack.stackSize + " " + stack.getBaseStack().getDisplayName())
-				.setClickHandler((s, button) -> JEIIntegration.showJEI(s.getBaseStack(), button));
+			this.itemScroll.addItem(new BigItemStack(stack.getBaseStack()), stack.stackSize + " " + stack.getBaseStack().getDisplayName());
 		}
 	}
 
@@ -92,13 +90,6 @@ public class GuiRewardChoice extends GuiElement implements IGuiEmbedded
 			retTags.setInteger("selection", idx);
 			QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(StandardPacketType.CHOICE.GetLocation(), retTags));
 		}
-		itemScroll.onMouseClick(mx, my, button);
-	}
-	
-	@Override
-	public void onMouseRelease(int mx, int my, int click)
-	{
-		itemScroll.onMouseRelease(mx, my, click);
 	}
 
 	@Override

@@ -155,7 +155,7 @@ public class TaskMeeting implements ITask, ITickableTask
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
-			return this.writeProgressToJson(json, null);
+			return this.writeProgressToJson(json);
 		} else if(saveType != EnumSaveType.CONFIG)
 		{
 			return json;
@@ -191,14 +191,11 @@ public class TaskMeeting implements ITask, ITickableTask
 		targetTags = json.getCompoundTag("targetNBT");
 	}
 
-	@Override
-	public NBTTagCompound writeProgressToJson(NBTTagCompound json, List<UUID> userFilter)
+	private NBTTagCompound writeProgressToJson(NBTTagCompound json)
 	{
 		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
 		{
-			if(userFilter != null && !userFilter.contains(uuid)) continue;
-			
 			jArray.appendTag(new NBTTagString(uuid.toString()));
 		}
 		json.setTag("completeUsers", jArray);

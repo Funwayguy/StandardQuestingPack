@@ -1,7 +1,5 @@
 package bq_standard.client.gui;
 
-import java.util.function.BiConsumer;
-
 import betterquesting.api.client.gui.GuiElement;
 import betterquesting.api.client.gui.lists.GuiScrollingBase;
 import betterquesting.api.client.gui.lists.IScrollingEntry;
@@ -27,16 +25,14 @@ public class GuiScrollingItemsSmall extends GuiScrollingBase<GuiScrollingItemsSm
 		this.allowDragScroll(true);
 	}
 	
-	public ScrollingEntryItem addItem(BigItemStack stack)
+	public void addItem(BigItemStack stack)
 	{
-		return addItem(stack, stack.getBaseStack().getDisplayName());
+		addItem(stack, stack.getBaseStack().getDisplayName());
 	}
 	
-	public ScrollingEntryItem addItem(BigItemStack stack, String description)
+	public void addItem(BigItemStack stack, String description)
 	{
-		ScrollingEntryItem item = new ScrollingEntryItem(mc, stack, description);
-		this.getEntryList().add(item);
-		return item;
+		this.getEntryList().add(new ScrollingEntryItem(mc, stack, description));
 	}
 	
 	public static class ScrollingEntryItem extends GuiElement implements IScrollingEntry
@@ -44,7 +40,6 @@ public class GuiScrollingItemsSmall extends GuiScrollingBase<GuiScrollingItemsSm
 		private final Minecraft mc;
 		private BigItemStack stack;
 		private String desc = "";
-		private BiConsumer<BigItemStack, Integer> clickHandler;
 		
 		private NonNullList<ItemStack> subStacks = NonNullList.<ItemStack>create();
 		
@@ -164,14 +159,7 @@ public class GuiScrollingItemsSmall extends GuiScrollingBase<GuiScrollingItemsSm
 		@Override
 		public void onMouseClick(int mx, int my, int px, int py, int click, int index)
 		{
-		}
-		
-		@Override
-		public void onMouseRelease(int mx, int my, int px, int py, int click, int index) {
-			if(stack != null && isWithin(mx, my, px + 1, py + 1, 16, 16))
-			{
-				clickHandler.accept(stack, click);
-			}
+			// JEI/NEI support here
 		}
 
 		@Override
@@ -184,11 +172,6 @@ public class GuiScrollingItemsSmall extends GuiScrollingBase<GuiScrollingItemsSm
 		public boolean canDrawOutsideBox(boolean isForeground)
 		{
 			return isForeground;
-		}
-
-		public void setClickHandler(BiConsumer<BigItemStack, Integer> clickHandler)
-		{
-			this.clickHandler = clickHandler;
 		}
 	}
 }

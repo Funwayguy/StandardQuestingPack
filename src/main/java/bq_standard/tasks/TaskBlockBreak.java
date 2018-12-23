@@ -36,7 +36,6 @@ import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 
@@ -150,7 +149,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 	{
 		if(saveType == EnumSaveType.PROGRESS)
 		{
-			return this.writeProgressToJson(json, null);
+			return this.writeProgressToJson(json);
 		} else if(saveType != EnumSaveType.CONFIG)
 		{
 			return json;
@@ -274,14 +273,11 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		}
 	}
 	
-	@Override
-	public NBTTagCompound writeProgressToJson(NBTTagCompound json, List<UUID> userFilter)
+	public NBTTagCompound writeProgressToJson(NBTTagCompound json)
 	{
 		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
 		{
-			if(userFilter != null && !userFilter.contains(uuid)) continue;
-			
 			jArray.appendTag(new NBTTagString(uuid.toString()));
 		}
 		json.setTag("completeUsers", jArray);
@@ -289,8 +285,6 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		NBTTagList progArray = new NBTTagList();
 		for(Entry<UUID,int[]> entry : userProgress.entrySet())
 		{
-			if(userFilter != null && !userFilter.contains(entry.getKey())) continue;
-			
 			NBTTagCompound pJson = new NBTTagCompound();
 			pJson.setString("uuid", entry.getKey().toString());
 			NBTTagList pArray = new NBTTagList();
