@@ -1,0 +1,53 @@
+bq_standard.task.retrieval=Задание на получение
+bq_standard.task.crafting=Задание на создание
+bq_standard.task.hunt=Задание на охоту
+bq_standard.task.scoreboard=Задание на получение очков
+bq_standard.task.location=Задание на поиск
+bq_standard.task.fluid=Задание на накопление жидкости
+bq_standard.task.meeting=Задание на встречу
+bq_standard.task.xp=Задание на получение опыта
+bq_standard.task.block_break=Задание на разрушение блока
+bq_standard.task.checkbox=Задание на отметку
+
+bq_standard.reward.choice=Выбор награды
+bq_standard.reward.item=Награда: предмет
+bq_standard.reward.scoreboard=Награда: очки
+bq_standard.reward.command=Награда: команда
+bq_standard.reward.xp=Награда: опыт
+
+bq_standard.title.edit_hunt=Редактировать задание на охоту
+bq_standard.title.edit_meeting=Редактировать задание на встречу
+bq_standard.title.edit_loot_groups=Edit Loot Groups
+bq_standard.title.edit_loot_entries=Edit Loot Entries
+bq_standard.title.edit_retrieval=Редактировать задание на получение
+bq_standard.ttile.edit_crafting=Редактировать задание на создание
+
+bq_standard.btn.select_mob=Выбор существа
+bq_standard.btn.add_remove_drops=Добавить/удалить дроп
+bq_standard.btn.edit_items=Добавить/удалить предметы
+bq_standard.btn.consume=Расходуется при завершении: %s
+
+bq_standard.gui.amount=Количество
+bq_standard.gui.kill=Убить %s
+bq_standard.gui.location=Место нахождения: %s
+bq_standard.gui.distance=Расстояние: %s
+bq_standard.gui.dimension=Измерение: %s
+bq_standard.gui.found=Найдено!
+bq_standard.gui.undiscovered=Не исследовано
+bq_standard.gui.condition=Условие: %s
+bq_standard.gui.meet=Встретить %s
+bq_standard.gui.weight=Вес
+bq_standard.gui.experience=Опыт
+
+bq_standard.importer.hqm_bag.name=HQM Bag Importer
+bq_standard.importer.hqm_bag.desc=Imports HQM rewards bags exported in json format.
+bq_standard.importer.hqm_quest.name=HQM Quest Importer
+bq_standard.importer.hqm_quest.desc=Imports HQM quest lines exported in json format. Due to the strange nature in which HQM quests are indexed post export, errors may occur between quests with duplicate names or conditional unlocks.
+bq_standard.importer.nat_file.name=Native File Importer
+bq_standard.importer.nat_file.desc=Imports native quest database files and appends them onto the exisiting ones.
+bq_standard.importer.nat_url.name=Native Url Importer
+bq_standard.importer.nat_url.desc=Imports native quest databases from the internet and appends them onto the exisiting ones.
+
+item.bq_standard.loot_chest.name=Сундук с сокровищами
+
+bq_standard.tooltip.loot_chest=Редкость: %s
