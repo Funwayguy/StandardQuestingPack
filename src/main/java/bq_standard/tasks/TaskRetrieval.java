@@ -16,8 +16,7 @@ import betterquesting.api.utils.ItemComparison;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
-import bq_standard.client.gui.tasks.GuiTaskRetrieval;
+import bq_standard.client.gui2.tasks.PanelTaskRetrieval;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskRetrieval;
 import net.minecraft.client.gui.GuiScreen;
@@ -385,7 +384,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITi
 	@Override
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-		return new PanelLegacyEmbed<>(rect, new GuiTaskRetrieval(this, quest, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
+	    return new PanelTaskRetrieval(rect, quest, this);
 	}
 	
 	@Override

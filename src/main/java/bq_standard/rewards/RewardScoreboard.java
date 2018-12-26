@@ -6,8 +6,7 @@ import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
-import bq_standard.client.gui.rewards.GuiRewardScoreboard;
+import bq_standard.client.gui2.rewards.PanelRewardScoreboard;
 import bq_standard.core.BQ_Standard;
 import bq_standard.rewards.factory.FactoryRewardScoreboard;
 import net.minecraft.client.gui.GuiScreen;
@@ -109,7 +108,8 @@ public class RewardScoreboard implements IReward
 	@SideOnly(Side.CLIENT)
 	public IGuiPanel getRewardGui(IGuiRect rect, IQuest quest)
 	{
-		return new PanelLegacyEmbed<>(rect, new GuiRewardScoreboard(this, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
+	    return new PanelRewardScoreboard(rect, quest, this);
+		//return new PanelLegacyEmbed<>(rect, new GuiRewardScoreboard(this, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
 	}
 	
 	@Override

@@ -12,9 +12,8 @@ import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
 import bq_standard.client.gui.editors.GuiHuntEditor;
-import bq_standard.client.gui.tasks.GuiTaskHunt;
+import bq_standard.client.gui2.tasks.PanelTaskHunt;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskHunt;
 import net.minecraft.client.gui.GuiScreen;
@@ -283,7 +282,7 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	@SideOnly(Side.CLIENT)
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-		return new PanelLegacyEmbed<>(rect, new GuiTaskHunt(this, quest, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
+	    return new PanelTaskHunt(rect, quest, this);
 	}
 	
 	@Override

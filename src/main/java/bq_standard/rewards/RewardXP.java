@@ -6,9 +6,8 @@ import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
 import bq_standard.XPHelper;
-import bq_standard.client.gui.rewards.GuiRewardXP;
+import bq_standard.client.gui2.rewards.PanelRewardXP;
 import bq_standard.rewards.factory.FactoryRewardXP;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -65,7 +64,7 @@ public class RewardXP implements IReward
 	@SideOnly(Side.CLIENT)
 	public IGuiPanel getRewardGui(IGuiRect rect, IQuest quest)
 	{
-		return new PanelLegacyEmbed<>(rect, new GuiRewardXP(this, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
+	    return new PanelRewardXP(rect, quest, this);
 	}
 	
 	@Override

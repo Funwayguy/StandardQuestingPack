@@ -10,8 +10,7 @@ import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
-import bq_standard.client.gui.tasks.GuiTaskLocation;
+import bq_standard.client.gui2.tasks.PanelTaskLocation;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskLocation;
 import net.minecraft.client.gui.GuiScreen;
@@ -204,7 +203,7 @@ public class TaskLocation implements ITask, ITickableTask
 	@Override
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-		return new PanelLegacyEmbed<>(rect, new GuiTaskLocation(this, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
+	    return new PanelTaskLocation(rect, quest, this);
 	}
 
 	@Override

@@ -10,10 +10,9 @@ import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
 import bq_standard.ScoreboardBQ;
 import bq_standard.client.gui.editors.GuiScoreEditor;
-import bq_standard.client.gui.tasks.GuiTaskScoreboard;
+import bq_standard.client.gui2.tasks.PanelTaskScoreboard;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskScoreboard;
 import net.minecraft.client.gui.GuiScreen;
@@ -251,7 +250,8 @@ public class TaskScoreboard implements ITask, ITickableTask
 	@SideOnly(Side.CLIENT)
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-		return new PanelLegacyEmbed<>(rect, new GuiTaskScoreboard(this, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
+	    return new PanelTaskScoreboard(rect, quest, this);
+		//return new PanelLegacyEmbed<>(rect, new GuiTaskScoreboard(this, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
 	}
 	
 	@Override

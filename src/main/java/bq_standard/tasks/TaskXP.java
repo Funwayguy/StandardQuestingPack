@@ -12,9 +12,8 @@ import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
 import bq_standard.XPHelper;
-import bq_standard.client.gui.tasks.GuiTaskXP;
+import bq_standard.client.gui2.tasks.PanelTaskXP;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskXP;
 import net.minecraft.client.gui.GuiScreen;
@@ -256,7 +255,8 @@ public class TaskXP implements ITask, IProgression<Long>, ITickableTask
 	@Override
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-		return new PanelLegacyEmbed<>(rect, new GuiTaskXP(this, quest, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
+	    return new PanelTaskXP(rect, quest, this);
+		//return new PanelLegacyEmbed<>(rect, new GuiTaskXP(this, quest, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
 	}
 	
 	@Override

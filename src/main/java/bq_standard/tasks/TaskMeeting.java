@@ -11,9 +11,8 @@ import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
 import bq_standard.client.gui.editors.GuiMeetingEditor;
-import bq_standard.client.gui.tasks.GuiTaskMeeting;
+import bq_standard.client.gui2.tasks.PanelTaskMeeting;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskMeeting;
 import net.minecraft.client.gui.GuiScreen;
@@ -239,7 +238,8 @@ public class TaskMeeting implements ITask, ITickableTask
 	@Override
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-		return new PanelLegacyEmbed<>(rect, new GuiTaskMeeting(this, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
+	    return new PanelTaskMeeting(rect, quest, this);
+		//return new PanelLegacyEmbed<>(rect, new GuiTaskMeeting(this, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
 	}
 
 	@Override

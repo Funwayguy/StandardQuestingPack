@@ -6,8 +6,7 @@ import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
-import bq_standard.client.gui.tasks.GuiTaskCheckbox;
+import bq_standard.client.gui2.tasks.PanelTaskCheckbox;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskCheckbox;
 import net.minecraft.client.gui.GuiScreen;
@@ -138,7 +137,7 @@ public class TaskCheckbox implements ITask
 	@SideOnly(Side.CLIENT)
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-		return new PanelLegacyEmbed<>(rect, new GuiTaskCheckbox(this, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
+	    return new PanelTaskCheckbox(rect, quest, this);
 	}
 
 	@Override

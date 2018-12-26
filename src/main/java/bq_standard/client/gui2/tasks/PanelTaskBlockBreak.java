@@ -12,23 +12,22 @@ import betterquesting.api2.client.gui.panels.content.PanelTextBox;
 import betterquesting.api2.client.gui.panels.lists.CanvasScrolling;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
 import betterquesting.api2.utils.QuestTranslation;
-import bq_standard.tasks.TaskCrafting;
+import bq_standard.tasks.TaskBlockBreak;
 import net.minecraft.client.Minecraft;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
 
 import java.util.UUID;
 
-public class PanelTaskCrafting extends CanvasEmpty
+public class PanelTaskBlockBreak extends CanvasEmpty
 {
-    private final TaskCrafting task;
     private final IQuest quest;
+    private final TaskBlockBreak task;
     
-    public PanelTaskCrafting(IGuiRect rect, IQuest quest, TaskCrafting task)
+    public PanelTaskBlockBreak(IGuiRect rect, IQuest quest, TaskBlockBreak task)
     {
         super(rect);
-        this.task = task;
         this.quest = quest;
+        this.task = task;
     }
     
     @Override
@@ -49,17 +48,16 @@ public class PanelTaskCrafting extends CanvasEmpty
         
         int listW = cvList.getTransform().getWidth();
         
-        for(int i = 0; i < task.requiredItems.size(); i++)
+        for(int i = 0; i < task.blockTypes.size(); i++)
         {
-            BigItemStack stack = task.requiredItems.get(i);
+            BigItemStack stack = task.blockTypes.get(i).getItemStack();
             
             if(stack == null)
             {
                 continue;
             }
     
-            PanelItemSlot slot = new PanelItemSlot(new GuiRectangle(0, i * 36, 36, 36, 0), -1, stack, false, true);
-            slot.setCallback(value -> lookupRecipe(value.getBaseStack()));
+            PanelItemSlot slot = new PanelItemSlot(new GuiRectangle(0, i * 36, 36, 36, 0), -1, stack, true, true);
             cvList.addPanel(slot);
             
             StringBuilder sb = new StringBuilder();
@@ -70,7 +68,7 @@ public class PanelTaskCrafting extends CanvasEmpty
 			
 			sb.append("\n").append(progress[i]).append("/").append(stack.stackSize).append("\n");
 			
-			if(isComplete || progress[i] >= stack.stackSize)
+			if(progress[i] >= stack.stackSize || isComplete)
 			{
 				sb.append(TextFormatting.GREEN).append(QuestTranslation.translate("betterquesting.tooltip.complete"));
 			} else
@@ -82,10 +80,5 @@ public class PanelTaskCrafting extends CanvasEmpty
 			text.setColor(PresetColor.TEXT_MAIN.getColor());
 			cvList.addPanel(text);
         }
-    }
-    
-    private void lookupRecipe(ItemStack stack)
-    {
-    
     }
 }

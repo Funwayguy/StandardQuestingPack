@@ -11,8 +11,7 @@ import betterquesting.api.questing.tasks.*;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
-import bq_standard.client.gui.tasks.GuiTaskFluid;
+import bq_standard.client.gui2.tasks.PanelTaskFluid;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskFluid;
 import net.minecraft.client.gui.GuiScreen;
@@ -378,7 +377,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 	@SideOnly(Side.CLIENT)
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-		return new PanelLegacyEmbed<>(rect, new GuiTaskFluid(this, quest, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
+	    return new PanelTaskFluid(rect, quest, this);
 	}
 	
 	@Override

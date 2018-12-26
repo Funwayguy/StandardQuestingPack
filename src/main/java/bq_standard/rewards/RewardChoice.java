@@ -9,9 +9,8 @@ import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import betterquesting.api2.client.gui.panels.PanelLegacyEmbed;
 import bq_standard.NBTReplaceUtil;
-import bq_standard.client.gui.rewards.GuiRewardChoice;
+import bq_standard.client.gui2.rewards.PanelRewardChoice;
 import bq_standard.core.BQ_Standard;
 import bq_standard.rewards.factory.FactoryRewardChoice;
 import net.minecraft.client.gui.GuiScreen;
@@ -164,7 +163,7 @@ public class RewardChoice implements IReward
 	@SideOnly(Side.CLIENT)
 	public IGuiPanel getRewardGui(IGuiRect rect, IQuest quest)
 	{
-		return new PanelLegacyEmbed<>(rect, new GuiRewardChoice(this, quest, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
+	    return new PanelRewardChoice(rect, quest, this);
 	}
 	
 	@Override

@@ -351,7 +351,6 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
 	    return new PanelTaskCrafting(rect, quest, this);
-		//return new PanelLegacyEmbed<>(new GuiRectangle(posX, posY, sizeX, sizeY), new GuiTaskCrafting(this, quest, posX, posY, sizeX, sizeY));
 	}
 	
 	@Override
