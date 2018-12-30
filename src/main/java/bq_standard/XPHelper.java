@@ -29,6 +29,7 @@ public class XPHelper
 		player.experienceLevel = getXPLevel(experience);
 		long expForLevel = getLevelXP(player.experienceLevel);
 		player.experience = (float)((double)(experience - expForLevel) / (double)xpBarCap(player));
+		player.experience = Math.max(0F, player.experience); // Sanity check
 		
 		if(sync && player instanceof EntityPlayerMP)
 		{
@@ -44,7 +45,8 @@ public class XPHelper
 	
 	public static long getPlayerXP(EntityPlayer player)
 	{
-		return getLevelXP(player.experienceLevel) + (long)(xpBarCap(player) * (double)player.experience);
+	    // Math.max is used here because for some reason the player.experience float value can sometimes be negitive in error
+		return getLevelXP(player.experienceLevel) + (long)(xpBarCap(player) * Math.max(0D, player.experience));
 	}
 	
 	public static long xpBarCap(EntityPlayer player)

@@ -11,7 +11,7 @@ import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import bq_standard.client.gui.editors.GuiMeetingEditor;
+import bq_standard.client.gui2.editors.GuiEditTaskMeeting;
 import bq_standard.client.gui2.tasks.PanelTaskMeeting;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskMeeting;
@@ -232,14 +232,13 @@ public class TaskMeeting implements ITask, ITickableTask
 	@SideOnly(Side.CLIENT)
 	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
 	{
-		return new GuiMeetingEditor(parent, this);
+	    return new GuiEditTaskMeeting(parent, quest, this);
 	}
 
 	@Override
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
 	    return new PanelTaskMeeting(rect, quest, this);
-		//return new PanelLegacyEmbed<>(rect, new GuiTaskMeeting(this, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
 	}
 
 	@Override

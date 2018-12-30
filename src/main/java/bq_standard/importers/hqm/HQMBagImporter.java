@@ -3,6 +3,7 @@ package bq_standard.importers.hqm;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.importers.IImporter;
+import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.questing.IQuestDatabase;
 import betterquesting.api.questing.IQuestLineDatabase;
@@ -30,7 +31,7 @@ public class HQMBagImporter implements IImporter
 {
 	public static HQMBagImporter instance = new HQMBagImporter();
 	
-	public List<LootGroup> hqmLoot = new ArrayList<LootGroup>();
+	private List<LootGroup> hqmLoot = new ArrayList<>();
 	
 	@Override
 	public String getUnlocalisedName()
@@ -106,7 +107,7 @@ public class HQMBagImporter implements IImporter
 					
 					lEntry.items.add(HQMUtilities.HQMStackT1(ji.getAsJsonObject()));
 				}
-				group.lootEntry.add(lEntry);
+				group.add(group.nextID(), lEntry);
 			}
 			
 			hqmLoot.add(group);
@@ -140,7 +141,7 @@ public class HQMBagImporter implements IImporter
 		for(LootGroup group : hqmLoot)
 		{
 			NBTTagCompound jGrp = new NBTTagCompound();
-			group.writeToJson(jGrp);
+			group.writeToNBT(jGrp, EnumSaveType.CONFIG);
 			jAry.appendTag(jGrp);
 		}
 		

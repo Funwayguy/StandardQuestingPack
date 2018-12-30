@@ -4,16 +4,20 @@ import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.utils.QuestCache;
 import bq_standard.core.BQ_Standard;
+import bq_standard.rewards.loot.LootRegistry;
 import bq_standard.tasks.TaskBlockBreak;
 import bq_standard.tasks.TaskCrafting;
 import bq_standard.tasks.TaskHunt;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemCraftedEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemSmeltedEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 
 import java.util.Map.Entry;
 
@@ -86,4 +90,22 @@ public class EventHandler
 			ConfigHandler.initConfigs();
 		}
 	}
+	
+	@SubscribeEvent
+    public void onPlayerJoin(PlayerLoggedInEvent event)
+    {
+		if(!event.player.world.isRemote && event.player instanceof EntityPlayerMP)
+		{
+			LootRegistry.INSTANCE.sendDatabase((EntityPlayerMP)event.player);
+		}
+    }
+	
+	@SubscribeEvent
+    public void onWorldSave(WorldEvent.Save event)
+    {
+        if(!event.getWorld().isRemote && LootSaveLoad.INSTANCE.worldDir != null && event.getWorld().provider.getDimension() == 0)
+        {
+            LootSaveLoad.INSTANCE.SaveLoot();
+        }
+    }
 }

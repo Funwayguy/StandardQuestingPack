@@ -109,7 +109,6 @@ public class RewardScoreboard implements IReward
 	public IGuiPanel getRewardGui(IGuiRect rect, IQuest quest)
 	{
 	    return new PanelRewardScoreboard(rect, quest, this);
-		//return new PanelLegacyEmbed<>(rect, new GuiRewardScoreboard(this, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
 	}
 	
 	@Override

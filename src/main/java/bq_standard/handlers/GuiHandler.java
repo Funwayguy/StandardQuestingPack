@@ -1,6 +1,6 @@
 package bq_standard.handlers;
 
-import bq_standard.client.gui.editors.GuiLootGroupEditor;
+import bq_standard.client.gui2.editors.GuiEditLootGroups;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.IGuiHandler;
@@ -18,7 +18,7 @@ public class GuiHandler implements IGuiHandler
 	{
 		if(ID == 0)
 		{
-			return new GuiLootGroupEditor(null);
+            return new GuiEditLootGroups(null);
 		}
 		
 		return null;

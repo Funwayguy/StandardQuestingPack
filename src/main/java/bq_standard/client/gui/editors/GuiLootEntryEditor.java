@@ -6,6 +6,7 @@ import betterquesting.api.client.gui.GuiScreenThemed;
 import betterquesting.api.client.gui.controls.GuiButtonThemed;
 import betterquesting.api.client.gui.controls.GuiNumberField;
 import betterquesting.api.client.gui.misc.IVolatileScreen;
+import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.misc.ICallback;
 import betterquesting.api.utils.RenderUtils;
 import bq_standard.rewards.loot.LootGroup;
@@ -88,10 +89,10 @@ public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScre
 	{
 		super.drawScreen(mx, my, partialTick);
 		
-		if(LootRegistry.updateUI)
+		if(LootRegistry.INSTANCE.updateUI)
 		{
 			RefreshColumns();
-			LootRegistry.updateUI = false;
+			LootRegistry.INSTANCE.updateUI = false;
 		}
 		
 		GlStateManager.color(1F, 1F, 1F, 1F);
@@ -106,7 +107,7 @@ public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScre
 			s += 20;
 		}
 		this.drawTexturedModalRect(guiLeft + sizeX/2 - 16, this.guiTop + 32 + s, 248, 40, 8, 20);
-		this.drawTexturedModalRect(guiLeft + sizeX/2 - 16, this.guiTop + 32 + (int)Math.max(0, s * (float)leftScroll/(group.lootEntry.size() - maxRows)), 248, 60, 8, 20);
+		this.drawTexturedModalRect(guiLeft + sizeX/2 - 16, this.guiTop + 32 + (int)Math.max(0, s * (float)leftScroll/(group.size() - maxRows)), 248, 60, 8, 20);
 		
 		RenderUtils.DrawLine(width/2, guiTop + 32, width/2, guiTop + sizeY - 48, 2F, this.getTextColor());
 		
@@ -129,14 +130,14 @@ public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScre
 		
 		if(btn.id == 1) // Add quest line
 		{
-			group.lootEntry.add(new LootEntry());
+			group.add(group.nextID(), new LootEntry());
 			RefreshColumns();
 		} else if(btn.id == 2) // Add loot group
 		{
 			if(selected != null)
 			{
 				NBTTagCompound json = new NBTTagCompound();
-				selected.writeToJson(json);
+				selected.writeToNBT(json, EnumSaveType.CONFIG);
 				QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(this, this, json, null);
 			}
 			
@@ -148,9 +149,9 @@ public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScre
 			
 			if(n2 == 0)
 			{
-				if(n3 >= 0 && n3 < group.lootEntry.size())
+				if(n3 >= 0 && n3 < group.size())
 				{
-					selected = group.lootEntry.get(n3);
+					selected = group.getEntries()[n3].getValue();
 					selIndex = n3;
 				} else
 				{
@@ -161,9 +162,9 @@ public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScre
 				RefreshColumns();
 			} else if(n2 == 1)
 			{
-				if(n3 >= 0 && n3 < group.lootEntry.size())
+				if(n3 >= 0 && n3 < group.size())
 				{
-					group.lootEntry.remove(n3);
+					group.removeValue(group.getEntries()[n3].getValue());
 				}
 			}
 		}
@@ -216,20 +217,20 @@ public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScre
         
         if(SDX != 0 && isWithin(mx, my, this.guiLeft, this.guiTop, sizeX/2, sizeY))
         {
-    		leftScroll = Math.max(0, MathHelper.clamp(leftScroll + SDX, 0, group.lootEntry.size() - maxRows));
+    		leftScroll = Math.max(0, MathHelper.clamp(leftScroll + SDX, 0, group.size() - maxRows));
     		RefreshColumns();
         }
     }
 	
 	public void RefreshColumns()
 	{
-		leftScroll = Math.max(0, MathHelper.clamp(leftScroll, 0, group.lootEntry.size() - maxRows));
+		leftScroll = Math.max(0, MathHelper.clamp(leftScroll, 0, group.size() - maxRows));
 		
-		if(selected != null && !group.lootEntry.contains(selected))
+		if(selected != null && group.getID(selected) < 0)
 		{
-			if(selIndex >= 0 && selIndex < group.lootEntry.size())
+			if(selIndex >= 0 && selIndex < group.size())
 			{
-				selected = group.lootEntry.get(selIndex);
+				selected = group.getEntries()[selIndex].getValue();
 			} else
 			{
 				selected = null;
@@ -248,7 +249,7 @@ public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScre
 			
 			if(n2 == 0)
 			{
-				if(n3 >= 0 && n3 < group.lootEntry.size())
+				if(n3 >= 0 && n3 < group.size())
 				{
 					btn.displayString = "#" + n3;
 					btn.enabled = btn.visible = true;
@@ -259,7 +260,7 @@ public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScre
 				}
 			} else if(n2 == 1)
 			{
-				btn.enabled = btn.visible = n3 >= 0 && n3 < group.lootEntry.size();
+				btn.enabled = btn.visible = n3 >= 0 && n3 < group.size();
 			}
 		}
 		
@@ -279,7 +280,7 @@ public class GuiLootEntryEditor extends GuiScreenThemed implements IVolatileScre
 	{
 		if(selected != null)
 		{
-			selected.readFromJson(value);
+			selected.readFromNBT(value, EnumSaveType.CONFIG);
 		}
 	}
 }

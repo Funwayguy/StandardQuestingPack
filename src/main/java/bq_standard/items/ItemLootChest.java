@@ -65,10 +65,10 @@ public class ItemLootChest extends Item
     		LootGroup group;
     		if(stack.getItemDamage() == 101)
     		{
-    			group = LootRegistry.getWeightedGroup(itemRand.nextFloat(), itemRand);
+    			group = LootRegistry.INSTANCE.getWeightedGroup(itemRand.nextFloat(), itemRand);
     		} else
     		{
-    			group = LootRegistry.getWeightedGroup(MathHelper.clamp(stack.getItemDamage(), 0, 100)/100F, itemRand);
+    			group = LootRegistry.INSTANCE.getWeightedGroup(MathHelper.clamp(stack.getItemDamage(), 0, 100)/100F, itemRand);
     		}
 	    	List<BigItemStack> loot;
 	    	String title = "Dungeon Loot";

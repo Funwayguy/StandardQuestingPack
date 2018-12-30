@@ -1,6 +1,7 @@
 package bq_standard.network.handlers;
 
 import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.network.IPacketHandler;
 import bq_standard.core.BQ_Standard;
 import bq_standard.network.StandardPacketType;
@@ -17,6 +18,8 @@ public class PktHandlerLootDatabase implements IPacketHandler
 	@Override
 	public void handleServer(NBTTagCompound data, EntityPlayerMP sender)
 	{
+	    if(sender == null || sender.getServer() == null) return;
+	    
 		if(!sender.getServer().getPlayerList().canSendCommands(sender.getGameProfile()))
 		{
 			BQ_Standard.logger.log(Level.WARN, "Player " + sender.getName() + " (UUID:" + QuestingAPI.getQuestingUUID(sender) + ") tried to edit loot chests without OP permissions!");
@@ -26,14 +29,14 @@ public class PktHandlerLootDatabase implements IPacketHandler
 		
 		BQ_Standard.logger.log(Level.INFO, "Player " + sender.getName() + " edited loot chests");
 		
-		LootRegistry.readFromJson(data.getCompoundTag("Database"));
-		LootRegistry.updateClients();
+		LootRegistry.INSTANCE.readFromNBT(data.getCompoundTag("Database"), EnumSaveType.CONFIG);
+		LootRegistry.INSTANCE.updateClients();
 	}
 	
 	@Override
 	public void handleClient(NBTTagCompound data)
 	{
-		LootRegistry.readFromJson(data.getCompoundTag("Database"));
+		LootRegistry.INSTANCE.readFromNBT(data.getCompoundTag("Database"), EnumSaveType.CONFIG);
 	}
 
 	@Override

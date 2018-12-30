@@ -4,6 +4,7 @@ import bq_standard.commands.BQS_Commands;
 import bq_standard.core.proxies.CommonProxy;
 import bq_standard.handlers.ConfigHandler;
 import bq_standard.handlers.GuiHandler;
+import bq_standard.handlers.LootSaveLoad;
 import bq_standard.items.ItemLootChest;
 import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ServerCommandManager;
@@ -14,10 +15,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.event.*;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import org.apache.logging.log4j.Logger;
@@ -72,5 +70,13 @@ public class BQ_Standard
 		ServerCommandManager manager = (ServerCommandManager) command;
 		
 		manager.registerCommand(new BQS_Commands());
+		
+		LootSaveLoad.INSTANCE.LoadLoot(event.getServer());
 	}
+	
+	@EventHandler
+    public void serverStopped(FMLServerStoppedEvent event)
+    {
+        LootSaveLoad.INSTANCE.UnloadLoot();
+    }
 }

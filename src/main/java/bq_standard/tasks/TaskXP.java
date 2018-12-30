@@ -256,7 +256,6 @@ public class TaskXP implements ITask, IProgression<Long>, ITickableTask
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
 	    return new PanelTaskXP(rect, quest, this);
-		//return new PanelLegacyEmbed<>(rect, new GuiTaskXP(this, quest, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
 	}
 	
 	@Override

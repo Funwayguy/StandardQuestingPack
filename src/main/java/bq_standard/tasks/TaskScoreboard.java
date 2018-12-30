@@ -11,7 +11,7 @@ import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import bq_standard.ScoreboardBQ;
-import bq_standard.client.gui.editors.GuiScoreEditor;
+import bq_standard.client.gui2.editors.GuiEditTaskScoreboard;
 import bq_standard.client.gui2.tasks.PanelTaskScoreboard;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskScoreboard;
@@ -251,14 +251,13 @@ public class TaskScoreboard implements ITask, ITickableTask
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
 	    return new PanelTaskScoreboard(rect, quest, this);
-		//return new PanelLegacyEmbed<>(rect, new GuiTaskScoreboard(this, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
 	}
 	
 	@Override
 	@SideOnly(Side.CLIENT)
 	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
 	{
-		return new GuiScoreEditor(parent, this);
+	    return new GuiEditTaskScoreboard(parent, quest, this);
 	}
 
 	@Override
