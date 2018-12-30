@@ -12,7 +12,7 @@ import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import bq_standard.client.gui2.editors.GuiEditTaskHunt;
+import bq_standard.client.gui2.editors.tasks.GuiEditTaskHunt;
 import bq_standard.client.gui2.tasks.PanelTaskHunt;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskHunt;

@@ -11,7 +11,7 @@ import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import bq_standard.ScoreboardBQ;
-import bq_standard.client.gui2.editors.GuiEditTaskScoreboard;
+import bq_standard.client.gui2.editors.tasks.GuiEditTaskScoreboard;
 import bq_standard.client.gui2.tasks.PanelTaskScoreboard;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskScoreboard;

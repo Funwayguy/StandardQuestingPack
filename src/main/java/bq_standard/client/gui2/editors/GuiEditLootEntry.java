@@ -10,7 +10,6 @@ import betterquesting.api2.client.gui.controls.PanelButton;
 import betterquesting.api2.client.gui.controls.PanelButtonStorage;
 import betterquesting.api2.client.gui.controls.PanelTextField;
 import betterquesting.api2.client.gui.controls.filters.FieldFilterNumber;
-import betterquesting.api2.client.gui.controls.filters.FieldFilterString;
 import betterquesting.api2.client.gui.misc.*;
 import betterquesting.api2.client.gui.panels.CanvasEmpty;
 import betterquesting.api2.client.gui.panels.CanvasTextured;
@@ -24,9 +23,9 @@ import betterquesting.api2.client.gui.themes.presets.PresetLine;
 import betterquesting.api2.client.gui.themes.presets.PresetTexture;
 import betterquesting.api2.storage.DBEntry;
 import betterquesting.api2.utils.QuestTranslation;
-import bq_standard.client.gui.editors.GuiLootEntryEditor;
 import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.loot.LootGroup;
+import bq_standard.rewards.loot.LootGroup.LootEntry;
 import bq_standard.rewards.loot.LootRegistry;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.nbt.NBTTagCompound;
@@ -35,21 +34,26 @@ import org.lwjgl.util.vector.Vector4f;
 
 import java.text.DecimalFormat;
 
-public class GuiEditLootGroups extends GuiScreenCanvas implements IVolatileScreen
+public class GuiEditLootEntry extends GuiScreenCanvas implements IVolatileScreen
 {
-    private LootGroup selGroup;
-    private int selIndex = -1; // This really shouldn't be necessary by now...
+    private LootGroup lootGroup;
+    private final int groupID;
+    
+    private LootEntry selEntry;
+    private int selectedID = -1;
     
     private CanvasScrolling lootList;
-    private PanelTextField<String> fieldName;
+    private PanelTextBox fieldName;
     private PanelTextField<Integer> fieldWeight;
     private PanelTextBox textWeight;
     
     private final DecimalFormat numFormat = new DecimalFormat("0.##");
     
-    public GuiEditLootGroups(GuiScreen parent)
+    public GuiEditLootEntry(GuiScreen parent, LootGroup group)
     {
         super(parent);
+        this.lootGroup = group;
+        this.groupID = LootRegistry.INSTANCE.getID(group);
     }
     
     @Override
@@ -81,8 +85,8 @@ public class GuiEditLootGroups extends GuiScreenCanvas implements IVolatileScree
             @Override
             public void onButtonClick()
             {
-                LootRegistry.INSTANCE.add(LootRegistry.INSTANCE.nextID(), new LootGroup());
-                SendChanges();
+                lootGroup.add(lootGroup.nextID(), new LootEntry());
+                sendChanges();
             }
         });
         
@@ -93,25 +97,19 @@ public class GuiEditLootGroups extends GuiScreenCanvas implements IVolatileScree
         
         cvRight.addPanel(new PanelTextBox(new GuiTransform(GuiAlign.TOP_EDGE, new GuiPadding(0, 4, 0, -16), 0), QuestTranslation.translate("betterquesting.gui.name")).setColor(PresetColor.TEXT_MAIN.getColor()));
         
-        fieldName = new PanelTextField<>(new GuiTransform(GuiAlign.TOP_EDGE, new GuiPadding(0, 16, 0, -32), 0), selGroup != null ? selGroup.name : "", FieldFilterString.INSTANCE);
-        fieldName.setCallback(value ->
-        {
-            if(selGroup == null) return;
-            selGroup.name = fieldName.getValue();
-            refreshGroups();
-        });
+        fieldName = new PanelTextBox(new GuiTransform(GuiAlign.TOP_EDGE, new GuiPadding(0, 16, 0, -32), 0), selEntry != null ? "#" + selectedID : "#--").setColor(PresetColor.TEXT_MAIN.getColor());
         cvRight.addPanel(fieldName);
         
         cvRight.addPanel(new PanelTextBox(new GuiTransform(GuiAlign.TOP_EDGE, new GuiPadding(0, 36, 0, -48), 0), QuestTranslation.translate("bq_standard.gui.weight")).setColor(PresetColor.TEXT_MAIN.getColor()));
         
-        fieldWeight = new PanelTextField<>(new GuiTransform(new Vector4f(0F, 0F, 0.5F, 0F), new GuiPadding(0, 48, 0, -64), 0), "" + (selGroup != null ? selGroup.weight : 1), FieldFilterNumber.INT);
+        fieldWeight = new PanelTextField<>(new GuiTransform(new Vector4f(0F, 0F, 0.5F, 0F), new GuiPadding(0, 48, 0, -64), 0), "" + (selEntry != null ? selEntry.weight : 1), FieldFilterNumber.INT);
         fieldWeight.setCallback(value ->
         {
-            if(selGroup == null) return;
+            if(selEntry == null) return;
             if(fieldWeight.getValue() <= 0) fieldWeight.setText("1");
-            selGroup.weight = fieldWeight.getValue();
-            int totalWeight = LootRegistry.INSTANCE.getTotalWeight();
-            float chance = selGroup.weight / (float)totalWeight * 100F;
+            selEntry.weight = fieldWeight.getValue();
+            int totalWeight = lootGroup.getTotalWeight();
+            float chance = selEntry.weight / (float)totalWeight * 100F;
             textWeight.setText("/" + totalWeight + " (" + numFormat.format(chance) + "%)");
         });
         cvRight.addPanel(fieldWeight);
@@ -125,11 +123,18 @@ public class GuiEditLootGroups extends GuiScreenCanvas implements IVolatileScree
             @Override
             public void onButtonClick()
             {
-                if(selGroup != null)
+                if(selEntry != null)
                 {
-                    // TODO: Open new entry editor
-                    SendChanges();
-                    mc.displayGuiScreen(new GuiLootEntryEditor(screenRef, selGroup));
+                    final NBTTagCompound eTag = selEntry.writeToNBT(new NBTTagCompound(), EnumSaveType.CONFIG);
+                    QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(screenRef, value -> {
+                        LootGroup lg = LootRegistry.INSTANCE.getValue(groupID);
+                        LootEntry le = lg == null ? null : lg.getValue(selectedID);
+                        if(le != null)
+                        {
+                            le.readFromNBT(eTag, EnumSaveType.CONFIG);
+                            sendChanges();
+                        }
+                    }, eTag.getTagList("items", 10), null);
                 }
             }
         });
@@ -141,7 +146,7 @@ public class GuiEditLootGroups extends GuiScreenCanvas implements IVolatileScree
             @Override
             public void onButtonClick()
             {
-                SendChanges();
+                sendChanges();
                 mc.displayGuiScreen(parent);
             }
         });
@@ -155,91 +160,86 @@ public class GuiEditLootGroups extends GuiScreenCanvas implements IVolatileScree
 		PanelLine paLine0 = new PanelLine(ls0, le0, PresetLine.GUI_DIVIDER.getLine(), 1, PresetColor.GUI_DIVIDER.getColor(), 1);
 		cvBackground.addPanel(paLine0);
         
-        refreshGroups();
+        refreshEntries();
     }
     
     @Override
     public void drawPanel(int mx, int my, float partialTick)
     {
-        // TODO: Another horrible workaround that needs replacing
         if(LootRegistry.INSTANCE.updateUI)
         {
             LootRegistry.INSTANCE.updateUI = false;
-            
-            if(selIndex >= 0)
+            lootGroup = LootRegistry.INSTANCE.getValue(groupID);
+            if(lootGroup == null)
             {
-                selGroup = LootRegistry.INSTANCE.getValue(selIndex);
+                mc.displayGuiScreen(parent);
+                return;
+            }
+            
+            if(selectedID >= 0)
+            {
+                selEntry = lootGroup.getValue(selectedID);
                 
-                if(selGroup == null)
+                if(selEntry == null)
                 {
-                    selIndex = -1;
+                    selectedID = -1;
                     
                     fieldName.setText("");
                     fieldWeight.setText("1");
                     textWeight.setText("/1 (100%)");
                 } else
                 {
-                    // Flipped now that we can safely reference by ID
-                    selGroup.name = fieldName.getValue();
-                    selGroup.weight = fieldWeight.getValue();
+                    selEntry.weight = fieldWeight.getValue();
                     
-                    int totalWeight = LootRegistry.INSTANCE.getTotalWeight();
-                    float chance = selGroup.weight / (float)totalWeight * 100F;
+                    int totalWeight = lootGroup.getTotalWeight();
+                    float chance = selEntry.weight / (float)totalWeight * 100F;
                     textWeight.setText("/" + totalWeight + " (" + numFormat.format(chance) + "%)");
                 }
             }
             
-            refreshGroups();
+            refreshEntries();
         }
         
         super.drawPanel(mx, my, partialTick);
     }
     
-    private void refreshGroups()
+    private void refreshEntries()
     {
         lootList.resetCanvas();
         int lWidth = lootList.getTransform().getWidth();
-        final DBEntry<LootGroup>[] lgAry = LootRegistry.INSTANCE.getEntries();
+        final DBEntry<LootEntry>[] lgAry = lootGroup.getEntries();
         
         for(int i = 0; i < lgAry.length; i++)
         {
-            lootList.addPanel(new PanelButtonStorage<DBEntry<LootGroup>>(new GuiRectangle(0, i * 16, 16, 16, 0), -1, "", lgAry[i])
+            lootList.addPanel(new PanelButtonStorage<>(new GuiRectangle(0, i * 16, 16, 16, 0), -1, "", lgAry[i]).setCallback(value ->
             {
-                @Override
-                public void onButtonClick()
-                {
-                    LootRegistry.INSTANCE.removeID(getStoredValue().getID());
-                    refreshGroups();
-                    SendChanges();
-                }
-            }.setIcon(PresetIcon.ICON_TRASH.getTexture()));
+                lootGroup.removeID(value.getID());
+                refreshEntries();
+                sendChanges();
+            }).setIcon(PresetIcon.ICON_TRASH.getTexture()));
             
-            lootList.addPanel(new PanelButtonStorage<DBEntry<LootGroup>>(new GuiRectangle(16, i * 16, lWidth - 16, 16, 0), -1, lgAry[i].getValue().name, lgAry[i])
+            lootList.addPanel(new PanelButtonStorage<>(new GuiRectangle(16, i * 16, lWidth - 16, 16, 0), -1, "#" + lgAry[i].getID(), lgAry[i]).setCallback(value ->
             {
-                @Override
-                public void onButtonClick()
-                {
-                    if(selGroup != null) SendChanges();
-                    selIndex = getStoredValue().getID();
-                    selGroup = getStoredValue().getValue();
-                    fieldName.setText(selGroup.name);
-                    fieldWeight.setText("" + selGroup.weight);
-                    
-                    int totalWeight = LootRegistry.INSTANCE.getTotalWeight();
-                    float chance = selGroup.weight / (float)totalWeight * 100F;
-                    textWeight.setText("/" + totalWeight + " (" + numFormat.format(chance) + "%)");
-                }
-            });
+                if(selEntry != null) sendChanges();
+                selectedID = value.getID();
+                selEntry = value.getValue();
+                fieldName.setText("#" + selectedID);
+                fieldWeight.setText("" + selEntry.weight);
+                
+                int totalWeight = lootGroup.getTotalWeight();
+                float chance = selEntry.weight / (float)totalWeight * 100F;
+                textWeight.setText("/" + totalWeight + " (" + numFormat.format(chance) + "%)");
+            }));
         }
     }
-	
-	private void SendChanges()
-	{
+    
+    private void sendChanges()
+    {
 		NBTTagCompound nbt = new NBTTagCompound();
 		LootRegistry.INSTANCE.writeToNBT(nbt, EnumSaveType.CONFIG);
 		NBTTagCompound tags = new NBTTagCompound();
 		tags.setInteger("ID", 1);
 		tags.setTag("Database", nbt);
 		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags));
-	}
+    }
 }

@@ -11,7 +11,7 @@ import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import bq_standard.client.gui2.editors.GuiEditTaskMeeting;
+import bq_standard.client.gui2.editors.tasks.GuiEditTaskMeeting;
 import bq_standard.client.gui2.tasks.PanelTaskMeeting;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskMeeting;
