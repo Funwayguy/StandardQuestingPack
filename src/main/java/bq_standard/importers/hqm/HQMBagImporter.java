@@ -3,7 +3,6 @@ package bq_standard.importers.hqm;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.importers.IImporter;
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.questing.IQuestDatabase;
 import betterquesting.api.questing.IQuestLineDatabase;
@@ -141,7 +140,7 @@ public class HQMBagImporter implements IImporter
 		for(LootGroup group : hqmLoot)
 		{
 			NBTTagCompound jGrp = new NBTTagCompound();
-			group.writeToNBT(jGrp, EnumSaveType.CONFIG);
+			group.writeToNBT(jGrp);
 			jAry.appendTag(jGrp);
 		}
 		

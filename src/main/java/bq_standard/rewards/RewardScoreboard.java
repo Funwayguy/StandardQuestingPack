@@ -1,6 +1,5 @@
 package bq_standard.rewards;
 
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
@@ -86,7 +85,7 @@ public class RewardScoreboard implements IReward
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json)
 	{
 		score = json.getString("score");
 		type = json.getString("type");
@@ -95,7 +94,7 @@ public class RewardScoreboard implements IReward
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
 		json.setString("score", score);
 		json.setString("type", "dummy");

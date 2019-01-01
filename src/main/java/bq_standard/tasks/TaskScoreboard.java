@@ -2,7 +2,6 @@ package bq_standard.tasks;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
@@ -17,7 +16,6 @@ import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskScoreboard;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
@@ -28,6 +26,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class TaskScoreboard implements ITask, ITickableTask
@@ -125,16 +124,8 @@ public class TaskScoreboard implements ITask, ITickableTask
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			return this.writeProgressToJson(json);
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return json;
-		}
-		
 		json.setString("scoreName", scoreName);
 		json.setString("scoreDisp", scoreDisp);
 		json.setString("type", type);
@@ -147,17 +138,8 @@ public class TaskScoreboard implements ITask, ITickableTask
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			this.readProgressFromJson(json);
-			return;
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return;
-		}
-		
 		scoreName = json.getString("scoreName");
 		scoreName.replaceAll(" ", "_");
 		scoreDisp = json.getString("scoreDisp");
@@ -168,8 +150,9 @@ public class TaskScoreboard implements ITask, ITickableTask
 		operation = ScoreOperation.valueOf(json.hasKey("operation", 8) ? json.getString("operation") : "MORE_OR_EQUAL");
 		operation = operation != null? operation : ScoreOperation.MORE_OR_EQUAL;
 	}
-
-	private NBTTagCompound writeProgressToJson(NBTTagCompound json)
+	
+	@Override
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
 	{
 		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
@@ -180,23 +163,17 @@ public class TaskScoreboard implements ITask, ITickableTask
 		
 		return json;
 	}
-
-	private void readProgressFromJson(NBTTagCompound json)
+ 
+	@Override
+	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers = new ArrayList<UUID>();
+		completeUsers = new ArrayList<>();
 		NBTTagList cList = json.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			NBTBase entry = cList.get(i);
-			
-			if(entry == null || entry.getId() != 8)
-			{
-				continue;
-			}
-			
 			try
 			{
-				completeUsers.add(UUID.fromString(((NBTTagString)entry).getString()));
+				completeUsers.add(UUID.fromString(cList.getStringTagAt(i)));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
@@ -204,7 +181,7 @@ public class TaskScoreboard implements ITask, ITickableTask
 		}
 	}
 	
-	public static enum ScoreOperation
+	public enum ScoreOperation
 	{
 		EQUAL("="),
 		LESS_THAN("<"),

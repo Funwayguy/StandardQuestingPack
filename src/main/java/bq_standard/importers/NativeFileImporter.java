@@ -1,7 +1,6 @@
 package bq_standard.importers;
 
 import betterquesting.api.client.importers.IImporter;
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.questing.IQuestDatabase;
 import betterquesting.api.questing.IQuestLineDatabase;
 import betterquesting.api.utils.FileExtensionFilter;
@@ -51,8 +50,8 @@ public class NativeFileImporter implements IImporter
 			ImportedQuests impQ = new ImportedQuests(questDB);
 			ImportedQuestLines impL = new ImportedQuestLines(lineDB);
 			
-			impQ.readFromNBT(nbt.getTagList("questDatabase", 10), EnumSaveType.CONFIG);
-			impL.readFromNBT(nbt.getTagList("questLines", 10), EnumSaveType.CONFIG);
+			impQ.readFromNBT(nbt.getTagList("questDatabase", 10));
+			impL.readFromNBT(nbt.getTagList("questLines", 10));
 			
 			mergeUtil.merge(impQ, impL);
 		}

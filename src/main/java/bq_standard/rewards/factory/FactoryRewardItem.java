@@ -1,6 +1,5 @@
 package bq_standard.rewards.factory;
 
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.misc.IFactory;
 import bq_standard.core.BQ_Standard;
 import bq_standard.rewards.RewardItem;
@@ -31,7 +30,7 @@ public class FactoryRewardItem implements IFactory<RewardItem>
 	public RewardItem loadFromNBT(NBTTagCompound json)
 	{
 		RewardItem reward = new RewardItem();
-		reward.readFromNBT(json, EnumSaveType.CONFIG);
+		reward.readFromNBT(json);
 		return reward;
 	}
 	

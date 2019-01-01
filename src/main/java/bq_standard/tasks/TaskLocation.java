@@ -2,7 +2,6 @@ package bq_standard.tasks;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
@@ -25,6 +24,7 @@ import net.minecraft.util.math.Vec3d;
 import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class TaskLocation implements ITask, ITickableTask
@@ -121,16 +121,8 @@ public class TaskLocation implements ITask, ITickableTask
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			return this.writeProgressToJson(json);
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return json;
-		}
-		
 		json.setString("name", name);
 		json.setInteger("posX", x);
 		json.setInteger("posY", y);
@@ -144,17 +136,8 @@ public class TaskLocation implements ITask, ITickableTask
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			this.readProgressFromJson(json);
-			return;
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return;
-		}
-		
 		name = json.getString("name");
 		x = json.getInteger("posX");
 		y = json.getInteger("posY");
@@ -164,8 +147,9 @@ public class TaskLocation implements ITask, ITickableTask
 		visible = json.getBoolean("visible");
 		hideInfo = json.getBoolean("hideInfo");
 	}
-
-	private NBTTagCompound writeProgressToJson(NBTTagCompound json)
+	
+	@Override
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
 	{
 		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
@@ -176,10 +160,11 @@ public class TaskLocation implements ITask, ITickableTask
 		
 		return json;
 	}
-
-	private void readProgressFromJson(NBTTagCompound json)
+ 
+	@Override
+	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers = new ArrayList<UUID>();
+		completeUsers = new ArrayList<>();
 		NBTTagList cList = json.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{

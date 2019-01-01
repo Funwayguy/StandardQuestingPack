@@ -1,7 +1,6 @@
 package bq_standard.network.handlers;
 
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.network.IPacketHandler;
 import bq_standard.core.BQ_Standard;
 import bq_standard.network.StandardPacketType;
@@ -40,7 +39,7 @@ public class PktHandlerLootImport implements IPacketHandler
 		for(int i = 0; i < list.tagCount(); i++)
 		{
 			LootGroup group = new LootGroup();
-			group.readFromNBT(list.getCompoundTagAt(i), EnumSaveType.CONFIG);
+			group.readFromNBT(list.getCompoundTagAt(i));
 			LootRegistry.INSTANCE.add(LootRegistry.INSTANCE.nextID(), group); // The ID doesn't particularly matter at this point
 		}
 		

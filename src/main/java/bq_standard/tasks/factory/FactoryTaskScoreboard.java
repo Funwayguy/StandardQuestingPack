@@ -1,6 +1,5 @@
 package bq_standard.tasks.factory;
 
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.misc.IFactory;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskScoreboard;
@@ -31,7 +30,7 @@ public final class FactoryTaskScoreboard implements IFactory<TaskScoreboard>
 	public TaskScoreboard loadFromNBT(NBTTagCompound json)
 	{
 		TaskScoreboard task = new TaskScoreboard();
-		task.readFromNBT(json, EnumSaveType.CONFIG);
+		task.readFromNBT(json);
 		return task;
 	}
 	

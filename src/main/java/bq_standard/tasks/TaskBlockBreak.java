@@ -2,7 +2,6 @@ package bq_standard.tasks;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.placeholders.ItemPlaceholder;
 import betterquesting.api.properties.NativeProps;
@@ -35,6 +34,7 @@ import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 
@@ -144,16 +144,8 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			return this.writeProgressToJson(json);
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return json;
-		}
-		
 		NBTTagList bAry = new NBTTagList();
 		for(JsonBlockType block : blockTypes)
 		{
@@ -166,17 +158,8 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			this.readProgressFromJson(json);
-			return;
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return;
-		}
-		
 		blockTypes.clear();
 		NBTTagList bList = json.getTagList("blocks", 10);
 		for(int i = 0; i < bList.tagCount(); i++)
@@ -211,7 +194,8 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		}
 	}
 	
-	public void readProgressFromJson(NBTTagCompound json)
+	@Override
+	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
 		completeUsers = new ArrayList<UUID>();
 		NBTTagList cList = json.getTagList("completeUsers", 8);
@@ -272,7 +256,8 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		}
 	}
 	
-	public NBTTagCompound writeProgressToJson(NBTTagCompound json)
+	@Override
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
 	{
 		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)

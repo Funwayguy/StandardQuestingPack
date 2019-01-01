@@ -1,6 +1,5 @@
 package bq_standard.importers;
 
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.questing.IQuestLine;
 import betterquesting.api.questing.IQuestLineDatabase;
@@ -54,13 +53,8 @@ public class ImportedQuestLines extends SimpleDatabase<IQuestLine> implements IQ
 	}
 	
 	@Override
-	public NBTTagList writeToNBT(NBTTagList json, EnumSaveType saveType)
+	public NBTTagList writeToNBT(NBTTagList json)
 	{
-		if(saveType != EnumSaveType.CONFIG)
-		{
-			return json;
-		}
-		
 		for(DBEntry<IQuestLine> entry : getEntries())
 		{
 			if(entry.getValue() == null)
@@ -70,7 +64,7 @@ public class ImportedQuestLines extends SimpleDatabase<IQuestLine> implements IQ
 			
 			int id = entry.getID();
 			
-			NBTTagCompound jObj = entry.getValue().writeToNBT(new NBTTagCompound(), saveType);
+			NBTTagCompound jObj = entry.getValue().writeToNBT(new NBTTagCompound());
 			jObj.setInteger("lineID", id);
 			jObj.setInteger("order", getOrderIndex(id));
 			json.appendTag(jObj);
@@ -80,13 +74,8 @@ public class ImportedQuestLines extends SimpleDatabase<IQuestLine> implements IQ
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagList json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagList json)
 	{
-		if(saveType != EnumSaveType.CONFIG)
-		{
-			return;
-		}
-		
 		reset();
 		
 		HashMap<Integer,Integer> orderMap = new HashMap<>();
@@ -111,7 +100,7 @@ public class ImportedQuestLines extends SimpleDatabase<IQuestLine> implements IQ
 			}
 			
 			IQuestLine line = this.createNew(id);
-			line.readFromNBT(jql, saveType);
+			line.readFromNBT(jql);
 			
 			if(order >= 0)
 			{

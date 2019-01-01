@@ -1,7 +1,6 @@
 package bq_standard.rewards;
 
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
@@ -122,7 +121,7 @@ public class RewardChoice implements IReward
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json)
 	{
 		choices = new ArrayList<BigItemStack>();
 		NBTTagList cList = json.getTagList("choices", 10);
@@ -148,7 +147,7 @@ public class RewardChoice implements IReward
 	}
 
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
 		NBTTagList rJson = new NBTTagList();
 		for(BigItemStack stack : choices)

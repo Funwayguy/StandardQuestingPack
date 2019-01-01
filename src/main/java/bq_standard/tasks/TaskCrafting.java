@@ -2,7 +2,6 @@ package bq_standard.tasks;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
@@ -28,6 +27,7 @@ import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 
@@ -158,16 +158,8 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			return this.writeProgressToJson(json);
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return json;
-		}
-		
 		json.setBoolean("partialMatch", partialMatch);
 		json.setBoolean("ignoreNBT", ignoreNBT);
 		
@@ -182,21 +174,12 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			this.readProgressFromJson(json);
-			return;
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return;
-		}
-		
 		partialMatch = json.getBoolean("partialMatch");
 		ignoreNBT = json.getBoolean("ignoreNBT");
 		
-		requiredItems = new ArrayList<BigItemStack>();
+		requiredItems = new ArrayList<>();
 		NBTTagList iList = json.getTagList("requiredItems", 10);
 		for(int i = 0; i < iList.tagCount(); i++)
 		{
@@ -225,9 +208,10 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 		}
 	}
 	
-	public void readProgressFromJson(NBTTagCompound json)
+	@Override
+	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers = new ArrayList<UUID>();
+		completeUsers = new ArrayList<>();
 		NBTTagList cList = json.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
@@ -286,7 +270,8 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 		}
 	}
 	
-	public NBTTagCompound writeProgressToJson(NBTTagCompound json)
+	@Override
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
 	{
 		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)

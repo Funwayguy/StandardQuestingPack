@@ -1,6 +1,5 @@
 package bq_standard.importers;
 
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.IQuestDatabase;
@@ -9,6 +8,9 @@ import betterquesting.api2.storage.DBEntry;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+
+import java.util.List;
+import java.util.UUID;
 
 public class ImportedQuests extends BigDatabase<IQuest> implements IQuestDatabase
 {
@@ -20,17 +22,12 @@ public class ImportedQuests extends BigDatabase<IQuest> implements IQuestDatabas
 	}
 	
 	@Override
-	public NBTTagList writeToNBT(NBTTagList json, EnumSaveType saveType)
+	public NBTTagList writeToNBT(NBTTagList json)
 	{
-		if(saveType != EnumSaveType.CONFIG)
-		{
-			return json;
-		}
-		
 		for(DBEntry<IQuest> entry : getEntries())
 		{
 			NBTTagCompound jq = new NBTTagCompound();
-			entry.getValue().writeToNBT(jq, saveType);
+			entry.getValue().writeToNBT(jq);
 			jq.setInteger("questID", entry.getID());
 			json.appendTag(jq);
 		}
@@ -39,13 +36,8 @@ public class ImportedQuests extends BigDatabase<IQuest> implements IQuestDatabas
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagList json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagList json)
 	{
-		if(saveType != EnumSaveType.CONFIG)
-		{
-			return;
-		}
-		
 		reset();
 		
 		for(int i = 0; i < json.tagCount(); i++)
@@ -68,9 +60,20 @@ public class ImportedQuests extends BigDatabase<IQuest> implements IQuestDatabas
 			
 			IQuest quest = getValue(qID);
 			quest = quest != null? quest : this.createNew(qID);
-			quest.readFromNBT(qTag, EnumSaveType.CONFIG);
+			quest.readFromNBT(qTag);
 		}
 	}
+	
+	@Override
+    public NBTTagList writeProgressToNBT(NBTTagList nbt, List<UUID> users)
+    {
+        return nbt;
+    }
+    
+    @Override
+    public void readProgressFromNBT(NBTTagList nbt, boolean merge)
+    {
+    }
 	
 	@Override
 	public QuestingPacket getSyncPacket()
@@ -90,7 +93,7 @@ public class ImportedQuests extends BigDatabase<IQuest> implements IQuestDatabas
 		IQuest q = parent.createNew(id);
 		parent.removeID(id); // Yes I know this is dumb
 		add(id, q);
-		q.setParentDatabase((IQuestDatabase) this);
+		q.setParentDatabase(this);
 		return q;
 	}
 }

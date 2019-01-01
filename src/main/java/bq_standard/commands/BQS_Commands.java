@@ -1,6 +1,5 @@
 package bq_standard.commands;
 
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api.utils.NBTConverter;
 import bq_standard.rewards.loot.LootRegistry;
@@ -43,7 +42,7 @@ public class BQS_Commands extends CommandBase
 			if(args[1].equalsIgnoreCase("save"))
 			{
 				NBTTagCompound jsonQ = new NBTTagCompound();
-				LootRegistry.INSTANCE.writeToNBT(jsonQ, EnumSaveType.CONFIG);
+				LootRegistry.INSTANCE.writeToNBT(jsonQ);
 				JsonHelper.WriteToFile(new File(server.getFile("config/betterquesting/"), "DefaultLoot.json"), NBTConverter.NBTtoJSON_Compound(jsonQ, new JsonObject(), true));
 				sender.sendMessage(new TextComponentString("Loot database set as global default"));
 			} else if(args[1].equalsIgnoreCase("load"))
@@ -54,7 +53,7 @@ public class BQS_Commands extends CommandBase
 				if(f1.exists())
 				{
 					j1 = NBTConverter.JSONtoNBT_Object(JsonHelper.ReadFromFile(f1), new NBTTagCompound(), true);
-					LootRegistry.INSTANCE.readFromNBT(j1, EnumSaveType.CONFIG);
+					LootRegistry.INSTANCE.readFromNBT(j1);
 					LootRegistry.INSTANCE.updateClients();
 					sender.sendMessage(new TextComponentString("Reloaded default loot database"));
 				} else

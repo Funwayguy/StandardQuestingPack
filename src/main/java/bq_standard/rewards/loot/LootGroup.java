@@ -1,10 +1,9 @@
 package bq_standard.rewards.loot;
 
-import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.misc.INBTSaveLoad;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api2.storage.DBEntry;
+import betterquesting.api2.storage.INBTSaveLoad;
 import betterquesting.api2.storage.SimpleDatabase;
 import bq_standard.rewards.loot.LootGroup.LootEntry;
 import net.minecraft.nbt.NBTTagCompound;
@@ -51,7 +50,7 @@ public class LootGroup extends SimpleDatabase<LootEntry> implements INBTSaveLoad
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound tag, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound tag)
 	{
 	    this.reset();
 	    
@@ -68,7 +67,7 @@ public class LootGroup extends SimpleDatabase<LootEntry> implements INBTSaveLoad
 			int id = entry.hasKey("ID", 99) ? entry.getInteger("ID") : -1;
 			
 			LootEntry loot = new LootEntry();
-			loot.readFromNBT(entry, saveType);
+			loot.readFromNBT(entry);
 			
 			if(id >= 0)
             {
@@ -86,10 +85,8 @@ public class LootGroup extends SimpleDatabase<LootEntry> implements INBTSaveLoad
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound tag, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound tag)
 	{
-	    if(saveType != EnumSaveType.CONFIG) return tag;
-	    
 		tag.setString("name", name);
 		tag.setInteger("weight", weight);
 		
@@ -98,7 +95,7 @@ public class LootGroup extends SimpleDatabase<LootEntry> implements INBTSaveLoad
 		{
 			if(entry == null) continue;
 			
-			NBTTagCompound jLoot = entry.getValue().writeToNBT(new NBTTagCompound(), saveType);
+			NBTTagCompound jLoot = entry.getValue().writeToNBT(new NBTTagCompound());
 			jLoot.setInteger("ID", entry.getID());
 			jRew.appendTag(jLoot);
 		}
@@ -113,10 +110,8 @@ public class LootGroup extends SimpleDatabase<LootEntry> implements INBTSaveLoad
 		public final List<BigItemStack> items = new ArrayList<>();
 		
 		@Override
-		public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
+		public void readFromNBT(NBTTagCompound json)
 		{
-		    if(saveType != EnumSaveType.CONFIG) return;
-		    
 			weight = json.getInteger("weight");
 			weight = Math.max(1, weight);
 			
@@ -129,10 +124,8 @@ public class LootGroup extends SimpleDatabase<LootEntry> implements INBTSaveLoad
 		}
 		
 		@Override
-		public NBTTagCompound writeToNBT(NBTTagCompound tag, EnumSaveType saveType)
+		public NBTTagCompound writeToNBT(NBTTagCompound tag)
 		{
-		    if(saveType != EnumSaveType.CONFIG) return tag;
-		    
 			tag.setInteger("weight", weight);
 			
 			NBTTagList jItm = new NBTTagList();

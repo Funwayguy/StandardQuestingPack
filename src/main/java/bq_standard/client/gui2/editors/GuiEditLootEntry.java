@@ -3,7 +3,6 @@ package bq_standard.client.gui2.editors;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.misc.IVolatileScreen;
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.network.QuestingPacket;
 import betterquesting.api2.client.gui.GuiScreenCanvas;
 import betterquesting.api2.client.gui.controls.PanelButton;
@@ -125,13 +124,13 @@ public class GuiEditLootEntry extends GuiScreenCanvas implements IVolatileScreen
             {
                 if(selEntry != null)
                 {
-                    final NBTTagCompound eTag = selEntry.writeToNBT(new NBTTagCompound(), EnumSaveType.CONFIG);
+                    final NBTTagCompound eTag = selEntry.writeToNBT(new NBTTagCompound());
                     QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(screenRef, value -> {
                         LootGroup lg = LootRegistry.INSTANCE.getValue(groupID);
                         LootEntry le = lg == null ? null : lg.getValue(selectedID);
                         if(le != null)
                         {
-                            le.readFromNBT(eTag, EnumSaveType.CONFIG);
+                            le.readFromNBT(eTag);
                             sendChanges();
                         }
                     }, eTag.getTagList("items", 10), null);
@@ -236,7 +235,7 @@ public class GuiEditLootEntry extends GuiScreenCanvas implements IVolatileScreen
     private void sendChanges()
     {
 		NBTTagCompound nbt = new NBTTagCompound();
-		LootRegistry.INSTANCE.writeToNBT(nbt, EnumSaveType.CONFIG);
+		LootRegistry.INSTANCE.writeToNBT(nbt);
 		NBTTagCompound tags = new NBTTagCompound();
 		tags.setInteger("ID", 1);
 		tags.setTag("Database", nbt);

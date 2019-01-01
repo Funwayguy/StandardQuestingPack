@@ -1,6 +1,5 @@
 package bq_standard.tasks.factory;
 
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.misc.IFactory;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskMeeting;
@@ -31,7 +30,7 @@ public final class FactoryTaskMeeting implements IFactory<TaskMeeting>
 	public TaskMeeting loadFromNBT(NBTTagCompound json)
 	{
 		TaskMeeting task = new TaskMeeting();
-		task.readFromNBT(json, EnumSaveType.CONFIG);
+		task.readFromNBT(json);
 		return task;
 	}
 	

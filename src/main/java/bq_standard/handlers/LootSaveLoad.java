@@ -1,6 +1,5 @@
 package bq_standard.handlers;
 
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api.utils.NBTConverter;
 import bq_standard.core.BQ_Standard;
@@ -45,12 +44,12 @@ public class LootSaveLoad
 			}
 		}
 		
-		LootRegistry.INSTANCE.readFromNBT(NBTConverter.JSONtoNBT_Object(j1, new NBTTagCompound(), true), EnumSaveType.CONFIG);
+		LootRegistry.INSTANCE.readFromNBT(NBTConverter.JSONtoNBT_Object(j1, new NBTTagCompound(), true));
     }
     
     public void SaveLoot()
     {
-        JsonHelper.WriteToFile(new File(worldDir, "QuestLoot.json"), NBTConverter.NBTtoJSON_Compound(LootRegistry.INSTANCE.writeToNBT(new NBTTagCompound(), EnumSaveType.CONFIG), new JsonObject(), true));
+        JsonHelper.WriteToFile(new File(worldDir, "QuestLoot.json"), NBTConverter.NBTtoJSON_Compound(LootRegistry.INSTANCE.writeToNBT(new NBTTagCompound()), new JsonObject(), true));
     }
     
     public void UnloadLoot()

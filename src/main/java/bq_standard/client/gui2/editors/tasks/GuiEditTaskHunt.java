@@ -4,7 +4,6 @@ import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.misc.IVolatileScreen;
 import betterquesting.api.enums.EnumPacketAction;
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api2.client.gui.GuiScreenCanvas;
@@ -117,7 +116,7 @@ public class GuiEditTaskHunt extends GuiScreenCanvas implements IVolatileScreen
             @Override
             public void onButtonClick()
             {
-                QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(screenRef, value -> task.readFromNBT(value, EnumSaveType.CONFIG), task.writeToNBT(new NBTTagCompound(), EnumSaveType.CONFIG), null);
+                QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(screenRef, value -> task.readFromNBT(value), task.writeToNBT(new NBTTagCompound()), null);
             }
         });
         
@@ -136,8 +135,8 @@ public class GuiEditTaskHunt extends GuiScreenCanvas implements IVolatileScreen
     private void sendChanges()
     {
 		NBTTagCompound base = new NBTTagCompound();
-		base.setTag("config", quest.writeToNBT(new NBTTagCompound(), EnumSaveType.CONFIG));
-		base.setTag("progress", quest.writeToNBT(new NBTTagCompound(), EnumSaveType.PROGRESS)); // TODO: Remove this when partial writes are implemented
+		base.setTag("config", quest.writeToNBT(new NBTTagCompound()));
+		base.setTag("progress", quest.writeProgressToNBT(new NBTTagCompound(), null)); // TODO: Remove this when partial writes are implemented
 		NBTTagCompound tags = new NBTTagCompound();
 		tags.setInteger("action", EnumPacketAction.EDIT.ordinal()); // Action: Update data
 		tags.setInteger("questID", QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));

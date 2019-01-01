@@ -2,7 +2,6 @@ package bq_standard.tasks;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
@@ -33,6 +32,7 @@ import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 
@@ -135,16 +135,8 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			return this.writeProgressToJson(json);
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return json;
-		}
-		
 		json.setString("target", idName);
 		json.setInteger("required", required);
 		json.setBoolean("subtypes", subtypes);
@@ -155,17 +147,8 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			this.readProgressFromJson(json);
-			return;
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return;
-		}
-		
 		idName = json.getString("target");
 		required = json.getInteger("required");
 		subtypes = json.getBoolean("subtypes");
@@ -173,9 +156,10 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		targetTags = json.getCompoundTag("targetNBT");
 	}
 	
-	private void readProgressFromJson(NBTTagCompound json)
+	@Override
+	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers = new ArrayList<UUID>();
+		completeUsers = new ArrayList<>();
 		NBTTagList cList = json.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
@@ -195,7 +179,7 @@ public class TaskHunt implements ITask, IProgression<Integer>
 			}
 		}
 		
-		userProgress = new HashMap<UUID,Integer>();
+		userProgress = new HashMap<>();
 		NBTTagList pList = json.getTagList("userProgress", 10);
 		for(int i = 0; i < pList.tagCount(); i++)
 		{
@@ -221,7 +205,8 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		}
 	}
 	
-	private NBTTagCompound writeProgressToJson(NBTTagCompound json)
+	@Override
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
 	{
 		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)

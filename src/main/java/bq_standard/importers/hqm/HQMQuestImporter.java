@@ -1,7 +1,6 @@
 package bq_standard.importers.hqm;
 
 import betterquesting.api.client.importers.IImporter;
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.properties.IPropertyContainer;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.*;
@@ -222,7 +221,7 @@ public class HQMQuestImporter implements IImporter
 				
 				if(tsks != null && tsks.size() > 0)
 				{
-					IDatabaseNBT<ITask, NBTTagList> taskReg = quest.getTasks();
+					IDatabaseNBT<ITask, NBTTagList, NBTTagList> taskReg = quest.getTasks();
 					for(ITask t : tsks)
 					{
 						taskReg.add(taskReg.nextID(), t);
@@ -241,7 +240,7 @@ public class HQMQuestImporter implements IImporter
 				
 				if(rews != null && rews.size() > 0)
 				{
-					IDatabaseNBT<IReward, NBTTagList> rewardReg = quest.getRewards();
+					IDatabaseNBT<IReward, NBTTagList, NBTTagList> rewardReg = quest.getRewards();
 					for(IReward r : rews)
 					{
 						rewardReg.add(rewardReg.nextID(), r);
@@ -290,13 +289,8 @@ public class HQMQuestImporter implements IImporter
                     }
     
                     @Override
-                    public NBTTagCompound writeToNBT(NBTTagCompound nbt, EnumSaveType saveType)
+                    public NBTTagCompound writeToNBT(NBTTagCompound nbt)
                     {
-                        if(saveType != EnumSaveType.CONFIG)
-                        {
-                            return nbt;
-                        }
-                        
                         nbt.setInteger("size", 24);
                         nbt.setInteger("x", qleX);
                         nbt.setInteger("y", qleY);
@@ -304,9 +298,8 @@ public class HQMQuestImporter implements IImporter
                     }
     
                     @Override
-                    public void readFromNBT(NBTTagCompound nbt, EnumSaveType saveType)
+                    public void readFromNBT(NBTTagCompound nbt)
                     {
-        
                     }
                 });
 			}

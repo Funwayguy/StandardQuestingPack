@@ -2,11 +2,10 @@ package bq_standard.rewards.loot;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.misc.INBTSaveLoad;
 import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api2.storage.DBEntry;
+import betterquesting.api2.storage.INBTSaveLoad;
 import betterquesting.api2.storage.SimpleDatabase;
 import bq_standard.network.StandardPacketType;
 import net.minecraft.entity.player.EntityPlayer;
@@ -78,14 +77,12 @@ public class LootRegistry extends SimpleDatabase<LootGroup> implements INBTSaveL
     }
     
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound tag, EnumSaveType saveType)
+    public NBTTagCompound writeToNBT(NBTTagCompound tag)
     {
-        if(saveType != EnumSaveType.CONFIG) return tag;
-        
 		NBTTagList jRew = new NBTTagList();
 		for(DBEntry<LootGroup> entry : getEntries())
 		{
-			NBTTagCompound jGrp = entry.getValue().writeToNBT(new NBTTagCompound(), saveType);
+			NBTTagCompound jGrp = entry.getValue().writeToNBT(new NBTTagCompound());
 			jGrp.setInteger("ID", entry.getID());
 			jRew.appendTag(jGrp);
 		}
@@ -95,10 +92,8 @@ public class LootRegistry extends SimpleDatabase<LootGroup> implements INBTSaveL
     }
     
     @Override
-    public void readFromNBT(NBTTagCompound tag, EnumSaveType saveType)
+    public void readFromNBT(NBTTagCompound tag)
     {
-        if(saveType != EnumSaveType.CONFIG) return;
-        
 		this.reset();
 		
 		List<LootGroup> legacyGroups = new ArrayList<>();
@@ -110,7 +105,7 @@ public class LootRegistry extends SimpleDatabase<LootGroup> implements INBTSaveL
 			int id = entry.hasKey("ID", 99) ? entry.getInteger("ID") : -1;
 			
 			LootGroup group = new LootGroup();
-			group.readFromNBT(entry, saveType);
+			group.readFromNBT(entry);
 			
 			if(id >= 0)
             {
@@ -133,7 +128,7 @@ public class LootRegistry extends SimpleDatabase<LootGroup> implements INBTSaveL
 	{
 		NBTTagCompound tags = new NBTTagCompound();
 		NBTTagCompound json = new NBTTagCompound();
-		LootRegistry.INSTANCE.writeToNBT(json, EnumSaveType.CONFIG);
+		LootRegistry.INSTANCE.writeToNBT(json);
 		tags.setTag("Database", json);
 		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToAll(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags));
 	}
@@ -142,7 +137,7 @@ public class LootRegistry extends SimpleDatabase<LootGroup> implements INBTSaveL
 	{
 		NBTTagCompound tags = new NBTTagCompound();
 		NBTTagCompound json = new NBTTagCompound();
-		LootRegistry.INSTANCE.writeToNBT(json, EnumSaveType.CONFIG);
+		LootRegistry.INSTANCE.writeToNBT(json);
 		tags.setTag("Database", json);
 		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToPlayer(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags), player);
 	}

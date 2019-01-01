@@ -2,7 +2,6 @@ package bq_standard.tasks;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
@@ -150,16 +149,8 @@ public class TaskMeeting implements ITask, ITickableTask
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			return this.writeProgressToJson(json);
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return json;
-		}
-		
 		json.setString("target", idName);
 		json.setInteger("range", range);
 		json.setInteger("amount", amount);
@@ -171,17 +162,8 @@ public class TaskMeeting implements ITask, ITickableTask
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			this.readProgressFromJson(json);
-			return;
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return;
-		}
-		
 		idName = json.hasKey("target", 8) ? json.getString("target") : "minecraft:villager";
 		range = json.getInteger("range");
 		amount = json.getInteger("amount");
@@ -190,7 +172,8 @@ public class TaskMeeting implements ITask, ITickableTask
 		targetTags = json.getCompoundTag("targetNBT");
 	}
 
-	private NBTTagCompound writeProgressToJson(NBTTagCompound json)
+	@Override
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
 	{
 		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
@@ -201,8 +184,9 @@ public class TaskMeeting implements ITask, ITickableTask
 		
 		return json;
 	}
-
-	private void readProgressFromJson(NBTTagCompound json)
+	
+	@Override
+	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
 		completeUsers = new ArrayList<UUID>();
 		NBTTagList cList = json.getTagList("completeUsers", 8);

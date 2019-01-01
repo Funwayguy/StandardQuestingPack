@@ -1,6 +1,5 @@
 package bq_standard.tasks.factory;
 
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.misc.IFactory;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskLocation;
@@ -31,7 +30,7 @@ public final class FactoryTaskLocation implements IFactory<TaskLocation>
 	public TaskLocation loadFromNBT(NBTTagCompound json)
 	{
 		TaskLocation task = new TaskLocation();
-		task.readFromNBT(json, EnumSaveType.CONFIG);
+		task.readFromNBT(json);
 		return task;
 	}
 	

@@ -1,7 +1,6 @@
 package bq_standard.rewards;
 
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.enums.EnumSaveType;
 import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
@@ -60,31 +59,17 @@ public class RewardCommand implements IReward
 		
 		if(viaPlayer)
 		{
-			server.addScheduledTask(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					server.getCommandManager().executeCommand(new AdminExecute(player), finCom);
-				}
-			});
+			server.addScheduledTask(() -> server.getCommandManager().executeCommand(new AdminExecute(player), finCom));
 		} else
 		{
 			final RewardCommandSender cmdSender = new RewardCommandSender(player.world, (int)player.posX, (int)player.posY, (int)player.posZ);
 			
-			server.addScheduledTask(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					server.getCommandManager().executeCommand(cmdSender, finCom);
-				}
-			});
+			server.addScheduledTask(() -> server.getCommandManager().executeCommand(cmdSender, finCom));
 		}
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json)
 	{
 		command = json.getString("command");
 		hideCmd = json.getBoolean("hideCommand");
@@ -92,7 +77,7 @@ public class RewardCommand implements IReward
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
 		json.setString("command", command);
 		json.setBoolean("hideCommand", hideCmd);
