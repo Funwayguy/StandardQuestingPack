@@ -50,8 +50,8 @@ public class NativeFileImporter implements IImporter
 			ImportedQuests impQ = new ImportedQuests(questDB);
 			ImportedQuestLines impL = new ImportedQuestLines(lineDB);
 			
-			impQ.readFromNBT(nbt.getTagList("questDatabase", 10));
-			impL.readFromNBT(nbt.getTagList("questLines", 10));
+			impQ.readFromNBT(nbt.getTagList("questDatabase", 10), false);
+			impL.readFromNBT(nbt.getTagList("questLines", 10), false);
 			
 			mergeUtil.merge(impQ, impL);
 		}
