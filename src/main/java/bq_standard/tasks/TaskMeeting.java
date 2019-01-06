@@ -6,7 +6,6 @@ import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
-import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
@@ -31,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class TaskMeeting implements ITask, ITickableTask
+public class TaskMeeting implements ITask, ITaskTickable
 {
 	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	
@@ -86,7 +85,7 @@ public class TaskMeeting implements ITask, ITickableTask
 	}
 	
 	@Override
-	public void updateTask(EntityPlayer player, IQuest quest)
+	public void tickTask(IQuest quest, EntityPlayer player)
 	{
 		if(player.ticksExisted%60 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
 		{

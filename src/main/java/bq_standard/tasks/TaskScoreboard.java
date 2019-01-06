@@ -6,7 +6,6 @@ import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
-import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import bq_standard.ScoreboardBQ;
@@ -29,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class TaskScoreboard implements ITask, ITickableTask
+public class TaskScoreboard implements ITask, ITaskTickable
 {
 	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	public String scoreName = "Score";
@@ -80,7 +79,7 @@ public class TaskScoreboard implements ITask, ITickableTask
 	}
 	
 	@Override
-	public void updateTask(EntityPlayer player, IQuest quest)
+	public void tickTask(IQuest quest, EntityPlayer player)
 	{
 		if(player.ticksExisted%20 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE)) // Auto-detect once per second
 		{

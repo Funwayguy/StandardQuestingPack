@@ -37,7 +37,7 @@ public class PanelTaskCrafting extends CanvasEmpty
         super.initPanel();
         
         UUID uuid = QuestingAPI.getQuestingUUID(Minecraft.getMinecraft().player);
-        int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL) ? task.getPartyProgress(uuid) : task.getGlobalProgress();
+        int[] progress = quest == null || !quest.getProperty(NativeProps.GLOBAL) ? task.getPartyProgress(uuid) : task.getGlobalProgress();
         boolean isComplete = task.isComplete(uuid);
         
         CanvasScrolling cvList = new CanvasScrolling(new GuiTransform(GuiAlign.FULL_BOX, new GuiPadding(0, 0, 8, 0), 0));

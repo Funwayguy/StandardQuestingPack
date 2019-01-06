@@ -153,17 +153,16 @@ public class HQMQuestImporter implements IImporter
 			loadedQuests.add(idName);
 			IQuest quest = GetNewQuest(idName, questDB);
 			
-			IPropertyContainer qProps = quest.getProperties();
-			qProps.setProperty(NativeProps.NAME, name);
-			qProps.setProperty(NativeProps.DESC, JsonHelper.GetString(jQuest, "description", "No Description"));
+			quest.setProperty(NativeProps.NAME, name);
+			quest.setProperty(NativeProps.DESC, JsonHelper.GetString(jQuest, "description", "No Description"));
 			BigItemStack tmp = HQMUtilities.HQMStackT1(JsonHelper.GetObject(jQuest, "icon"));
 			
 			if(tmp != null)
 			{
-				qProps.setProperty(NativeProps.ICON, tmp);
+				quest.setProperty(NativeProps.ICON, tmp);
 			} else
 			{
-				qProps.setProperty(NativeProps.ICON, new BigItemStack(Items.NETHER_STAR));
+				quest.setProperty(NativeProps.ICON, new BigItemStack(Items.NETHER_STAR));
 			}
 			
 			if(json.has("repeat")) // Assuming this is in Minecraft time
@@ -172,7 +171,7 @@ public class HQMQuestImporter implements IImporter
 				int rTime = 0;
 				rTime += JsonHelper.GetNumber(jRpt, "days", 0).intValue() * 24000;
 				rTime += JsonHelper.GetNumber(jRpt, "hours", 0).intValue() * 1000;
-				qProps.setProperty(NativeProps.REPEAT_TIME, rTime);
+				quest.setProperty(NativeProps.REPEAT_TIME, rTime);
 			}
 			
 			for(JsonElement er : JsonHelper.GetArray(jQuest, "prerequisites"))

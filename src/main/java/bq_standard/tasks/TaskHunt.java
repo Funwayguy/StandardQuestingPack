@@ -85,7 +85,7 @@ public class TaskHunt implements ITask, IProgression<Integer>
 			return;
 		}
 		
-		int progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(QuestingAPI.getQuestingUUID(player)) : getGlobalProgress();
+		int progress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(QuestingAPI.getQuestingUUID(player)) : getGlobalProgress();
 		
 		if(progress >= required)
 		{

@@ -9,7 +9,6 @@ import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.IItemTask;
 import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
-import betterquesting.api.questing.tasks.ITickableTask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api.utils.JsonHelper;
@@ -33,7 +32,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITickableTask
+public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITaskTickable
 {
 	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
 	public ArrayList<BigItemStack> requiredItems = new ArrayList<BigItemStack>();
@@ -72,7 +71,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITi
 	}
 	
 	@Override
-	public void updateTask(EntityPlayer player, IQuest quest)
+	public void tickTask(IQuest quest, EntityPlayer player)
 	{
 		if(player.ticksExisted%60 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
 		{
@@ -83,7 +82,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITi
 			{
 				boolean flag = true;
 				
-				int[] totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(QuestingAPI.getQuestingUUID(player)) : getGlobalProgress();
+				int[] totalProgress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(QuestingAPI.getQuestingUUID(player)) : getGlobalProgress();
 				for(int j = 0; j < requiredItems.size(); j++)
 				{
 					BigItemStack rStack = requiredItems.get(j);
@@ -168,7 +167,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITi
 		if(consume || idvDetect)
 		{
 			setUserProgress(playerID, progress);
-			totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
+			totalProgress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		}
 		
 		for(int j = 0; j < requiredItems.size(); j++)

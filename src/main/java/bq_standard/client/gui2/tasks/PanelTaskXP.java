@@ -47,7 +47,7 @@ public class PanelTaskXP extends CanvasEmpty
         System.out.println(XPHelper.xpBarCap(player));
         System.out.println(player.experience);
         
-		long xp = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL) ? task.getPartyProgress(QuestingAPI.getQuestingUUID(Minecraft.getMinecraft().player)) : task.getGlobalProgress();
+		long xp = quest == null || !quest.getProperty(NativeProps.GLOBAL) ? task.getPartyProgress(QuestingAPI.getQuestingUUID(Minecraft.getMinecraft().player)) : task.getGlobalProgress();
 		xp = !task.levels? xp : XPHelper.getXPLevel(xp);
 		final float xpPercent = (float)((double)xp/(double)task.amount);
         

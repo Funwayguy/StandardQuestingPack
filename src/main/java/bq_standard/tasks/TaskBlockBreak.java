@@ -87,7 +87,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		}
 		
 		boolean flag = true;
-		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
+		int[] progress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		
 		for(int j = 0; j < blockTypes.size(); j++)
 		{

@@ -28,7 +28,7 @@ import org.apache.logging.log4j.Level;
 import java.util.*;
 import java.util.Map.Entry;
 
-public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int[]>, ITickableTask
+public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int[]>, ITaskTickable
 {
 	private List<UUID> completeUsers = new ArrayList<>();
 	public List<FluidStack> requiredFluids = new ArrayList<>();
@@ -65,7 +65,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 	}
 	
 	@Override
-	public void updateTask(EntityPlayer player, IQuest quest)
+	public void tickTask(IQuest quest, EntityPlayer player)
 	{
 		if(player.ticksExisted%60 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
 		{
@@ -76,7 +76,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 			{
 				boolean flag = true;
 				
-				int[] totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(QuestingAPI.getQuestingUUID(player)) : getGlobalProgress();
+				int[] totalProgress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(QuestingAPI.getQuestingUUID(player)) : getGlobalProgress();
 				
 				for(int j = 0; j < requiredFluids.size(); j++)
 				{
@@ -167,7 +167,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		if(consume)
 		{
 			setUserProgress(QuestingAPI.getQuestingUUID(player), progress);
-			totalProgress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
+			totalProgress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		}
 		
 		for(int j = 0; j < requiredFluids.size(); j++)

@@ -76,7 +76,7 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 			return;
 		}
 		
-		int[] progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
+		int[] progress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		
 		boolean flag = true;
 		
