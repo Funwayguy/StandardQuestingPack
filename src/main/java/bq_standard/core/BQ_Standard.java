@@ -20,7 +20,7 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = BQ_Standard.MODID, name = BQ_Standard.NAME, guiFactory = "bq_standard.handlers.ConfigGuiFactory")
+@Mod(modid = BQ_Standard.MODID, version = "@VERSION@", name = BQ_Standard.NAME, guiFactory = "bq_standard.handlers.ConfigGuiFactory")
 public class BQ_Standard
 {
     public static final String MODID = "bq_standard";

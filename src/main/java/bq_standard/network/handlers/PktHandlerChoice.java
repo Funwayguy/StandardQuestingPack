@@ -45,7 +45,7 @@ public class PktHandlerChoice implements IPacketHandler
 		IQuest quest = QuestingAPI.getAPI(ApiReference.QUEST_DB).getValue(qID);
 		IReward reward = quest == null? null : quest.getRewards().getValue(rID);
 		
-		if(reward != null && reward instanceof RewardChoice)
+		if(reward instanceof RewardChoice)
 		{
 			RewardChoice rChoice = (RewardChoice)reward;
 			rChoice.setSelection(QuestingAPI.getQuestingUUID(sender), sel);
