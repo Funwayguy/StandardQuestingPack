@@ -1,9 +1,7 @@
 package bq_standard.tasks;
 
-import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.jdoc.IJsonDoc;
-import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.ItemComparison;
@@ -17,7 +15,6 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
@@ -32,7 +29,7 @@ import java.util.UUID;
 
 public class TaskMeeting implements ITask, ITaskTickable
 {
-	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
+	private final List<UUID> completeUsers = new ArrayList<>();
 	
 	public String idName = "minecraft:villager";
 	public int range = 4;
@@ -87,7 +84,7 @@ public class TaskMeeting implements ITask, ITaskTickable
 	@Override
 	public void tickTask(IQuest quest, EntityPlayer player)
 	{
-		if(player.ticksExisted%60 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
+		if(player.ticksExisted%60 == 0)
 		{
 			detect(player, quest);
 		}
@@ -187,20 +184,13 @@ public class TaskMeeting implements ITask, ITaskTickable
 	@Override
 	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers = new ArrayList<UUID>();
+		completeUsers.clear();
 		NBTTagList cList = json.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			NBTBase entry = cList.get(i);
-			
-			if(entry == null || entry.getId() != 8)
-			{
-				continue;
-			}
-			
 			try
 			{
-				completeUsers.add(UUID.fromString(((NBTTagString)entry).getString()));
+				completeUsers.add(UUID.fromString(cList.getStringTagAt(i)));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);

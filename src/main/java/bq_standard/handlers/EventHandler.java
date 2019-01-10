@@ -2,6 +2,7 @@ package bq_standard.handlers;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.cache.CapabilityProviderQuestCache;
@@ -73,7 +74,7 @@ public class EventHandler
 		{
 		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
             {
-                if(task.getValue() instanceof TaskHunt) ((TaskHunt)task.getValue()).onKilledByPlayer(entry.getValue(), event.getEntityLiving(), event.getSource());
+                if(task.getValue() instanceof TaskHunt) ((TaskHunt)task.getValue()).onKilledByPlayer(entry.getValue(), player, event.getEntityLiving(), event.getSource());
             }
 		}
 	}
@@ -98,7 +99,7 @@ public class EventHandler
 	@SubscribeEvent
     public void onEntityLiving(LivingUpdateEvent event)
     {
-        if(event.getEntityLiving() == null || event.getEntityLiving().world.isRemote || event.getEntityLiving().ticksExisted%60 != 0 || !(event.getEntityLiving() instanceof EntityPlayer)) return;
+        if(event.getEntityLiving() == null || event.getEntityLiving().world.isRemote || event.getEntityLiving().ticksExisted%20 != 0 || !(event.getEntityLiving() instanceof EntityPlayer) || QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE)) return;
         
         EntityPlayer player = (EntityPlayer)event.getEntityLiving();
         betterquesting.api2.cache.QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);

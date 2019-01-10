@@ -1,9 +1,7 @@
 package bq_standard.tasks;
 
-import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.jdoc.IJsonDoc;
-import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.client.gui.misc.IGuiRect;
@@ -13,7 +11,6 @@ import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskLocation;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
@@ -80,7 +77,7 @@ public class TaskLocation implements ITask, ITaskTickable
 	@Override
 	public void tickTask(IQuest quest, EntityPlayer player)
 	{
-		if(player.ticksExisted%100 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE)) // Only auto-detect every 5 seconds
+		if(player.ticksExisted%100 == 0) // Only auto-detect every 5 seconds
 		{
 			detect(player, quest);
 		}
@@ -102,15 +99,11 @@ public class TaskLocation implements ITask, ITaskTickable
 			{
 				Vec3d pPos = new Vec3d(player.posX, player.posY + player.getEyeHeight(), player.posZ);
 				Vec3d tPos = new Vec3d(x, y, z);
-				boolean liquids = false;
-				RayTraceResult mop = player.world.rayTraceBlocks(pPos, tPos, liquids, !liquids, false);
+				RayTraceResult mop = player.world.rayTraceBlocks(pPos, tPos, false, true, false);
 				
 				if(mop == null || mop.typeOfHit != RayTraceResult.Type.BLOCK)
 				{
 					setComplete(playerID);
-				} else
-				{
-					return;
 				}
 			} else
 			{
@@ -167,16 +160,9 @@ public class TaskLocation implements ITask, ITaskTickable
 		NBTTagList cList = json.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			NBTBase entry = cList.get(i);
-			
-			if(entry == null || entry.getId() != 8)
-			{
-				continue;
-			}
-			
 			try
 			{
-				completeUsers.add(UUID.fromString(((NBTTagString)entry).getString()));
+				completeUsers.add(UUID.fromString(cList.getStringTagAt(i)));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);

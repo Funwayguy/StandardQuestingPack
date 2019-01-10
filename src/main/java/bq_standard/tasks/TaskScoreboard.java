@@ -3,9 +3,10 @@ package bq_standard.tasks;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.jdoc.IJsonDoc;
-import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api2.cache.CapabilityProviderQuestCache;
+import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import bq_standard.ScoreboardBQ;
@@ -30,7 +31,7 @@ import java.util.UUID;
 
 public class TaskScoreboard implements ITask, ITaskTickable
 {
-	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
+	private final List<UUID> completeUsers = new ArrayList<>();
 	public String scoreName = "Score";
 	public String scoreDisp = "Score";
 	public String type = "dummy";
@@ -81,7 +82,7 @@ public class TaskScoreboard implements ITask, ITaskTickable
 	@Override
 	public void tickTask(IQuest quest, EntityPlayer player)
 	{
-		if(player.ticksExisted%20 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE)) // Auto-detect once per second
+		if(player.ticksExisted%20 == 0) // Auto-detect once per second
 		{
 			detect(player, quest);
 		}
@@ -90,13 +91,13 @@ public class TaskScoreboard implements ITask, ITaskTickable
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(isComplete(QuestingAPI.getQuestingUUID(player)))
-		{
-			return;
-		}
+	    UUID playerID = QuestingAPI.getQuestingUUID(player);
+        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+        
+		if(isComplete(playerID)) return;
 		
 		Scoreboard board = player.getWorldScoreboard();
-		ScoreObjective scoreObj = board == null? null : board.getObjective(scoreName);
+		ScoreObjective scoreObj = board.getObjective(scoreName);
 		
 		if(scoreObj == null)
 		{
@@ -109,6 +110,7 @@ public class TaskScoreboard implements ITask, ITaskTickable
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to create score '" + scoreName + "' for task!", e);
+				return;
 			}
 		}
 
@@ -118,7 +120,8 @@ public class TaskScoreboard implements ITask, ITaskTickable
 		
 		if(operation.checkValues(points, target))
 		{
-			setComplete(QuestingAPI.getQuestingUUID(player));
+			setComplete(playerID);
+			if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
 		}
 	}
 	
@@ -140,14 +143,19 @@ public class TaskScoreboard implements ITask, ITaskTickable
 	public void readFromNBT(NBTTagCompound json)
 	{
 		scoreName = json.getString("scoreName");
-		scoreName.replaceAll(" ", "_");
+		scoreName = scoreName.replaceAll(" ", "_");
 		scoreDisp = json.getString("scoreDisp");
 		type = json.hasKey("type", 8) ? json.getString("type") : "dummy";
 		target = json.getInteger("target");
 		conversion = json.getFloat("unitConversion");
 		suffix = json.getString("unitSuffix");
-		operation = ScoreOperation.valueOf(json.hasKey("operation", 8) ? json.getString("operation") : "MORE_OR_EQUAL");
-		operation = operation != null? operation : ScoreOperation.MORE_OR_EQUAL;
+		try
+        {
+            operation = ScoreOperation.valueOf(json.hasKey("operation", 8) ? json.getString("operation") : "MORE_OR_EQUAL");
+        } catch(Exception e)
+        {
+            operation = ScoreOperation.MORE_OR_EQUAL;
+        }
 	}
 	
 	@Override
@@ -166,7 +174,7 @@ public class TaskScoreboard implements ITask, ITaskTickable
 	@Override
 	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers = new ArrayList<>();
+		completeUsers.clear();
 		NBTTagList cList = json.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
@@ -189,7 +197,8 @@ public class TaskScoreboard implements ITask, ITaskTickable
 		MORE_OR_EQUAL(">="),
 		NOT("=/=");
 		
-		String text = "";
+		private final String text;
+		
 		ScoreOperation(String text)
 		{
 			this.text = text;

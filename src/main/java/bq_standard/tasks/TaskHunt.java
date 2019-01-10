@@ -9,6 +9,8 @@ import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.ItemComparison;
+import betterquesting.api2.cache.CapabilityProviderQuestCache;
+import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import bq_standard.client.gui2.editors.tasks.GuiEditTaskHunt;
@@ -20,7 +22,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
@@ -38,9 +39,10 @@ import java.util.UUID;
 
 public class TaskHunt implements ITask, IProgression<Integer>
 {
-	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
-	public HashMap<UUID, Integer> userProgress = new HashMap<UUID, Integer>();
+	private final List<UUID> completeUsers = new ArrayList<>();
+	public final HashMap<UUID, Integer> userProgress = new HashMap<>();
 	public String idName = "minecraft:zombie";
+	public String damageType = "";
 	public int required = 1;
 	public boolean ignoreNBT = true;
 	public boolean subtypes = true;
@@ -80,29 +82,29 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(isComplete(QuestingAPI.getQuestingUUID(player)))
+	    UUID playerID = QuestingAPI.getQuestingUUID(player);
+	    
+		if(isComplete(playerID))
 		{
 			return;
 		}
 		
-		int progress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(QuestingAPI.getQuestingUUID(player)) : getGlobalProgress();
+		int progress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		
 		if(progress >= required)
 		{
-			setComplete(QuestingAPI.getQuestingUUID(player));
+			setComplete(playerID);
 		}
 	}
 	
-	public void onKilledByPlayer(IQuest quest, EntityLivingBase entity, DamageSource source)
+	public void onKilledByPlayer(IQuest quest, EntityPlayer player, EntityLivingBase entity, DamageSource source)
 	{
-		EntityPlayer player = (EntityPlayer)source.getTrueSource();
-		
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
+        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
 		
-		if(player == null || entity == null || this.isComplete(playerID))
-		{
-			return;
-		}
+		if(entity == null || this.isComplete(playerID)) return;
+		
+		if(damageType.length() > 0 && (source == null || !damageType.equalsIgnoreCase(source.damageType))) return;
 		
 		int progress = getUsersProgress(playerID);
 		
@@ -130,6 +132,7 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		}
 		
 		setUserProgress(playerID, progress + 1);
+		if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
 		
 		detect(player, quest);
 	}
@@ -142,6 +145,7 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		json.setBoolean("subtypes", subtypes);
 		json.setBoolean("ignoreNBT", ignoreNBT);
 		json.setTag("targetNBT", targetTags);
+		json.setString("damageType", damageType);
 		
 		return json;
 	}
@@ -154,43 +158,31 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		subtypes = json.getBoolean("subtypes");
 		ignoreNBT = json.getBoolean("ignoreNBT");
 		targetTags = json.getCompoundTag("targetNBT");
+		damageType = json.getString("damageType");
 	}
 	
 	@Override
 	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers = new ArrayList<>();
+		completeUsers.clear();
 		NBTTagList cList = json.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			NBTBase entry = cList.get(i);
-			
-			if(entry == null || entry.getId() != 8)
-			{
-				continue;
-			}
 			
 			try
 			{
-				completeUsers.add(UUID.fromString(((NBTTagString)entry).getString()));
+				completeUsers.add(UUID.fromString(cList.getStringTagAt(i)));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
 			}
 		}
 		
-		userProgress = new HashMap<>();
+		userProgress.clear();
 		NBTTagList pList = json.getTagList("userProgress", 10);
 		for(int i = 0; i < pList.tagCount(); i++)
 		{
-			NBTBase entry = pList.get(i);
-			
-			if(entry == null || entry.getId() != 10)
-			{
-				continue;
-			}
-			
-			NBTTagCompound pTag = (NBTTagCompound)entry;
+			NBTTagCompound pTag = pList.getCompoundTagAt(i);
 			UUID uuid;
 			try
 			{

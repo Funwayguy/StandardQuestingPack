@@ -11,6 +11,8 @@ import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api.utils.JsonHelper;
+import betterquesting.api2.cache.CapabilityProviderQuestCache;
+import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import bq_standard.client.gui2.tasks.PanelTaskCrafting;
@@ -20,6 +22,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -33,11 +36,11 @@ import java.util.UUID;
 
 public class TaskCrafting implements ITask, IProgression<int[]>
 {
-	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
-	public ArrayList<BigItemStack> requiredItems = new ArrayList<BigItemStack>();
-	public HashMap<UUID, int[]> userProgress = new HashMap<UUID, int[]>();
-	boolean partialMatch = true;
-	boolean ignoreNBT = false;
+	private final List<UUID> completeUsers = new ArrayList<>();
+	public final NonNullList<BigItemStack> requiredItems = NonNullList.create();
+	public final HashMap<UUID, int[]> userProgress = new HashMap<>();
+	public boolean partialMatch = true;
+	public boolean ignoreNBT = false;
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -84,10 +87,7 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 		{
 			BigItemStack rStack = requiredItems.get(i);
 			
-			if(progress[i] >= rStack.stackSize)
-			{
-				continue;
-			} else
+			if(progress[i] < rStack.stackSize)
 			{
 				flag = false;
 				break;
@@ -103,13 +103,12 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	public void onItemCrafted(IQuest quest, EntityPlayer player, ItemStack stack)
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
+        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
 		
-		if(isComplete(playerID))
-		{
-			return;
-		}
+		if(isComplete(playerID)) return;
 		
 		int[] progress = getUsersProgress(playerID);
+		boolean updated = false;
 		
 		for(int i = 0; i < requiredItems.size(); i++)
 		{
@@ -123,10 +122,15 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 			if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.oreDict, rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
 			{
 				progress[i] += stack.getCount();
+				updated = true;
 			}
 		}
 		
-		setUserProgress(QuestingAPI.getQuestingUUID(player), progress);
+		if(updated)
+        {
+            setUserProgress(playerID, progress);
+            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+        }
 		
 		detect(player, quest);
 	}
@@ -134,8 +138,12 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	public void onItemSmelted(IQuest quest, EntityPlayer player, ItemStack stack)
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
+        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+		
+		if(isComplete(playerID)) return;
 		
 		int[] progress = getUsersProgress(playerID);
+		boolean updated = false;
 		
 		for(int i = 0; i < requiredItems.size(); i++)
 		{
@@ -149,10 +157,15 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 			if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.oreDict, rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
 			{
 				progress[i] += stack.getCount();
+				updated = true;
 			}
 		}
 		
-		setUserProgress(playerID, progress);
+		if(updated)
+        {
+            setUserProgress(playerID, progress);
+            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+        }
 		
 		detect(player, quest);
 	}
@@ -179,70 +192,35 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 		partialMatch = json.getBoolean("partialMatch");
 		ignoreNBT = json.getBoolean("ignoreNBT");
 		
-		requiredItems = new ArrayList<>();
+		requiredItems.clear();
 		NBTTagList iList = json.getTagList("requiredItems", 10);
 		for(int i = 0; i < iList.tagCount(); i++)
 		{
-			NBTBase entry = iList.get(i);
-			
-			if(entry == null || entry.getId() != 10)
-			{
-				continue;
-			}
-			
-			try
-			{
-				BigItemStack item = JsonHelper.JsonToItemStack((NBTTagCompound)entry);
-				
-				if(item != null)
-				{
-					requiredItems.add(item);
-				} else
-				{
-					continue;
-				}
-			} catch(Exception e)
-			{
-				BQ_Standard.logger.log(Level.ERROR, "Unable to load quest item data", e);
-			}
+		    requiredItems.add(JsonHelper.JsonToItemStack(iList.getCompoundTagAt(i)));
 		}
 	}
 	
 	@Override
 	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers = new ArrayList<>();
+		completeUsers.clear();
 		NBTTagList cList = json.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			NBTBase entry = cList.get(i);
-			
-			if(entry == null || entry.getId() != 8)
-			{
-				continue;
-			}
-			
 			try
 			{
-				completeUsers.add(UUID.fromString(((NBTTagString)entry).getString()));
+				completeUsers.add(UUID.fromString(cList.getStringTagAt(i)));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
 			}
 		}
 		
-		userProgress = new HashMap<UUID,int[]>();
+		userProgress.clear();
 		NBTTagList pList = json.getTagList("userProgress", 10);
 		for(int n = 0; n < pList.tagCount(); n++)
 		{
-			NBTBase entry = pList.get(n);
-			
-			if(entry == null || entry.getId() != 10)
-			{
-				continue;
-			}
-			
-			NBTTagCompound pTag = (NBTTagCompound)entry;
+			NBTTagCompound pTag = pList.getCompoundTagAt(n);
 			UUID uuid;
 			try
 			{
@@ -371,7 +349,7 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 			}
 		}
 		
-		return progress == null || progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
+		return progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
 	}
 	
 	public int[] getPartyProgress(UUID uuid)

@@ -12,6 +12,8 @@ import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api.utils.JsonHelper;
+import betterquesting.api2.cache.CapabilityProviderQuestCache;
+import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import bq_standard.client.gui2.tasks.PanelTaskRetrieval;
@@ -20,7 +22,11 @@ import bq_standard.tasks.factory.FactoryTaskRetrieval;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -34,11 +40,11 @@ import java.util.UUID;
 
 public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITaskTickable
 {
-	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
-	public ArrayList<BigItemStack> requiredItems = new ArrayList<BigItemStack>();
-	public HashMap<UUID, int[]> userProgress = new HashMap<UUID, int[]>();
-	boolean partialMatch = true;
-	boolean ignoreNBT = false;
+	private final List<UUID> completeUsers = new ArrayList<>();
+	public final NonNullList<BigItemStack> requiredItems = NonNullList.create();
+	private final HashMap<UUID, int[]> userProgress = new HashMap<>();
+	public boolean partialMatch = true;
+	public boolean ignoreNBT = false;
 	public boolean consume = true;
 	public boolean idvDetect = true;
 	public boolean autoConsume = false;
@@ -73,7 +79,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITa
 	@Override
 	public void tickTask(IQuest quest, EntityPlayer player)
 	{
-		if(player.ticksExisted%60 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
+		if(player.ticksExisted%60 == 0)
 		{
 			if(!consume || autoConsume)
 			{
@@ -87,10 +93,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITa
 				{
 					BigItemStack rStack = requiredItems.get(j);
 					
-					if(rStack == null || totalProgress[j] >= rStack.stackSize)
-					{
-						continue;
-					}
+					if(totalProgress[j] >= rStack.stackSize) continue;
 					
 					flag = false;
 					break;
@@ -109,12 +112,10 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITa
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
-		if(player.inventory == null || isComplete(playerID))
-		{
-			return;
-		}
+		if(player.inventory == null || isComplete(playerID)) return;
 		
 		int[] progress = this.getUsersProgress(playerID);
+		boolean updated = false;
 		
 		for(int i = 0; i < player.inventory.getSizeInventory(); i++)
 		{
@@ -122,19 +123,17 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITa
 			{
 				ItemStack stack = player.inventory.getStackInSlot(i);
 				
-				if(stack == null)
+				if(stack.isEmpty())
 				{
 					break;
 				}
 				
 				BigItemStack rStack = requiredItems.get(j);
 				
-				if(rStack == null || progress[j] >= rStack.stackSize)
-				{
-					continue;
-				}
+				if(progress[j] >= rStack.stackSize) continue;
 				
 				int remaining = rStack.stackSize - progress[j];
+				if(remaining <= 0) continue;
 				
 				if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.oreDict, rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
 				{
@@ -146,6 +145,8 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITa
 					{
 						progress[j] += Math.min(remaining, stack.getCount());
 					}
+					
+					updated = true;
 				}
 			}
 		}
@@ -154,9 +155,10 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITa
 		{
 			for(int i = 0; i < progress.length; i++)
 			{
-				if(progress[i] < requiredItems.get(i).stackSize)
+				if(progress[i] != 0 && progress[i] < requiredItems.get(i).stackSize)
 				{
 					progress[i] = 0;
+					updated = true;
 				}
 			}
 		}
@@ -166,7 +168,13 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITa
 		
 		if(consume || idvDetect)
 		{
-			setUserProgress(playerID, progress);
+		    if(updated)
+            {
+                setUserProgress(playerID, progress);
+                QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+                if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+                
+            }
 			totalProgress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		}
 		
@@ -174,10 +182,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITa
 		{
 			BigItemStack rStack = requiredItems.get(j);
 			
-			if(rStack == null || totalProgress[j] >= rStack.stackSize)
-			{
-				continue;
-			}
+			if(totalProgress[j] >= rStack.stackSize) continue;
 			
 			flag = false;
 			break;
@@ -217,33 +222,18 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITa
 		idvDetect = !json.getBoolean("groupDetect");
 		autoConsume = json.getBoolean("autoConsume");
 		
-		requiredItems = new ArrayList<>();
+		requiredItems.clear();
 		NBTTagList iList = json.getTagList("requiredItems", 10);
 		for(int i = 0; i < iList.tagCount(); i++)
 		{
-			NBTBase entry = iList.get(i);
-			
-			if(entry == null || entry.getId() != 10)
-			{
-				continue;
-			}
-			
-			BigItemStack item = JsonHelper.JsonToItemStack((NBTTagCompound)entry);
-			
-			if(item != null)
-			{
-				requiredItems.add(item);
-			} else
-			{
-				continue;
-			}
+			requiredItems.add(JsonHelper.JsonToItemStack(iList.getCompoundTagAt(i)));
 		}
 	}
 	
 	@Override
 	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers = new ArrayList<>();
+		completeUsers.clear();
 		NBTTagList cList = json.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
@@ -256,7 +246,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITa
 			}
 		}
 		
-		userProgress = new HashMap<>();
+		userProgress.clear();
 		NBTTagList pList = json.getTagList("userProgress", 10);
 		
 		for(int n = 0; n < pList.tagCount(); n++)
@@ -371,10 +361,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITa
 		{
 			BigItemStack rStack = requiredItems.get(j);
 			
-			if(rStack == null || progress[j] >= rStack.stackSize)
-			{
-				continue;
-			}
+			if(progress[j] >= rStack.stackSize) continue;
 			
 			if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.oreDict, rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
 			{
@@ -388,28 +375,20 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITa
 	@Override
 	public ItemStack submitItem(UUID owner, ItemStack input)
 	{
-		ItemStack stack = input;
+		ItemStack stack = input.copy();
 		
-		if(owner == null || stack == null || stack.isEmpty() || !consume || isComplete(owner))
-		{
-			return stack;
-		}
+		if(owner == null || stack.isEmpty() || !consume || isComplete(owner)) return stack;
 		
 		int[] progress = getUsersProgress(owner);
+		boolean updated = false;
 		
 		for(int j = 0; j < requiredItems.size(); j++)
 		{
-			if(stack == null || stack.isEmpty())
-			{
-				break;
-			}
+			if(stack.isEmpty()) break;
 			
 			BigItemStack rStack = requiredItems.get(j);
 			
-			if(rStack == null || progress[j] >= rStack.stackSize)
-			{
-				continue;
-			}
+			if(progress[j] >= rStack.stackSize) continue;
 
 			int remaining = rStack.stackSize - progress[j];
 			
@@ -418,23 +397,17 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITa
 				int removed = Math.min(stack.getCount(), remaining);
 				stack.shrink(removed);
 				progress[j] += removed;
-				
-				if(stack.getCount() <= 0)
-				{
-					break;
-				}
+				updated = true;
+				if(stack.isEmpty()) break;
 			}
 		}
 		
-		setUserProgress(owner, progress);
+		if(updated)
+        {
+            setUserProgress(owner, progress);
+        }
 		
-		if(stack == null || stack.isEmpty() || stack.getCount() <= 0)
-		{
-			return ItemStack.EMPTY;
-		} else
-		{
-			return stack;
-		}
+		return stack.isEmpty() ? ItemStack.EMPTY : stack;
 	}
 	
 	@Override
@@ -470,7 +443,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITa
 			}
 		}
 		
-		return progress == null || progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
+		return progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
 	}
 	
 	public int[] getPartyProgress(UUID uuid)

@@ -8,6 +8,8 @@ import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.*;
 import betterquesting.api.utils.JsonHelper;
+import betterquesting.api2.cache.CapabilityProviderQuestCache;
+import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import bq_standard.client.gui2.tasks.PanelTaskFluid;
@@ -17,6 +19,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
@@ -30,9 +33,9 @@ import java.util.Map.Entry;
 
 public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int[]>, ITaskTickable
 {
-	private List<UUID> completeUsers = new ArrayList<>();
-	public List<FluidStack> requiredFluids = new ArrayList<>();
-	public Map<UUID, int[]> userProgress = new HashMap<>();
+	private final List<UUID> completeUsers = new ArrayList<>();
+	public NonNullList<FluidStack> requiredFluids = NonNullList.create();
+	public final Map<UUID, int[]> userProgress = new HashMap<>();
 	public boolean consume = true;
 	public boolean autoConsume = false;
 	public boolean ignoreNbt = false;
@@ -67,7 +70,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 	@Override
 	public void tickTask(IQuest quest, EntityPlayer player)
 	{
-		if(player.ticksExisted%60 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
+		if(player.ticksExisted%60 == 0)
 		{
 			if(!consume || autoConsume)
 			{
@@ -82,10 +85,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 				{
 					FluidStack rStack = requiredFluids.get(j);
 					
-					if(rStack == null || totalProgress[j] >= rStack.amount)
-					{
-						continue;
-					}
+					if(totalProgress[j] >= rStack.amount) continue;
 					
 					flag = false;
 					break;
@@ -110,6 +110,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		}
 		
 		int[] progress = getUsersProgress(playerID);
+		boolean updated = false;
 		
 		for(int i = 0; i < player.inventory.getSizeInventory(); i++)
 		{
@@ -132,10 +133,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 				
 				FluidStack rStack = requiredFluids.get(j);
 				
-				if(rStack == null || progress[j] >= rStack.amount)
-				{
-					continue;
-				}
+				if(progress[j] >= rStack.amount) continue;
 				
 				int remaining = rStack.amount - progress[j];
 				
@@ -158,6 +156,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 				}
 				
 				progress[j] += Math.min(remaining, fluid.amount);
+				updated = true;
 			}
 		}
 		
@@ -166,18 +165,20 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		
 		if(consume)
 		{
-			setUserProgress(QuestingAPI.getQuestingUUID(player), progress);
-			totalProgress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
+		    if(updated)
+            {
+                setUserProgress(QuestingAPI.getQuestingUUID(player), progress);
+                QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+                if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+            }
+            totalProgress = quest == null || !quest.getProperty(NativeProps.GLOBAL) ? getPartyProgress(playerID) : getGlobalProgress();
 		}
 		
 		for(int j = 0; j < requiredFluids.size(); j++)
 		{
 			FluidStack rStack = requiredFluids.get(j);
 			
-			if(rStack == null || totalProgress[j] >= rStack.amount)
-			{
-				continue;
-			}
+			if(totalProgress[j] >= rStack.amount) continue;
 			
 			flag = false;
 			break;
@@ -213,61 +214,35 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		autoConsume = json.getBoolean("autoConsume");
 		ignoreNbt = json.getBoolean("ignoreNBT");
 		
-		requiredFluids = new ArrayList<>();
+		requiredFluids.clear();
 		NBTTagList fList = json.getTagList("requiredFluids", 10);
 		for(int i = 0; i < fList.tagCount(); i++)
 		{
-			NBTBase entry = fList.get(i);
-			
-			if(entry == null || entry.getId() != 10)
-			{
-				continue;
-			}
-			
-			FluidStack fluid = JsonHelper.JsonToFluidStack((NBTTagCompound)entry);
-			
-			if(fluid != null)
-			{
-				requiredFluids.add(fluid);
-			}
+			requiredFluids.add(JsonHelper.JsonToFluidStack(fList.getCompoundTagAt(i)));
 		}
 	}
 	
 	@Override
 	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers = new ArrayList<>();
+		completeUsers.clear();
 		NBTTagList cList = json.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			NBTBase entry = cList.get(i);
-			
-			if(entry == null || entry.getId() != 8)
-			{
-				continue;
-			}
-			
 			try
 			{
-				completeUsers.add(UUID.fromString(((NBTTagString)entry).getString()));
+				completeUsers.add(UUID.fromString(cList.getStringTagAt(i)));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
 			}
 		}
 		
-		userProgress = new HashMap<>();
+		userProgress.clear();
 		NBTTagList pList = json.getTagList("userProgress", 10);
 		for(int n = 0; n < pList.tagCount(); n++)
-		{
-			NBTBase entry = pList.get(n);
-			
-			if(entry == null || entry.getId() != 10)
-			{
-				continue;
-			}
-			
-			NBTTagCompound pTag = (NBTTagCompound)entry;
+        {
+			NBTTagCompound pTag = pList.getCompoundTagAt(n);
 			UUID uuid;
 			try
 			{
@@ -334,7 +309,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 	public void resetAll()
 	{
 		completeUsers.clear();
-		userProgress.clear();;
+		userProgress.clear();
 	}
 	
 	@Override
@@ -383,17 +358,9 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		
 		for(int j = 0; j < requiredFluids.size(); j++)
 		{
-			FluidStack rStack = requiredFluids.get(j);
-			
-			if(rStack == null || progress[j] >= rStack.amount)
-			{
-				continue;
-			}
-			
-			if(rStack.equals(fluid))
-			{
-				return true;
-			}
+			FluidStack rStack = requiredFluids.get(j).copy();
+			if(ignoreNbt) rStack.tag = null;
+			if(progress[j] < rStack.amount && rStack.equals(fluid)) return true;
 		}
 		
 		return false;
@@ -426,10 +393,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		{
 			FluidStack rStack = requiredFluids.get(j);
 			
-			if(rStack == null || progress[j] >= rStack.amount)
-			{
-				continue;
-			}
+			if(progress[j] >= rStack.amount) continue;
 			
 			int remaining = rStack.amount - progress[j];
 			
@@ -469,9 +433,9 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		item.setCount(1); // Decrease input stack by 1 when drain has been confirmed
 
 		IFluidHandlerItem handler = FluidUtil.getFluidHandler(item);
-		FluidStack fluid = handler.drain(Integer.MAX_VALUE, false);//FluidUtil.getFluidContained(item);
+		FluidStack fluid = handler == null ? null : handler.drain(Integer.MAX_VALUE, false);//FluidUtil.getFluidContained(item);
 		
-		if(fluid != null && handler != null)
+		if(fluid != null)
 		{
 			int amount = fluid.amount;
 			fluid = submitFluid(owner, fluid);
@@ -509,7 +473,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 			}
 		}
 		
-		return progress == null || progress.length != requiredFluids.size()? new int[requiredFluids.size()] : progress;
+		return progress.length != requiredFluids.size()? new int[requiredFluids.size()] : progress;
 	}
 	
 	public int[] getPartyProgress(UUID uuid)

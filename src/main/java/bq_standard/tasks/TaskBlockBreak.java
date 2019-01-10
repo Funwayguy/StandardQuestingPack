@@ -11,6 +11,8 @@ import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
+import betterquesting.api2.cache.CapabilityProviderQuestCache;
+import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import bq_standard.client.gui2.tasks.PanelTaskBlockBreak;
@@ -21,9 +23,13 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -40,9 +46,9 @@ import java.util.UUID;
 
 public class TaskBlockBreak implements ITask, IProgression<int[]>
 {
-	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
-	public HashMap<UUID, int[]> userProgress = new HashMap<UUID, int[]>();
-	public ArrayList<JsonBlockType> blockTypes = new ArrayList<JsonBlockType>();
+	private final List<UUID> completeUsers = new ArrayList<>();
+	public final HashMap<UUID, int[]> userProgress = new HashMap<>();
+	public final List<JsonBlockType> blockTypes = new ArrayList<>();
 	
 	public TaskBlockBreak()
 	{
@@ -136,6 +142,8 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 			{
 				progress[i] += 1;
 				setUserProgress(player.getUniqueID(), progress);
+                QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+                if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
 				break;
 			}
 		}
@@ -164,22 +172,15 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		NBTTagList bList = json.getTagList("blocks", 10);
 		for(int i = 0; i < bList.tagCount(); i++)
 		{
-			NBTBase element = bList.get(i);
-			
-			if(element == null || element.getId() != 10)
-			{
-				continue;
-			}
-			
 			JsonBlockType block = new JsonBlockType();
-			block.readFromJson((NBTTagCompound)element);
+			block.readFromJson(bList.getCompoundTagAt(i));
 			blockTypes.add(block);
 		}
 		
 		if(json.hasKey("blockID", 8))
 		{
-			Block targetBlock = (Block)Block.REGISTRY.getObject(new ResourceLocation(json.getString("blockID")));
-			targetBlock = targetBlock != null? targetBlock : Blocks.LOG;
+			Block targetBlock = Block.REGISTRY.getObject(new ResourceLocation(json.getString("blockID")));
+			targetBlock = targetBlock != null ? targetBlock : Blocks.LOG;
 			int targetMeta = json.getInteger("blockMeta");
 			NBTTagCompound targetNbt = json.getCompoundTag("blockNBT");
 			int targetNum = json.getInteger("amount");
@@ -197,38 +198,24 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 	@Override
 	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers = new ArrayList<UUID>();
+		completeUsers.clear();
 		NBTTagList cList = json.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			NBTBase entry = cList.get(i);
-			
-			if(entry == null || entry.getId() != 8)
-			{
-				continue;
-			}
-			
 			try
 			{
-				completeUsers.add(UUID.fromString(((NBTTagString)entry).getString()));
+				completeUsers.add(UUID.fromString(cList.getStringTagAt(i)));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
 			}
 		}
 		
-		userProgress = new HashMap<UUID,int[]>();
+		userProgress.clear();
 		NBTTagList pList = json.getTagList("userProgress", 10);
 		for(int n = 0; n < pList.tagCount(); n++)
 		{
-			NBTBase entry = pList.get(n);
-			
-			if(entry == null || entry.getId() != 10)
-			{
-				continue;
-			}
-			
-			NBTTagCompound pTag = (NBTTagCompound)entry;
+			NBTTagCompound pTag = pList.getCompoundTagAt(n);
 			UUID uuid;
 			try
 			{
@@ -294,7 +281,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 	public void resetAll()
 	{
 		completeUsers.clear();
-		userProgress = new HashMap<UUID, int[]>();
+		userProgress.clear();
 	}
 	
 	public float getParticipation(UUID uuid)
@@ -356,7 +343,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 			}
 		}
 		
-		return progress == null || progress.length != blockTypes.size()? new int[blockTypes.size()] : progress;
+		return progress.length != blockTypes.size()? new int[blockTypes.size()] : progress;
 	}
 	
 	public int[] getPartyProgress(UUID uuid)
@@ -432,7 +419,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		
 		public void readFromJson(NBTTagCompound json)
 		{
-			b = (Block)Block.REGISTRY.getObject(new ResourceLocation(json.getString("blockID")));
+			b = Block.REGISTRY.getObject(new ResourceLocation(json.getString("blockID")));
 			b = b != null? b : Blocks.LOG;
 			m = json.getInteger("meta");
 			n = n < 0? OreDictionary.WILDCARD_VALUE : n;
@@ -443,9 +430,9 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		
 		public BigItemStack getItemStack()
 		{
-			BigItemStack stack = null;
+			BigItemStack stack;
 			
-			if(b == null || Item.getItemFromBlock(b) == null)
+			if(b == null || Item.getItemFromBlock(b) == Items.AIR)
 			{
 				stack = new BigItemStack(ItemPlaceholder.placeholder, n, 0);
 				stack.getBaseStack().setStackDisplayName("NULL");

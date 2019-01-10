@@ -10,7 +10,6 @@ import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskCheckbox;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
@@ -25,7 +24,7 @@ import java.util.UUID;
 
 public class TaskCheckbox implements ITask
 {
-	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
+	private final List<UUID> completeUsers = new ArrayList<>();
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -93,20 +92,13 @@ public class TaskCheckbox implements ITask
 	@Override
 	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers = new ArrayList<>();
+		completeUsers.clear();
 		NBTTagList cList = json.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			NBTBase entry = cList.get(i);
-			
-			if(entry == null || entry.getId() != 8)
-			{
-				continue;
-			}
-			
 			try
 			{
-				completeUsers.add(UUID.fromString(((NBTTagString)entry).getString()));
+				completeUsers.add(UUID.fromString(cList.getStringTagAt(i)));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
