@@ -1,7 +1,6 @@
 package bq_standard.rewards;
 
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api.utils.BigItemStack;
@@ -9,7 +8,7 @@ import betterquesting.api.utils.JsonHelper;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import bq_standard.NBTReplaceUtil;
-import bq_standard.client.gui2.rewards.PanelRewardChoice;
+import bq_standard.client.gui.rewards.PanelRewardChoice;
 import bq_standard.core.BQ_Standard;
 import bq_standard.rewards.factory.FactoryRewardChoice;
 import net.minecraft.client.gui.GuiScreen;
@@ -168,12 +167,6 @@ public class RewardChoice implements IReward
 	@Override
 	@SideOnly(Side.CLIENT)
 	public GuiScreen getRewardEditor(GuiScreen screen, IQuest quest)
-	{
-		return null;
-	}
-
-	@Override
-	public IJsonDoc getDocumentation()
 	{
 		return null;
 	}

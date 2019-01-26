@@ -2,7 +2,7 @@ package bq_standard.core.proxies;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.client.themes.IThemeRegistry;
+import betterquesting.api2.client.gui.themes.IThemeRegistry;
 import bq_standard.client.theme.BQSTextures;
 import bq_standard.client.theme.ThemeStandard;
 import bq_standard.core.BQ_Standard;
@@ -51,7 +51,7 @@ public class ClientProxy extends CommonProxy
         BQSTextures.registerTextures();
 		
 		IThemeRegistry themeReg = QuestingAPI.getAPI(ApiReference.THEME_REG);
-		themeReg.registerTheme(new ThemeStandard("Standard Light", new ResourceLocation("betterquesting", "textures/gui/editor_gui.png"), new ResourceLocation("bq_standard", "light")));
+		themeReg.registerTheme(new ThemeStandard("Standard Light", new ResourceLocation("bq_standard", "textures/gui/editor_gui_light.png"), new ResourceLocation("bq_standard", "light")));
 		themeReg.registerTheme(new ThemeStandard("Standard Dark", new ResourceLocation("bq_standard", "textures/gui/editor_gui_dark.png"), new ResourceLocation("bq_standard", "dark")).setTextColor(Color.WHITE.getRGB()));
 		themeReg.registerTheme(new ThemeStandard("Stronghold", new ResourceLocation("bq_standard", "textures/gui/editor_gui_stronghold.png"), new ResourceLocation("bq_standard", "stronghold")).setTextColor(Color.WHITE.getRGB()));
 		themeReg.registerTheme(new ThemeStandard("Overworld", new ResourceLocation("bq_standard", "textures/gui/editor_gui_overworld.png"), new ResourceLocation("bq_standard", "overworld")).setTextColor(Color.WHITE.getRGB()));

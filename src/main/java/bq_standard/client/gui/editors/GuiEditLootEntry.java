@@ -1,4 +1,4 @@
-package bq_standard.client.gui2.editors;
+package bq_standard.client.gui.editors;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;

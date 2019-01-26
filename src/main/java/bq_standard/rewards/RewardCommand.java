@@ -1,13 +1,12 @@
 package bq_standard.rewards;
 
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import bq_standard.AdminExecute;
-import bq_standard.client.gui2.rewards.PanelRewardCommand;
+import bq_standard.client.gui.rewards.PanelRewardCommand;
 import bq_standard.rewards.factory.FactoryRewardCommand;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
@@ -158,11 +157,5 @@ public class RewardCommand implements IReward
 		{
 			return world.getMinecraftServer();
 		}
-	}
-
-	@Override
-	public IJsonDoc getDocumentation()
-	{
-		return null;
 	}
 }

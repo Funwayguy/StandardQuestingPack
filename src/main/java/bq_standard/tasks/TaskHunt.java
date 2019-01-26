@@ -2,7 +2,6 @@ package bq_standard.tasks;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.party.IParty;
@@ -13,8 +12,8 @@ import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import bq_standard.client.gui2.editors.tasks.GuiEditTaskHunt;
-import bq_standard.client.gui2.tasks.PanelTaskHunt;
+import bq_standard.client.gui.editors.tasks.GuiEditTaskHunt;
+import bq_standard.client.gui.tasks.PanelTaskHunt;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskHunt;
 import net.minecraft.client.gui.GuiScreen;
@@ -318,11 +317,5 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		}
 		
 		return total;
-	}
-
-	@Override
-	public IJsonDoc getDocumentation()
-	{
-		return null;
 	}
 }

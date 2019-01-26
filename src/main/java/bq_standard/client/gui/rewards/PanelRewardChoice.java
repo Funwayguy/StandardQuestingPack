@@ -1,4 +1,4 @@
-package bq_standard.client.gui2.rewards;
+package bq_standard.client.gui.rewards;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;

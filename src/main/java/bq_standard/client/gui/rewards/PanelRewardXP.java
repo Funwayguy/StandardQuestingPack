@@ -1,4 +1,4 @@
-package bq_standard.client.gui2.rewards;
+package bq_standard.client.gui.rewards;
 
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.utils.BigItemStack;

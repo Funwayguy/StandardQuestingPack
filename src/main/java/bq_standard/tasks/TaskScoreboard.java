@@ -2,7 +2,6 @@ package bq_standard.tasks;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.cache.CapabilityProviderQuestCache;
@@ -10,8 +9,8 @@ import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import bq_standard.ScoreboardBQ;
-import bq_standard.client.gui2.editors.tasks.GuiEditTaskScoreboard;
-import bq_standard.client.gui2.tasks.PanelTaskScoreboard;
+import bq_standard.client.gui.editors.tasks.GuiEditTaskScoreboard;
+import bq_standard.client.gui.tasks.PanelTaskScoreboard;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskScoreboard;
 import net.minecraft.client.gui.GuiScreen;
@@ -243,11 +242,5 @@ public class TaskScoreboard implements ITask, ITaskTickable
 	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
 	{
 	    return new GuiEditTaskScoreboard(parent, quest, this);
-	}
-
-	@Override
-	public IJsonDoc getDocumentation()
-	{
-		return null;
 	}
 }

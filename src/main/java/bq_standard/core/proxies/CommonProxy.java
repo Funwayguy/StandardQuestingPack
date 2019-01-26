@@ -43,6 +43,7 @@ public class CommonProxy
 		taskReg.registerTask(FactoryTaskRetrieval.INSTANCE);
 		taskReg.registerTask(FactoryTaskScoreboard.INSTANCE);
 		taskReg.registerTask(FactoryTaskXP.INSTANCE);
+		taskReg.registerTask(FactoryTaskAdvancement.INSTANCE);
 
 		IRewardRegistry rewardReg = QuestingAPI.getAPI(ApiReference.REWARD_REG);
 		rewardReg.registerReward(FactoryRewardChoice.INSTANCE);

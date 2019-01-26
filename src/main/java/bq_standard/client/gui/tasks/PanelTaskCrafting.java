@@ -1,4 +1,4 @@
-package bq_standard.client.gui2.tasks;
+package bq_standard.client.gui.tasks;
 
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.properties.NativeProps;
@@ -7,13 +7,19 @@ import betterquesting.api.utils.BigItemStack;
 import betterquesting.api2.client.gui.misc.*;
 import betterquesting.api2.client.gui.panels.CanvasEmpty;
 import betterquesting.api2.client.gui.panels.bars.PanelVScrollBar;
+import betterquesting.api2.client.gui.panels.content.PanelGeneric;
 import betterquesting.api2.client.gui.panels.content.PanelItemSlot;
 import betterquesting.api2.client.gui.panels.content.PanelTextBox;
 import betterquesting.api2.client.gui.panels.lists.CanvasScrolling;
+import betterquesting.api2.client.gui.resources.colors.GuiColorStatic;
+import betterquesting.api2.client.gui.resources.textures.GuiTextureColored;
+import betterquesting.api2.client.gui.resources.textures.ItemTexture;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
+import betterquesting.api2.client.gui.themes.presets.PresetIcon;
 import betterquesting.api2.utils.QuestTranslation;
 import bq_standard.tasks.TaskCrafting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
 
@@ -40,10 +46,19 @@ public class PanelTaskCrafting extends CanvasEmpty
         int[] progress = quest == null || !quest.getProperty(NativeProps.GLOBAL) ? task.getPartyProgress(uuid) : task.getGlobalProgress();
         boolean isComplete = task.isComplete(uuid);
         
-        CanvasScrolling cvList = new CanvasScrolling(new GuiTransform(GuiAlign.FULL_BOX, new GuiPadding(0, 0, 8, 0), 0));
+        this.addPanel(new PanelGeneric(new GuiRectangle(0, 0, 24, 24, 0), new ItemTexture(new BigItemStack(Blocks.CRAFTING_TABLE))));
+        this.addPanel(new PanelGeneric(new GuiRectangle(16, 16, 8, 8, 0), task.allowCraft ? new GuiTextureColored(PresetIcon.ICON_TICK.getTexture(), new GuiColorStatic(0xFF00FF00)) : new GuiTextureColored(PresetIcon.ICON_CROSS.getTexture(), new GuiColorStatic(0xFFFF0000))));
+        
+        this.addPanel(new PanelGeneric(new GuiRectangle(32, 0, 24, 24, 0), new ItemTexture(new BigItemStack(Blocks.FURNACE))));
+        this.addPanel(new PanelGeneric(new GuiRectangle(48, 16, 8, 8, 0), task.allowSmelt ? new GuiTextureColored(PresetIcon.ICON_TICK.getTexture(), new GuiColorStatic(0xFF00FF00)) : new GuiTextureColored(PresetIcon.ICON_CROSS.getTexture(), new GuiColorStatic(0xFFFF0000))));
+        
+        this.addPanel(new PanelGeneric(new GuiRectangle(64, 0, 24, 24, 0), new ItemTexture(new BigItemStack(Blocks.ANVIL))));
+        this.addPanel(new PanelGeneric(new GuiRectangle(80, 16, 8, 8, 0), task.allowAnvil ? new GuiTextureColored(PresetIcon.ICON_TICK.getTexture(), new GuiColorStatic(0xFF00FF00)) : new GuiTextureColored(PresetIcon.ICON_CROSS.getTexture(), new GuiColorStatic(0xFFFF0000))));
+        
+        CanvasScrolling cvList = new CanvasScrolling(new GuiTransform(GuiAlign.FULL_BOX, new GuiPadding(0, 32, 8, 0), 0));
         this.addPanel(cvList);
     
-        PanelVScrollBar scList = new PanelVScrollBar(new GuiTransform(GuiAlign.RIGHT_EDGE, new GuiPadding(-8, 0, 0, 0), 0));
+        PanelVScrollBar scList = new PanelVScrollBar(new GuiTransform(GuiAlign.RIGHT_EDGE, new GuiPadding(-8, 32, 0, 0), 0));
         this.addPanel(scList);
         cvList.setScrollDriverY(scList);
         
@@ -52,11 +67,6 @@ public class PanelTaskCrafting extends CanvasEmpty
         for(int i = 0; i < task.requiredItems.size(); i++)
         {
             BigItemStack stack = task.requiredItems.get(i);
-            
-            if(stack == null)
-            {
-                continue;
-            }
     
             PanelItemSlot slot = new PanelItemSlot(new GuiRectangle(0, i * 36, 36, 36, 0), -1, stack, false, true);
             slot.setCallback(value -> lookupRecipe(value.getBaseStack()));

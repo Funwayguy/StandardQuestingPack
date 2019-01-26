@@ -6,13 +6,9 @@ import bq_standard.tasks.TaskXP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
-public final class FactoryTaskXP implements IFactory<TaskXP>
+public class FactoryTaskXP implements IFactory<TaskXP>
 {
 	public static final FactoryTaskXP INSTANCE = new FactoryTaskXP();
-	
-	private FactoryTaskXP()
-	{
-	}
 	
 	@Override
 	public ResourceLocation getRegistryName()

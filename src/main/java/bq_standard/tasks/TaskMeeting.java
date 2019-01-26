@@ -1,14 +1,13 @@
 package bq_standard.tasks;
 
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import bq_standard.client.gui2.editors.tasks.GuiEditTaskMeeting;
-import bq_standard.client.gui2.tasks.PanelTaskMeeting;
+import bq_standard.client.gui.editors.tasks.GuiEditTaskMeeting;
+import bq_standard.client.gui.tasks.PanelTaskMeeting;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskMeeting;
 import net.minecraft.client.gui.GuiScreen;
@@ -212,11 +211,5 @@ public class TaskMeeting implements ITask, ITaskTickable
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
 	    return new PanelTaskMeeting(rect, quest, this);
-	}
-
-	@Override
-	public IJsonDoc getDocumentation()
-	{
-		return null;
 	}
 }

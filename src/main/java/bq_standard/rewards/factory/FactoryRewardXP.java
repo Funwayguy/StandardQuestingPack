@@ -10,10 +10,6 @@ public class FactoryRewardXP implements IFactory<RewardXP>
 {
 	public static final FactoryRewardXP INSTANCE = new FactoryRewardXP();
 	
-	private FactoryRewardXP()
-	{
-	}
-	
 	@Override
 	public ResourceLocation getRegistryName()
 	{

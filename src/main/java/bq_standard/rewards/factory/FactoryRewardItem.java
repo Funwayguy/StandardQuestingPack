@@ -10,10 +10,6 @@ public class FactoryRewardItem implements IFactory<RewardItem>
 {
 	public static final FactoryRewardItem INSTANCE = new FactoryRewardItem();
 	
-	private FactoryRewardItem()
-	{
-	}
-	
 	@Override
 	public ResourceLocation getRegistryName()
 	{

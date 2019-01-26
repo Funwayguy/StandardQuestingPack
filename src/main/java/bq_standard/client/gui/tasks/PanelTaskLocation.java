@@ -1,4 +1,4 @@
-package bq_standard.client.gui2.tasks;
+package bq_standard.client.gui.tasks;
 
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;

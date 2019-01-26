@@ -6,13 +6,9 @@ import bq_standard.tasks.TaskScoreboard;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
-public final class FactoryTaskScoreboard implements IFactory<TaskScoreboard>
+public class FactoryTaskScoreboard implements IFactory<TaskScoreboard>
 {
 	public static final FactoryTaskScoreboard INSTANCE = new FactoryTaskScoreboard();
-	
-	private FactoryTaskScoreboard()
-	{
-	}
 	
 	@Override
 	public ResourceLocation getRegistryName()

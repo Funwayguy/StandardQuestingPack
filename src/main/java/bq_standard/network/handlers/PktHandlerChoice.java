@@ -28,19 +28,13 @@ public class PktHandlerChoice implements IPacketHandler
 	@Override
 	public void handleServer(NBTTagCompound tag, EntityPlayerMP sender)
 	{
-		if(sender == null)
-		{
-			return;
-		}
+		if(sender == null) return;
 		
 		int qID = tag.hasKey("questID")? tag.getInteger("questID") : -1;
 		int rID = tag.hasKey("rewardID")? tag.getInteger("rewardID") : -1;
 		int sel = tag.hasKey("selection")? tag.getInteger("selection") : -1;
 		
-		if(qID < 0 || rID < 0)
-		{
-			return;
-		}
+		if(qID < 0 || rID < 0) return;
 		
 		IQuest quest = QuestingAPI.getAPI(ApiReference.QUEST_DB).getValue(qID);
 		IReward reward = quest == null? null : quest.getRewards().getValue(rID);
@@ -68,18 +62,11 @@ public class PktHandlerChoice implements IPacketHandler
 		int rID = tag.hasKey("rewardID")? tag.getInteger("rewardID") : -1;
 		int sel = tag.hasKey("selection")? tag.getInteger("selection") : -1;
 		
-		if(qID < 0 || rID < 0)
-		{
-			return;
-		}
+		if(qID < 0 || rID < 0) return;
 		
 		IQuest quest = QuestingAPI.getAPI(ApiReference.QUEST_DB).getValue(qID);
 		IReward reward = quest == null? null : quest.getRewards().getValue(rID);
 		
-		if(reward != null && reward instanceof RewardChoice)
-		{
-			RewardChoice rChoice = (RewardChoice)reward;
-			rChoice.setSelection(QuestingAPI.getQuestingUUID(player), sel);
-		}
+		if(reward instanceof RewardChoice) ((RewardChoice)reward).setSelection(QuestingAPI.getQuestingUUID(player), sel);
 	}
 }

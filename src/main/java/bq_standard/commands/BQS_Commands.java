@@ -26,8 +26,14 @@ public class BQS_Commands extends CommandBase
 	@Override
 	public String getUsage(ICommandSender sender)
 	{
-		return "/bq_loot default [save|load], /bq_loot delete [all|<loot_id>]";
+		return "/bqs_loot default [save|load], /bqs_loot delete [all|<loot_id>]";
 	}
+	
+	@Override
+    public int getRequiredPermissionLevel()
+    {
+        return 2;
+    }
 
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException

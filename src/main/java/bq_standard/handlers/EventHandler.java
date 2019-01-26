@@ -6,6 +6,7 @@ import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.cache.CapabilityProviderQuestCache;
+import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.storage.DBEntry;
 import bq_standard.core.BQ_Standard;
 import bq_standard.rewards.loot.LootRegistry;
@@ -17,6 +18,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
+import net.minecraftforge.event.entity.player.AnvilRepairEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
@@ -32,14 +34,14 @@ public class EventHandler
 	{
 		if(event.player == null || event.player.world.isRemote) return;
         
-        betterquesting.api2.cache.QuestCache qc = event.player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+        QuestCache qc = event.player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
 		if(qc == null) return;
 		
 		for(DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(qc.getActiveQuests()))
 		{
 		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
             {
-                if(task.getValue() instanceof TaskCrafting) ((TaskCrafting)task.getValue()).onItemCrafted(entry.getValue(), event.player, event.crafting.copy());
+                if(task.getValue() instanceof TaskCrafting) ((TaskCrafting)task.getValue()).onItemCraft(entry.getValue(), event.player, event.crafting.copy());
             }
 		}
 	}
@@ -49,14 +51,31 @@ public class EventHandler
 	{
 		if(event.player == null || event.player.world.isRemote) return;
         
-        betterquesting.api2.cache.QuestCache qc = event.player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+       QuestCache qc = event.player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
 		if(qc == null) return;
 		
 		for(DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(qc.getActiveQuests()))
 		{
 		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
             {
-                if(task.getValue() instanceof TaskCrafting) ((TaskCrafting)task.getValue()).onItemSmelted(entry.getValue(), event.player, event.smelting.copy());
+                if(task.getValue() instanceof TaskCrafting) ((TaskCrafting)task.getValue()).onItemSmelt(entry.getValue(), event.player, event.smelting.copy());
+            }
+		}
+	}
+	
+	@SubscribeEvent
+	public void onItemAnvil(AnvilRepairEvent event)
+	{
+		if(event.getEntityPlayer() == null || event.getEntityPlayer().world.isRemote) return;
+        
+        QuestCache qc = event.getEntityPlayer().getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+		if(qc == null) return;
+		
+		for(DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(qc.getActiveQuests()))
+		{
+		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
+            {
+                if(task.getValue() instanceof TaskCrafting) ((TaskCrafting)task.getValue()).onItemAnvil(entry.getValue(), event.getEntityPlayer(), event.getItemResult().copy());
             }
 		}
 	}
@@ -67,7 +86,7 @@ public class EventHandler
 		if(event.getSource() == null || !(event.getSource().getTrueSource() instanceof EntityPlayer) || event.getSource().getTrueSource().world.isRemote) return;
 		
 		EntityPlayer player = (EntityPlayer)event.getSource().getTrueSource();
-        betterquesting.api2.cache.QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
 		if(qc == null) return;
 		
 		for(DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(qc.getActiveQuests()))
@@ -84,7 +103,7 @@ public class EventHandler
 	{
 		if(event.getPlayer() == null || event.getPlayer().world.isRemote) return;
 		
-        betterquesting.api2.cache.QuestCache qc = event.getPlayer().getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+        QuestCache qc = event.getPlayer().getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
 		if(qc == null) return;
 		
 		for(DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(qc.getActiveQuests()))
@@ -99,10 +118,10 @@ public class EventHandler
 	@SubscribeEvent
     public void onEntityLiving(LivingUpdateEvent event)
     {
-        if(event.getEntityLiving() == null || event.getEntityLiving().world.isRemote || event.getEntityLiving().ticksExisted%20 != 0 || !(event.getEntityLiving() instanceof EntityPlayer) || QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE)) return;
+        if(!(event.getEntityLiving() instanceof EntityPlayer) || event.getEntityLiving().world.isRemote || event.getEntityLiving().ticksExisted%20 != 0 || QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE)) return;
         
         EntityPlayer player = (EntityPlayer)event.getEntityLiving();
-        betterquesting.api2.cache.QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
 		if(qc == null) return;
 		
 		for(DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(qc.getActiveQuests()))

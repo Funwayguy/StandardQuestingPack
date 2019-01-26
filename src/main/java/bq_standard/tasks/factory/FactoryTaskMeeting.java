@@ -6,13 +6,9 @@ import bq_standard.tasks.TaskMeeting;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
-public final class FactoryTaskMeeting implements IFactory<TaskMeeting>
+public class FactoryTaskMeeting implements IFactory<TaskMeeting>
 {
 	public static final FactoryTaskMeeting INSTANCE = new FactoryTaskMeeting();
-	
-	private FactoryTaskMeeting()
-	{
-	}
 	
 	@Override
 	public ResourceLocation getRegistryName()

@@ -1,12 +1,11 @@
 package bq_standard.tasks;
 
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import bq_standard.client.gui2.tasks.PanelTaskLocation;
+import bq_standard.client.gui.tasks.PanelTaskLocation;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskLocation;
 import net.minecraft.client.gui.GuiScreen;
@@ -178,12 +177,6 @@ public class TaskLocation implements ITask, ITaskTickable
 
 	@Override
 	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
-	{
-		return null;
-	}
-
-	@Override
-	public IJsonDoc getDocumentation()
 	{
 		return null;
 	}

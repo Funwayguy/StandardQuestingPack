@@ -2,7 +2,7 @@ package bq_standard.network.handlers;
 
 import betterquesting.api.network.IPacketHandler;
 import betterquesting.api.utils.BigItemStack;
-import bq_standard.client.gui2.GuiLootChest;
+import bq_standard.client.gui.GuiLootChest;
 import bq_standard.network.StandardPacketType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayerMP;

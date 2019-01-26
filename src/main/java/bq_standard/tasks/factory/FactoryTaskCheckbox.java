@@ -6,13 +6,9 @@ import bq_standard.tasks.TaskCheckbox;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
-public final class FactoryTaskCheckbox implements IFactory<TaskCheckbox>
+public class FactoryTaskCheckbox implements IFactory<TaskCheckbox>
 {
 	public static final FactoryTaskCheckbox INSTANCE = new FactoryTaskCheckbox();
-	
-	private FactoryTaskCheckbox()
-	{
-	}
 	
 	@Override
 	public ResourceLocation getRegistryName()

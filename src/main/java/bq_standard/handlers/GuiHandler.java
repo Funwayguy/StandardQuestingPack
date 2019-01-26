@@ -1,6 +1,6 @@
 package bq_standard.handlers;
 
-import bq_standard.client.gui2.editors.GuiEditLootGroup;
+import bq_standard.client.gui.editors.GuiEditLootGroup;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.IGuiHandler;

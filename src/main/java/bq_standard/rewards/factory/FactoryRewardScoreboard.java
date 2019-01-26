@@ -10,10 +10,6 @@ public class FactoryRewardScoreboard implements IFactory<RewardScoreboard>
 {
 	public static final FactoryRewardScoreboard INSTANCE = new FactoryRewardScoreboard();
 	
-	private FactoryRewardScoreboard()
-	{
-	}
-	
 	@Override
 	public ResourceLocation getRegistryName()
 	{

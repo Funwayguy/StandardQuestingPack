@@ -1,11 +1,10 @@
 package bq_standard.tasks;
 
-import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import bq_standard.client.gui2.tasks.PanelTaskCheckbox;
+import bq_standard.client.gui.tasks.PanelTaskCheckbox;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskCheckbox;
 import net.minecraft.client.gui.GuiScreen;
@@ -121,12 +120,6 @@ public class TaskCheckbox implements ITask
 	@Override
 	@SideOnly(Side.CLIENT)
 	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
-	{
-		return null;
-	}
-
-	@Override
-	public IJsonDoc getDocumentation()
 	{
 		return null;
 	}

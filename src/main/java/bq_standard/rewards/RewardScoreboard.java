@@ -1,11 +1,10 @@
 package bq_standard.rewards;
 
-import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import bq_standard.client.gui2.rewards.PanelRewardScoreboard;
+import bq_standard.client.gui.rewards.PanelRewardScoreboard;
 import bq_standard.core.BQ_Standard;
 import bq_standard.rewards.factory.FactoryRewardScoreboard;
 import net.minecraft.client.gui.GuiScreen;
@@ -113,12 +112,6 @@ public class RewardScoreboard implements IReward
 	@Override
 	@SideOnly(Side.CLIENT)
 	public GuiScreen getRewardEditor(GuiScreen screen, IQuest quest)
-	{
-		return null;
-	}
-
-	@Override
-	public IJsonDoc getDocumentation()
 	{
 		return null;
 	}

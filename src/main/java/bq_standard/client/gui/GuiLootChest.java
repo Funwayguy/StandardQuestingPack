@@ -1,4 +1,4 @@
-package bq_standard.client.gui2;
+package bq_standard.client.gui;
 
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api2.client.gui.GuiScreenCanvas;

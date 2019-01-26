@@ -6,13 +6,9 @@ import bq_standard.tasks.TaskHunt;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
-public final class FactoryTaskHunt implements IFactory<TaskHunt>
+public class FactoryTaskHunt implements IFactory<TaskHunt>
 {
 	public static final FactoryTaskHunt INSTANCE = new FactoryTaskHunt();
-	
-	private FactoryTaskHunt()
-	{
-	}
 	
 	@Override
 	public ResourceLocation getRegistryName()

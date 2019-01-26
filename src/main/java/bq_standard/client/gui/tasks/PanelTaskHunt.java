@@ -1,5 +1,7 @@
-package bq_standard.client.gui2.tasks;
+package bq_standard.client.gui.tasks;
 
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api2.client.gui.controls.IValueIO;
 import betterquesting.api2.client.gui.misc.GuiAlign;
@@ -11,18 +13,18 @@ import betterquesting.api2.client.gui.panels.content.PanelEntityPreview;
 import betterquesting.api2.client.gui.panels.content.PanelTextBox;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
 import betterquesting.api2.utils.QuestTranslation;
-import bq_standard.tasks.TaskMeeting;
+import bq_standard.tasks.TaskHunt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.util.ResourceLocation;
 
-public class PanelTaskMeeting extends CanvasEmpty
+public class PanelTaskHunt extends CanvasEmpty
 {
     private final IQuest quest;
-    private final TaskMeeting task;
+    private final TaskHunt task;
     
-    public PanelTaskMeeting(IGuiRect rect, IQuest quest, TaskMeeting task)
+    public PanelTaskHunt(IGuiRect rect, IQuest quest, TaskHunt task)
     {
         super(rect);
         this.quest = quest;
@@ -46,9 +48,10 @@ public class PanelTaskMeeting extends CanvasEmpty
             target = null;
         }
         
+        int progress = quest == null || !quest.getProperty(NativeProps.GLOBAL) ? task.getPartyProgress(QuestingAPI.getQuestingUUID(Minecraft.getMinecraft().player)) : task.getGlobalProgress();
 		String tnm = target != null? target.getName() : task.idName;
         
-        this.addPanel(new PanelTextBox(new GuiTransform(GuiAlign.TOP_EDGE, new GuiPadding(0, 0, 0, -16), 0), QuestTranslation.translate("bq_standard.gui.meet", tnm) + " x" + task.amount).setAlignment(1).setColor(PresetColor.TEXT_MAIN.getColor()));
+        this.addPanel(new PanelTextBox(new GuiTransform(GuiAlign.TOP_EDGE, new GuiPadding(0, 0, 0, -16), 0), QuestTranslation.translate("bq_standard.gui.kill", tnm) + " " + progress + "/" + task.required).setAlignment(1).setColor(PresetColor.TEXT_MAIN.getColor()));
         
         if(target != null) this.addPanel(new PanelEntityPreview(new GuiTransform(GuiAlign.FULL_BOX, new GuiPadding(0, 16, 0, 0), 0), target).setRotationDriven(new IValueIO<Float>()
         {

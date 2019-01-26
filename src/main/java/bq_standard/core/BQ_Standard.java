@@ -1,6 +1,7 @@
 package bq_standard.core;
 
 import bq_standard.commands.BQS_Commands;
+import bq_standard.commands.BqsComDumpAdvancements;
 import bq_standard.core.proxies.CommonProxy;
 import bq_standard.handlers.ConfigHandler;
 import bq_standard.handlers.GuiHandler;
@@ -70,6 +71,7 @@ public class BQ_Standard
 		ServerCommandManager manager = (ServerCommandManager) command;
 		
 		manager.registerCommand(new BQS_Commands());
+		manager.registerCommand(new BqsComDumpAdvancements());
 		
 		LootSaveLoad.INSTANCE.LoadLoot(event.getServer());
 	}

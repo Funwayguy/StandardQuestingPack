@@ -2,7 +2,6 @@ package bq_standard.tasks;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.placeholders.ItemPlaceholder;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
@@ -15,7 +14,7 @@ import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import bq_standard.client.gui2.tasks.PanelTaskBlockBreak;
+import bq_standard.client.gui.tasks.PanelTaskBlockBreak;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskBlockBreak;
 import net.minecraft.block.Block;
@@ -454,11 +453,5 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 			stack.oreDict = oreDict;
 			return stack;
 		}
-	}
-
-	@Override
-	public IJsonDoc getDocumentation()
-	{
-		return null;
 	}
 }

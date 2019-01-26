@@ -2,7 +2,6 @@ package bq_standard.tasks;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.party.IParty;
@@ -15,13 +14,16 @@ import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import bq_standard.client.gui2.tasks.PanelTaskCrafting;
+import bq_standard.client.gui.tasks.PanelTaskCrafting;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskCrafting;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
@@ -41,6 +43,9 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	public final HashMap<UUID, int[]> userProgress = new HashMap<>();
 	public boolean partialMatch = true;
 	public boolean ignoreNBT = false;
+	public boolean allowAnvil = false;
+	public boolean allowSmelt = true;
+	public boolean allowCraft = true;
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -100,42 +105,25 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 		}
 	}
 	
-	public void onItemCrafted(IQuest quest, EntityPlayer player, ItemStack stack)
-	{
-		UUID playerID = QuestingAPI.getQuestingUUID(player);
-        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-		
-		if(isComplete(playerID)) return;
-		
-		int[] progress = getUsersProgress(playerID);
-		boolean updated = false;
-		
-		for(int i = 0; i < requiredItems.size(); i++)
-		{
-			BigItemStack rStack = requiredItems.get(i);
-			
-			if(progress[i] >= rStack.stackSize)
-			{
-				continue;
-			}
-			
-			if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.oreDict, rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
-			{
-				progress[i] += stack.getCount();
-				updated = true;
-			}
-		}
-		
-		if(updated)
-        {
-            setUserProgress(playerID, progress);
-            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
-        }
-		
-		detect(player, quest);
-	}
+	public void onItemCraft(IQuest quest, EntityPlayer player, ItemStack stack)
+    {
+        if(!allowCraft) return;
+        onItemInternal(quest, player, stack);
+    }
 	
-	public void onItemSmelted(IQuest quest, EntityPlayer player, ItemStack stack)
+	public void onItemSmelt(IQuest quest, EntityPlayer player, ItemStack stack)
+    {
+        if(!allowSmelt) return;
+        onItemInternal(quest, player, stack);
+    }
+	
+	public void onItemAnvil(IQuest quest, EntityPlayer player, ItemStack stack)
+    {
+        if(!allowAnvil) return;
+        onItemInternal(quest, player, stack);
+    }
+	
+	private void onItemInternal(IQuest quest, EntityPlayer player, ItemStack stack)
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
         QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
@@ -175,6 +163,9 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	{
 		json.setBoolean("partialMatch", partialMatch);
 		json.setBoolean("ignoreNBT", ignoreNBT);
+		json.setBoolean("allowCraft", allowCraft);
+		json.setBoolean("allowSmelt", allowSmelt);
+		json.setBoolean("allowAnvil", allowAnvil);
 		
 		NBTTagList itemArray = new NBTTagList();
 		for(BigItemStack stack : this.requiredItems)
@@ -191,6 +182,9 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	{
 		partialMatch = json.getBoolean("partialMatch");
 		ignoreNBT = json.getBoolean("ignoreNBT");
+		allowCraft = json.getBoolean("allowCraft");
+		allowSmelt = json.getBoolean("allowSmelt");
+		allowAnvil = json.getBoolean("allowAnvil");
 		
 		requiredItems.clear();
 		NBTTagList iList = json.getTagList("requiredItems", 10);
@@ -403,11 +397,5 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 		}
 		
 		return total;
-	}
-
-	@Override
-	public IJsonDoc getDocumentation()
-	{
-		return null;
 	}
 }

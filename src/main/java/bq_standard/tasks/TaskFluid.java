@@ -2,23 +2,28 @@ package bq_standard.tasks;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.party.IParty;
-import betterquesting.api.questing.tasks.*;
+import betterquesting.api.questing.tasks.IFluidTask;
+import betterquesting.api.questing.tasks.IItemTask;
+import betterquesting.api.questing.tasks.IProgression;
+import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import bq_standard.client.gui2.tasks.PanelTaskFluid;
+import bq_standard.client.gui.tasks.PanelTaskFluid;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskFluid;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.FluidStack;
@@ -347,7 +352,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 	}
 
 	@Override
-	public boolean canAcceptFluid(UUID owner, FluidStack fluid)
+	public boolean canAcceptFluid(UUID owner, IQuest quest, FluidStack fluid)
 	{
 		if(owner == null || fluid == null || fluid.getFluid() == null || !consume || isComplete(owner) || requiredFluids.size() <= 0)
 		{
@@ -367,7 +372,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 	}
 
 	@Override
-	public boolean canAcceptItem(UUID owner, ItemStack item)
+	public boolean canAcceptItem(UUID owner, IQuest quest, ItemStack item)
 	{
 		if(owner == null || item == null || item.isEmpty() || !consume || isComplete(owner) || requiredFluids.size() <= 0)
 		{
@@ -376,11 +381,11 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		
 		FluidStack contents = FluidUtil.getFluidContained(item);
 		
-		return contents != null && this.canAcceptFluid(owner, contents);
+		return contents != null && this.canAcceptFluid(owner, quest, contents);
 	}
 
 	@Override
-	public FluidStack submitFluid(UUID owner, FluidStack fluid)
+	public FluidStack submitFluid(UUID owner, IQuest quest, FluidStack fluid)
 	{
 		if(owner == null || fluid == null || fluid.amount <= 0 || !consume || isComplete(owner) || requiredFluids.size() <= 0)
 		{
@@ -420,7 +425,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 	}
 
 	@Override
-	public ItemStack submitItem(UUID owner, ItemStack input)
+	public ItemStack submitItem(UUID owner, IQuest quest, ItemStack input)
 	{
 		ItemStack item = input;
 		
@@ -438,7 +443,7 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		if(fluid != null)
 		{
 			int amount = fluid.amount;
-			fluid = submitFluid(owner, fluid);
+			fluid = submitFluid(owner, quest, fluid);
 			input.shrink(1);
 			handler.drain(amount - (fluid == null? 0 : fluid.amount), true);
 			return handler.getContainer();
@@ -527,11 +532,5 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 		}
 		
 		return total;
-	}
-
-	@Override
-	public IJsonDoc getDocumentation()
-	{
-		return null;
 	}
 }
