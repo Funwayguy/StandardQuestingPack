@@ -23,8 +23,6 @@ public class PanelTaskAdvancement extends CanvasEmpty
     private final TaskAdvancement task;
     private final IQuest quest;
     
-    private Advancement adv;
-    
     public PanelTaskAdvancement(IGuiRect rect, IQuest quest, TaskAdvancement task)
     {
         super(rect);

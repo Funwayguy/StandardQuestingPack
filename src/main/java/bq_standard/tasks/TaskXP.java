@@ -31,7 +31,7 @@ import java.util.UUID;
 
 public class TaskXP implements ITask, IProgression<Long>, ITaskTickable
 {
-	private List<UUID> completeUsers = new ArrayList<>();
+	private final List<UUID> completeUsers = new ArrayList<>();
 	private final HashMap<UUID, Long> userProgress = new HashMap<>();
 	public boolean levels = true;
 	public int amount = 30;
@@ -151,7 +151,7 @@ public class TaskXP implements ITask, IProgression<Long>, ITaskTickable
 	@Override
 	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers = new ArrayList<>();
+		completeUsers.clear();
 		NBTTagList cList = json.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{

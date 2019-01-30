@@ -159,35 +159,35 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json)
+	public NBTTagCompound writeToNBT(NBTTagCompound nbt)
 	{
-		json.setBoolean("partialMatch", partialMatch);
-		json.setBoolean("ignoreNBT", ignoreNBT);
-		json.setBoolean("allowCraft", allowCraft);
-		json.setBoolean("allowSmelt", allowSmelt);
-		json.setBoolean("allowAnvil", allowAnvil);
+		nbt.setBoolean("partialMatch", partialMatch);
+		nbt.setBoolean("ignoreNBT", ignoreNBT);
+		nbt.setBoolean("allowCraft", allowCraft);
+		nbt.setBoolean("allowSmelt", allowSmelt);
+		nbt.setBoolean("allowAnvil", allowAnvil);
 		
 		NBTTagList itemArray = new NBTTagList();
 		for(BigItemStack stack : this.requiredItems)
 		{
 			itemArray.appendTag(JsonHelper.ItemStackToJson(stack, new NBTTagCompound()));
 		}
-		json.setTag("requiredItems", itemArray);
+		nbt.setTag("requiredItems", itemArray);
 		
-		return json;
+		return nbt;
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json)
+	public void readFromNBT(NBTTagCompound nbt)
 	{
-		partialMatch = json.getBoolean("partialMatch");
-		ignoreNBT = json.getBoolean("ignoreNBT");
-		allowCraft = json.getBoolean("allowCraft");
-		allowSmelt = json.getBoolean("allowSmelt");
-		allowAnvil = json.getBoolean("allowAnvil");
+		partialMatch = nbt.getBoolean("partialMatch");
+		ignoreNBT = nbt.getBoolean("ignoreNBT");
+		if(nbt.hasKey("allowCraft")) allowCraft = nbt.getBoolean("allowCraft");
+		if(nbt.hasKey("allowSmelt")) allowSmelt = nbt.getBoolean("allowSmelt");
+		if(nbt.hasKey("allowAnvil")) allowAnvil = nbt.getBoolean("allowAnvil");
 		
 		requiredItems.clear();
-		NBTTagList iList = json.getTagList("requiredItems", 10);
+		NBTTagList iList = nbt.getTagList("requiredItems", 10);
 		for(int i = 0; i < iList.tagCount(); i++)
 		{
 		    requiredItems.add(JsonHelper.JsonToItemStack(iList.getCompoundTagAt(i)));
@@ -195,10 +195,10 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	}
 	
 	@Override
-	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
+	public void readProgressFromNBT(NBTTagCompound nbt, boolean merge)
 	{
 		completeUsers.clear();
-		NBTTagList cList = json.getTagList("completeUsers", 8);
+		NBTTagList cList = nbt.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
 			try
@@ -211,7 +211,7 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 		}
 		
 		userProgress.clear();
-		NBTTagList pList = json.getTagList("userProgress", 10);
+		NBTTagList pList = nbt.getTagList("userProgress", 10);
 		for(int n = 0; n < pList.tagCount(); n++)
 		{
 			NBTTagCompound pTag = pList.getCompoundTagAt(n);
@@ -243,14 +243,14 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	}
 	
 	@Override
-	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound nbt, List<UUID> users)
 	{
 		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
 		{
 			jArray.appendTag(new NBTTagString(uuid.toString()));
 		}
-		json.setTag("completeUsers", jArray);
+		nbt.setTag("completeUsers", jArray);
 		
 		NBTTagList progArray = new NBTTagList();
 		for(Entry<UUID,int[]> entry : userProgress.entrySet())
@@ -265,9 +265,9 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 			pJson.setTag("data", pArray);
 			progArray.appendTag(pJson);
 		}
-		json.setTag("userProgress", progArray);
+		nbt.setTag("userProgress", progArray);
 		
-		return json;
+		return nbt;
 	}
 
 	@Override

@@ -18,7 +18,6 @@ import betterquesting.api2.client.gui.resources.textures.ItemTexture;
 import bq_standard.XPHelper;
 import bq_standard.tasks.TaskXP;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.util.vector.Vector4f;
@@ -41,11 +40,6 @@ public class PanelTaskXP extends CanvasEmpty
         super.initPanel();
         
         this.addPanel(new PanelGeneric(new GuiTransform(GuiAlign.MID_CENTER, -16, -32, 32, 32, 0), new ItemTexture(new BigItemStack(Items.EXPERIENCE_BOTTLE))));
-    
-        EntityPlayer player = Minecraft.getMinecraft().player;
-        System.out.println(XPHelper.getPlayerXP(player));
-        System.out.println(XPHelper.xpBarCap(player));
-        System.out.println(player.experience);
         
 		long xp = quest == null || !quest.getProperty(NativeProps.GLOBAL) ? task.getPartyProgress(QuestingAPI.getQuestingUUID(Minecraft.getMinecraft().player)) : task.getGlobalProgress();
 		xp = !task.levels? xp : XPHelper.getXPLevel(xp);
