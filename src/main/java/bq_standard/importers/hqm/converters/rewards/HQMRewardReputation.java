@@ -14,7 +14,7 @@ public class HQMRewardReputation implements HQMReward
 	@Override
 	public List<IReward> Convert(JsonElement json)
 	{
-		List<IReward> rList = new ArrayList<IReward>();
+		List<IReward> rList = new ArrayList<>();
 		
 		if(json == null || !json.isJsonArray())
 		{
@@ -30,7 +30,7 @@ public class HQMRewardReputation implements HQMReward
 			
 			int index = JsonHelper.GetNumber(je.getAsJsonObject(), "reputation", 0).intValue();
 			int value = JsonHelper.GetNumber(je.getAsJsonObject(), "value", 1).intValue();
-			String name = HQMQuestImporter.instance.reputations.containsKey(index)? HQMQuestImporter.instance.reputations.get(index) : "Reputation (" + index + ")";
+			String name = HQMQuestImporter.INSTANCE.reputations.containsKey(index)? HQMQuestImporter.INSTANCE.reputations.get(index) : "Reputation (" + index + ")";
 			RewardScoreboard reward = new RewardScoreboard();
 			reward.score = name;
 			reward.value = value;

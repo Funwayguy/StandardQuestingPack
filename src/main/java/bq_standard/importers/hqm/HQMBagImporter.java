@@ -28,7 +28,7 @@ import java.util.List;
 
 public class HQMBagImporter implements IImporter
 {
-	public static HQMBagImporter instance = new HQMBagImporter();
+	public static final HQMBagImporter INSTANCE = new HQMBagImporter();
 	
 	private List<LootGroup> hqmLoot = new ArrayList<>();
 	

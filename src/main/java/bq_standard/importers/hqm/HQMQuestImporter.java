@@ -28,7 +28,8 @@ import java.util.Map.Entry;
 
 public class HQMQuestImporter implements IImporter
 {
-	public static HQMQuestImporter instance = new HQMQuestImporter();
+	public static final HQMQuestImporter INSTANCE = new HQMQuestImporter();
+	private static final FileFilter FILTER = new FileExtensionFilter(".json");
 	
 	private static HashMap<String, HQMTask> taskConverters = new HashMap<>();
 	private static HashMap<String, HQMReward> rewardConverters = new HashMap<>();
@@ -40,7 +41,7 @@ public class HQMQuestImporter implements IImporter
 	@Override
 	public FileFilter getFileFilter()
 	{
-		return new FileExtensionFilter(".json");
+		return FILTER;
 	}
 
 	@Override

@@ -44,9 +44,13 @@ public class ClientProxy extends CommonProxy
 		
 		QuestingAPI.getAPI(ApiReference.PACKET_REG).registerHandler(new PktHandlerLootClaim());
 		
-		QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(new NativeFileImporter());
-		QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(new HQMQuestImporter());
-		QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(new HQMBagImporter());
+		QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(NativeFileImporter.INSTANCE);
+		
+		QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(HQMQuestImporter.INSTANCE);
+		QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(HQMBagImporter.INSTANCE);
+		
+		// Sooon...
+		//QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(FTBQQuestImporter.INSTANCE);
         
         BQSTextures.registerTextures();
 		

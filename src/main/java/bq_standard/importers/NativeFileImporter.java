@@ -13,7 +13,8 @@ import java.io.FileFilter;
 
 public class NativeFileImporter implements IImporter
 {
-	public static NativeFileImporter instance = new NativeFileImporter();
+	public static final NativeFileImporter INSTANCE = new NativeFileImporter();
+	private static final FileFilter FILTER = new FileExtensionFilter(".json");
 	
 	@Override
 	public String getUnlocalisedName()
@@ -30,7 +31,7 @@ public class NativeFileImporter implements IImporter
 	@Override
 	public FileFilter getFileFilter()
 	{
-		return new FileExtensionFilter(".json");
+		return FILTER;
 	}
 
 	@Override

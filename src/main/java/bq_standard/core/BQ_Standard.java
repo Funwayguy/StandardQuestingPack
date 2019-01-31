@@ -12,6 +12,7 @@ import net.minecraft.command.ServerCommandManager;
 import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
@@ -61,6 +62,10 @@ public class BQ_Standard
     @EventHandler
     public void postInit(FMLPostInitializationEvent event)
     {
+        if(Loader.isModLoaded("betterquesting"))
+        {
+            proxy.registerExpansion();
+        }
     }
 	
 	@EventHandler

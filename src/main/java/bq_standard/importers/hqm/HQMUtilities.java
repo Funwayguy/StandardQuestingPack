@@ -11,7 +11,6 @@ import bq_standard.importers.hqm.converters.items.HQMItemHeart;
 import com.google.gson.JsonObject;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
@@ -30,7 +29,7 @@ public class HQMUtilities
 	public static BigItemStack HQMStackT1(JsonObject json) // This can return multiple stacks in the event the stack size exceeds 127
 	{
 		String iID = JsonHelper.GetString(json, "id", "minecraft:stone");
-		Item item = (Item)Item.REGISTRY.getObject(new ResourceLocation(iID));
+		Item item = Item.REGISTRY.getObject(new ResourceLocation(iID));
 		int amount = JsonHelper.GetNumber(json, "amount", 1).intValue();
 		int damage = JsonHelper.GetNumber(json, "damage", 0).intValue();
 		NBTTagCompound tags = null;
@@ -51,12 +50,7 @@ public class HQMUtilities
 				rawNbt = rawNbt.replace("[\\\"", "[\""); // Fix start of lists
 				rawNbt = rawNbt.replace("\\n", "\n");
 				
-				NBTBase nbt = JsonToNBT.getTagFromJson(rawNbt);
-				
-				if(nbt != null && nbt instanceof NBTTagCompound)
-				{
-					tags = (NBTTagCompound)nbt;
-				}
+				tags = JsonToNBT.getTagFromJson(rawNbt);
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to convert HQM NBT data. This is likely a HQM Gson/Json formatting issue", e);
@@ -97,7 +91,7 @@ public class HQMUtilities
 	{
 		JsonObject json = JsonHelper.GetObject(rJson, "item");
 		String iID = JsonHelper.GetString(json, "id", "minecraft:stone");
-		Item item = (Item)Item.REGISTRY.getObject(new ResourceLocation(iID));
+		Item item = Item.REGISTRY.getObject(new ResourceLocation(iID));
 		int amount = JsonHelper.GetNumber(rJson, "required", 1).intValue();
 		int damage = JsonHelper.GetNumber(json, "damage", 0).intValue();
 		boolean oreDict = JsonHelper.GetString(rJson, "precision", "").equalsIgnoreCase("ORE_DICTIONARY");
@@ -120,12 +114,7 @@ public class HQMUtilities
 				rawNbt = rawNbt.replace("[\\\"", "[\""); // Fix start of lists
 				rawNbt = rawNbt.replace("\\n", "\n");
 				
-				NBTBase nbt = JsonToNBT.getTagFromJson(rawNbt);
-				
-				if(nbt != null && nbt instanceof NBTTagCompound)
-				{
-					tags = (NBTTagCompound)nbt;
-				}
+				tags = JsonToNBT.getTagFromJson(rawNbt);
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to convert HQM NBT data. This is likely a HQM Gson/Json formatting issue", e);
@@ -187,7 +176,7 @@ public class HQMUtilities
 		return new FluidStack(fluid, amount);
 	}
 	
-	static HashMap<String,HQMItem> itemConverters = new HashMap<String,HQMItem>();
+	private static HashMap<String,HQMItem> itemConverters = new HashMap<>();
 	
 	static
 	{
