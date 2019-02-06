@@ -13,7 +13,7 @@ import java.util.List;
 
 public class HQMTaskDetect implements HQMTask
 {
-	boolean consume = false;
+	private final boolean consume;
 	
 	public HQMTaskDetect(boolean consume)
 	{
@@ -23,7 +23,7 @@ public class HQMTaskDetect implements HQMTask
 	@Override
 	public List<ITask> Convert(JsonObject json)
 	{
-		List<ITask> tList = new ArrayList<ITask>();
+		List<ITask> tList = new ArrayList<>();
 		TaskRetrieval retTask = new TaskRetrieval();
 		TaskFluid fluTask = new TaskFluid();
 		

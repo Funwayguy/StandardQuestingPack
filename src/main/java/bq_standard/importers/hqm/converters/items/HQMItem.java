@@ -5,5 +5,5 @@ import net.minecraft.nbt.NBTTagCompound;
 
 public interface HQMItem
 {
-	public BigItemStack convertItem(int damage, int amount, NBTTagCompound tags);
+	BigItemStack convertItem(int damage, int amount, NBTTagCompound tags);
 }

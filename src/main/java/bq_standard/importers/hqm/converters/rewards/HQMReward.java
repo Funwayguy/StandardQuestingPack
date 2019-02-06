@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface HQMReward
 {
-	public List<IReward> Convert(JsonElement json);
+	List<IReward> Convert(JsonElement json);
 }

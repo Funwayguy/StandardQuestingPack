@@ -73,7 +73,7 @@ public class AdvancementDump
                 DBEntry<IQuest> pq = idMap.get(parent);
                 if(pq != null)
                 {
-                    entry.getValue().getValue().getPrerequisites().add(pq.getValue());
+                    addReq(entry.getValue().getValue(), pq.getID());
                 }
             }
         }
@@ -105,5 +105,21 @@ public class AdvancementDump
                 }
             }
         }
+    }
+    
+    private boolean containsReq(IQuest quest, int id)
+    {
+        for(int reqID : quest.getRequirements()) if(id == reqID) return true;
+        return false;
+    }
+    
+    private boolean addReq(IQuest quest, int id)
+    {
+        if(containsReq(quest, id)) return false;
+        int[] orig = quest.getRequirements();
+        int[] added = Arrays.copyOf(orig, orig.length + 1);
+        added[orig.length] = id;
+        quest.setRequirements(added);
+        return true;
     }
 }

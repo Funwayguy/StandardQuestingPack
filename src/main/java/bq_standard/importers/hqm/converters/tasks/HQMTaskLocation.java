@@ -14,7 +14,7 @@ public class HQMTaskLocation implements HQMTask
 	@Override
 	public List<ITask> Convert(JsonObject json)
 	{
-		List<ITask> tList = new ArrayList<ITask>();
+		List<ITask> tList = new ArrayList<>();
 		
 		for(JsonElement element : JsonHelper.GetArray(json, "locations"))
 		{

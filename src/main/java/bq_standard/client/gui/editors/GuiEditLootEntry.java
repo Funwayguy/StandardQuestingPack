@@ -125,7 +125,7 @@ public class GuiEditLootEntry extends GuiScreenCanvas implements IVolatileScreen
                 if(selEntry != null)
                 {
                     final NBTTagCompound eTag = selEntry.writeToNBT(new NBTTagCompound());
-                    QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(screenRef, value -> {
+                    mc.displayGuiScreen(QuestingAPI.getAPI(ApiReference.THEME_REG).getGuiHook().getNbtEditor(screenRef, value -> {
                         LootGroup lg = LootRegistry.INSTANCE.getValue(groupID);
                         LootEntry le = lg == null ? null : lg.getValue(selectedID);
                         if(le != null)
@@ -133,7 +133,7 @@ public class GuiEditLootEntry extends GuiScreenCanvas implements IVolatileScreen
                             le.readFromNBT(eTag);
                             sendChanges();
                         }
-                    }, eTag.getTagList("items", 10), null);
+                    }, eTag.getTagList("items", 10), null));
                 }
             }
         });

@@ -49,7 +49,7 @@ public class ClientProxy extends CommonProxy
 		QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(HQMQuestImporter.INSTANCE);
 		QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(HQMBagImporter.INSTANCE);
 		
-		// Sooon...
+		// Soon...
 		//QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(FTBQQuestImporter.INSTANCE);
         
         BQSTextures.registerTextures();
@@ -126,6 +126,5 @@ public class ClientProxy extends CommonProxy
 		}
 		
 		ModelLoader.setCustomModelResourceLocation(item, meta, model);
-	    //Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, meta, model);
 	}
 }

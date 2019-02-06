@@ -19,17 +19,13 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.WorldProvider;
-import net.minecraftforge.common.DimensionManager;
+import net.minecraft.world.DimensionType;
 import org.lwjgl.util.vector.Vector4f;
 
 import java.awt.*;
-import java.util.HashMap;
 
 public class PanelTaskLocation extends CanvasEmpty
 {
-    private static HashMap<Integer, String> dimNameCache;
-    
     private final IQuest quest;
     private final TaskLocation task;
     
@@ -131,32 +127,12 @@ public class PanelTaskLocation extends CanvasEmpty
     
     private static String getDimName(int dim)
 	{
-		if(dimNameCache == null)
-		{
-			dimNameCache = new HashMap<>();
-			Integer[] dimNums = DimensionManager.getStaticDimensionIDs();
-			
-			for(Integer i : dimNums)
-			{
-				try
-				{
-					WorldProvider prov = DimensionManager.createProviderFor(i);
-					
-					if(prov == null)
-					{
-						continue;
-					}
-					
-					dimNameCache.put(i, prov.getDimensionType().getName());
-				} catch(Exception e)
-				{
-					dimNameCache.put(i, "ERROR");
-				}
-			}
-		}
-		
-		String name = dimNameCache.get(dim);
-		
-		return name != null? name : "?";
+	    try
+        {
+            return DimensionType.getById(dim).getName();
+        } catch(Exception e)
+        {
+            return "?";
+        }
 	}
 }

@@ -99,7 +99,7 @@ public class GuiEditTaskHunt extends GuiScreenCanvas implements IVolatileScreen
             @Override
             public void onButtonClick()
             {
-                QuestingAPI.getAPI(ApiReference.GUI_HELPER).openEntityEditor(screenRef, value -> {
+                mc.displayGuiScreen(QuestingAPI.getAPI(ApiReference.THEME_REG).getGuiHook().getEntityEditor(screenRef, value -> {
                     Entity tmp = value != null ? value : new EntityZombie(mc.world);
                     ResourceLocation res = EntityList.getKey(tmp.getClass());
                     task.idName = res != null ? res.toString() : "minecraft:zombie";
@@ -107,7 +107,7 @@ public class GuiEditTaskHunt extends GuiScreenCanvas implements IVolatileScreen
                     tmp.writeToNBTOptional(task.targetTags);
                     
                     sendChanges();
-                }, target);
+                }, target));
             }
         });
         
@@ -116,7 +116,7 @@ public class GuiEditTaskHunt extends GuiScreenCanvas implements IVolatileScreen
             @Override
             public void onButtonClick()
             {
-                QuestingAPI.getAPI(ApiReference.GUI_HELPER).openJsonEditor(screenRef, value -> task.readFromNBT(value), task.writeToNBT(new NBTTagCompound()), null);
+                mc.displayGuiScreen(QuestingAPI.getAPI(ApiReference.THEME_REG).getGuiHook().getNbtEditor(screenRef, task::readFromNBT, task.writeToNBT(new NBTTagCompound()), null));
             }
         });
         

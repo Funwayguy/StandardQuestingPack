@@ -12,7 +12,7 @@ public class HQMRewardCommand implements HQMReward
 	@Override
 	public List<IReward> Convert(JsonElement json)
 	{
-		List<IReward> rList = new ArrayList<IReward>();
+		List<IReward> rList = new ArrayList<>();
 		
 		if(json == null || !json.isJsonArray())
 		{

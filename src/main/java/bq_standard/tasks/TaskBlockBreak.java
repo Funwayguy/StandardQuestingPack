@@ -46,12 +46,12 @@ import java.util.UUID;
 public class TaskBlockBreak implements ITask, IProgression<int[]>
 {
 	private final List<UUID> completeUsers = new ArrayList<>();
-	public final HashMap<UUID, int[]> userProgress = new HashMap<>();
-	public final List<JsonBlockType> blockTypes = new ArrayList<>();
+	private final HashMap<UUID, int[]> userProgress = new HashMap<>();
+	public final List<NbtBlockType> blockTypes = new ArrayList<>();
 	
 	public TaskBlockBreak()
 	{
-		blockTypes.add(new JsonBlockType());
+		blockTypes.add(new NbtBlockType());
 	}
 	
 	@Override
@@ -96,7 +96,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		
 		for(int j = 0; j < blockTypes.size(); j++)
 		{
-			JsonBlockType block = blockTypes.get(j);
+			NbtBlockType block = blockTypes.get(j);
 			
 			if(block == null || progress[j] >= block.n)
 			{
@@ -133,7 +133,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		
 		for(int i = 0; i < blockTypes.size(); i++)
 		{
-			JsonBlockType block = blockTypes.get(i);
+			NbtBlockType block = blockTypes.get(i);
 			
 			boolean flag = block.oreDict.length() > 0 && OreDictionary.getOres(block.oreDict).contains(new ItemStack(state.getBlock(), 1, block.m < 0? OreDictionary.WILDCARD_VALUE : state.getBlock().getMetaFromState(state)));
 			
@@ -154,9 +154,9 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
 		NBTTagList bAry = new NBTTagList();
-		for(JsonBlockType block : blockTypes)
+		for(NbtBlockType block : blockTypes)
 		{
-			NBTTagCompound jbt = block.writeToJson(new NBTTagCompound());
+			NBTTagCompound jbt = block.writeToNBT(new NBTTagCompound());
 			bAry.appendTag(jbt);
 		}
 		json.setTag("blocks", bAry);
@@ -171,20 +171,20 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		NBTTagList bList = json.getTagList("blocks", 10);
 		for(int i = 0; i < bList.tagCount(); i++)
 		{
-			JsonBlockType block = new JsonBlockType();
-			block.readFromJson(bList.getCompoundTagAt(i));
+			NbtBlockType block = new NbtBlockType();
+			block.readFromNBT(bList.getCompoundTagAt(i));
 			blockTypes.add(block);
 		}
 		
 		if(json.hasKey("blockID", 8))
 		{
 			Block targetBlock = Block.REGISTRY.getObject(new ResourceLocation(json.getString("blockID")));
-			targetBlock = targetBlock != null ? targetBlock : Blocks.LOG;
+			targetBlock = targetBlock != Blocks.AIR ? targetBlock : Blocks.LOG;
 			int targetMeta = json.getInteger("blockMeta");
 			NBTTagCompound targetNbt = json.getCompoundTag("blockNBT");
 			int targetNum = json.getInteger("amount");
 			
-			JsonBlockType leg = new JsonBlockType();
+			NbtBlockType leg = new NbtBlockType();
 			leg.b = targetBlock;
 			leg.m = targetMeta;
 			leg.tags = targetNbt;
@@ -295,7 +295,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		int[] progress = getUsersProgress(uuid);
 		for(int i = 0; i < blockTypes.size(); i++)
 		{
-			JsonBlockType block = blockTypes.get(i);
+			NbtBlockType block = blockTypes.get(i);
 			total += progress[i] / (float)block.n;
 		}
 		
@@ -398,7 +398,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		return total;
 	}
 	
-	public static class JsonBlockType
+	public static class NbtBlockType
 	{
 		public Block b = Blocks.LOG;
 		public int m = -1;
@@ -406,7 +406,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		public int n = 1;
 		public String oreDict = "";
 		
-		public NBTTagCompound writeToJson(NBTTagCompound json)
+		public NBTTagCompound writeToNBT(NBTTagCompound json)
 		{
 			json.setString("blockID", b.getRegistryName().toString());
 			json.setInteger("meta", m);
@@ -416,10 +416,10 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 			return json;
 		}
 		
-		public void readFromJson(NBTTagCompound json)
+		public void readFromNBT(NBTTagCompound json)
 		{
 			b = Block.REGISTRY.getObject(new ResourceLocation(json.getString("blockID")));
-			b = b != null? b : Blocks.LOG;
+			b = b != Blocks.AIR? b : Blocks.LOG;
 			m = json.getInteger("meta");
 			n = n < 0? OreDictionary.WILDCARD_VALUE : n;
 			tags = json.getCompoundTag("nbt");

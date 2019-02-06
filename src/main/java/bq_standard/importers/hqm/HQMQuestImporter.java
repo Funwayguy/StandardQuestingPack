@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Level;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -192,7 +193,30 @@ public class HQMQuestImporter implements IImporter
 				}
 				
 				IQuest preReq = GetNewQuest(id, questDB);
-				quest.getPrerequisites().add(preReq);
+				addReq(quest, questDB.getID(preReq));
+			}
+			
+			for(JsonElement er : JsonHelper.GetArray(jQuest, "optionlinks"))
+			{
+				if(er == null || !er.isJsonPrimitive() || !er.getAsJsonPrimitive().isString())
+				{
+					continue;
+				}
+				
+				String id = er.getAsJsonPrimitive().getAsString();
+				
+				if(id.startsWith("{") && id.contains("["))
+				{
+					String[] nParts = id.split("\\[");
+					
+					if(nParts.length > 1)
+					{
+						id = nParts[1].replaceFirst("]", "");
+					}
+				}
+				
+				IQuest preReq = GetNewQuest(id, questDB);
+				addReq(quest, questDB.getID(preReq));
 			}
 			
 			for(JsonElement jt : JsonHelper.GetArray(jQuest, "tasks"))
@@ -210,7 +234,7 @@ public class HQMQuestImporter implements IImporter
 					continue;
 				} else if(!taskConverters.containsKey(tType))
 				{
-					BQ_Standard.logger.log(Level.WARN, "Unidentified HQM task '" + tType + "'! Please report this so that it can be supported in future builds");
+					BQ_Standard.logger.log(Level.WARN, "Unsupported HQM task \"" + tType + "\"! Skipping...");
 					continue;
 				}
 				
@@ -250,15 +274,31 @@ public class HQMQuestImporter implements IImporter
 				BQ_Standard.logger.log(Level.WARN, "Tried to add duplicate quest " + quest + " to quest line " + questLine.getUnlocalisedName());
 			} else
 			{
-			    // TODO: Find a better way of doing this.
 			    final int qleX = JsonHelper.GetNumber(jQuest, "x", 0).intValue();
 			    final int qleY = JsonHelper.GetNumber(jQuest, "y", 0).intValue();
+			    final boolean bigIcon = JsonHelper.GetBoolean(jQuest, "bigicon", false);
+			    
 			    IQuestLineEntry qle = questLine.createNew(questDB.getID(quest));
+			    qle.setSize(bigIcon ? 32 : 24);
 			    qle.setPosition(qleX, qleY);
-			    qle.setSize(24);
 			}
 		}
 	}
+    
+    private boolean containsReq(IQuest quest, int id)
+    {
+        for(int reqID : quest.getRequirements()) if(id == reqID) return true;
+        return false;
+    }
+    
+    private void addReq(IQuest quest, int id)
+    {
+        if(containsReq(quest, id)) return;
+        int[] orig = quest.getRequirements();
+        int[] added = Arrays.copyOf(orig, orig.length + 1);
+        added[orig.length] = id;
+        quest.setRequirements(added);
+    }
 	
 	static
 	{
@@ -268,6 +308,8 @@ public class HQMQuestImporter implements IImporter
 		taskConverters.put("KILL", new HQMTaskKill());
 		taskConverters.put("LOCATION", new HQMTaskLocation());
 		taskConverters.put("CRAFT", new HQMTaskCraft());
+		taskConverters.put("ADVANCEMENT", new HQMTaskAdvancement());
+		taskConverters.put("BLOCK_BREAK", new HQMTaskBlockBreak());
 		
 		rewardConverters.put("reward", new HQMRewardStandard());
 		rewardConverters.put("rewardchoice", new HQMRewardChoice());

@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface HQMTask
 {
-	public List<ITask> Convert(JsonObject json);
+	List<ITask> Convert(JsonObject json);
 }

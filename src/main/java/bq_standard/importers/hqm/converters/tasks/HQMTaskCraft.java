@@ -15,7 +15,7 @@ public class HQMTaskCraft implements HQMTask
 	@Override
 	public List<ITask> Convert(JsonObject json)
 	{
-		List<ITask> tList = new ArrayList<ITask>();
+		List<ITask> tList = new ArrayList<>();
 		
 		TaskCrafting task = new TaskCrafting();
 		

@@ -36,7 +36,7 @@ public class ItemLootChest extends Item
 	public ItemLootChest()
 	{
 		this.setMaxStackSize(1);
-		this.setUnlocalizedName("bq_standard.loot_chest");
+		this.setTranslationKey("bq_standard.loot_chest");
 		this.setCreativeTab(QuestingAPI.getAPI(ApiReference.CREATIVE_TAB));
 	}
 
