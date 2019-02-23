@@ -3,6 +3,7 @@ package bq_standard.tasks;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
@@ -28,19 +29,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class TaskAdvancement implements ITaskTickable
+public class TaskAdvancement implements ITask
 {
 	private final List<UUID> completeUsers = new ArrayList<>();
 	public ResourceLocation advID;
-	
-    @Override
-    public void tickTask(IQuest quest, EntityPlayer player)
-    {
-		if(player.ticksExisted%60 == 0) // Only auto-detect every 3 seconds
-		{
-			detect(player, quest);
-		}
-    }
     
     @Override
     public String getUnlocalisedName()
@@ -54,10 +46,16 @@ public class TaskAdvancement implements ITaskTickable
         return FactoryTaskAdvancement.INSTANCE.getRegistryName();
     }
     
+    public void onAdvancementGet(IQuest quest, EntityPlayer player, Advancement advancement)
+    {
+        if(advancement == null || advID == null || !advID.equals(advancement.getId())) return;
+        detect(player, quest);
+    }
+    
     @Override
     public void detect(EntityPlayer player, IQuest quest)
     {
-        if(player.getServer() == null || !(player instanceof EntityPlayerMP)) return;
+        if(!(player instanceof EntityPlayerMP) || player.getServer() == null || advID == null) return;
         
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
         QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);

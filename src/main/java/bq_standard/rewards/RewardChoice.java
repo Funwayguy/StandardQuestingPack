@@ -30,7 +30,7 @@ public class RewardChoice implements IReward
 {
 	/**
 	 * The selected reward index to be claimed.<br>
-	 * Should only ever be used client side. NEVER on server
+	 * Should only ever be used client side. NEVER onHit server
 	 */
 	public ArrayList<BigItemStack> choices = new ArrayList<BigItemStack>();
 	private HashMap<UUID,Integer> selected = new HashMap<UUID,Integer>();

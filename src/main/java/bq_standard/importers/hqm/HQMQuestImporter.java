@@ -1,5 +1,6 @@
 package bq_standard.importers.hqm;
 
+import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.importers.IImporter;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.*;
@@ -9,23 +10,27 @@ import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.FileExtensionFilter;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api2.storage.IDatabaseNBT;
+import betterquesting.api2.utils.BQThreadedIO;
 import bq_standard.core.BQ_Standard;
+import bq_standard.importers.hqm.converters.HQMRep;
 import bq_standard.importers.hqm.converters.rewards.*;
 import bq_standard.importers.hqm.converters.tasks.*;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import net.minecraft.init.Items;
 import net.minecraft.nbt.NBTTagList;
 import org.apache.logging.log4j.Level;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.Future;
 
 public class HQMQuestImporter implements IImporter
 {
@@ -35,7 +40,7 @@ public class HQMQuestImporter implements IImporter
 	private static HashMap<String, HQMTask> taskConverters = new HashMap<>();
 	private static HashMap<String, HQMReward> rewardConverters = new HashMap<>();
 	
-	public HashMap<Integer, String> reputations = new HashMap<>();
+	public HashMap<String, HQMRep> reputations = new HashMap<>();
 	
 	private HashMap<String, IQuest> idMap = new HashMap<>(); // Use this to remap old IDs to new ones
 	
@@ -63,39 +68,110 @@ public class HQMQuestImporter implements IImporter
 		reputations.clear();
 		idMap.clear();
 		
+		for(File selected : files) // Pre-search for reputations required for tasks
+		{
+			if(selected == null || !selected.exists() || !selected.getName().equalsIgnoreCase("reputations.json")) continue;
+			
+			JsonArray json = ReadArrayFromFile(selected);
+			LoadReputations(json);
+        }
+		
 		for(File selected : files)
 		{
-			if(selected == null || !selected.exists())
-			{
-				continue;
-			}
+			if(selected == null || !selected.exists() || selected.getName().equalsIgnoreCase("reputations.json")) continue;
 			
 			JsonObject json = JsonHelper.ReadFromFile(selected);
 			ImportQuestLine(questDB, lineDB, json);
 		}
 	}
 	
-	private void LoadReputations(JsonObject jsonRoot)
+	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+	
+	private static JsonArray ReadArrayFromFile(File file)
 	{
-		reputations.clear();
+		Future<JsonArray> task = BQThreadedIO.INSTANCE.enqueue(() -> {
+			if(file == null || !file.exists())
+			{
+				return new JsonArray();
+			}
+			
+			try(InputStreamReader fr = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))
+			{
+				return GSON.fromJson(fr, JsonArray.class);
+			} catch(Exception e)
+			{
+				QuestingAPI.getLogger().log(Level.ERROR, "An error occured while loading JSON from file:", e);
+				
+				int i = 0;
+				File bkup = new File(file.getParent(), "malformed_" + file.getName() + i + ".json");
+				
+				while(bkup.exists())
+				{
+					i++;
+					bkup = new File(file.getParent(), "malformed_" + file.getName() + i + ".json");
+				}
+				
+				QuestingAPI.getLogger().log(Level.ERROR, "Creating backup at: " + bkup.getAbsolutePath());
+				JsonHelper.CopyPaste(file, bkup);
+				
+				return new JsonArray(); // Just a safety measure against NPEs
+			}
+		});
 		
+		try
+		{
+			return task.get(); // Wait for other scheduled file ops to finish
+		} catch(Exception e)
+		{
+		    QuestingAPI.getLogger().error("Unable to read from file " + file, e);
+			return new JsonArray();
+		}
+	}
+	
+	private void LoadReputations(JsonArray jsonRoot)
+	{
+	    if(jsonRoot == null || jsonRoot.size() <= 0) return;
+	    
 		int i = -1;
 		
-		for(JsonElement e : JsonHelper.GetArray(jsonRoot, "reputation"))
+		for(JsonElement e : jsonRoot)
 		{
-			i++;
-			
-			if(e == null || !e.isJsonObject())
-			{
-				continue;
-			}
-			
-			JsonObject jRep = e.getAsJsonObject();
-			
-			if(jRep.has("name"))
-			{
-				reputations.put(i, JsonHelper.GetString(jRep, "name", "Reputation(" + i + ")"));
-			}
+		    if(!(e instanceof JsonObject)) continue;
+		    JsonObject jRep = e.getAsJsonObject();
+		    
+		    String repName = "Reputation(" + i + ")";
+		    if(jRep.has("Name")) repName = JsonHelper.GetString(jRep, "Name", repName);
+		    if(jRep.has("name")) repName = JsonHelper.GetString(jRep, "name", repName);
+		    
+		    String repId = "" + (++i);
+		    if(jRep.has("Id")) repId = JsonHelper.GetNumber(jRep, "Id", i).toString();
+		    if(jRep.has("id")) repId = JsonHelper.GetString(jRep, "id", repId);
+		    
+		    
+		    HQMRep repObj = new HQMRep(repName);
+		    
+		    JsonArray mrkAry = null;
+		    if(jRep.has("Markers")) mrkAry = JsonHelper.GetArray(jRep, "Markers");
+		    if(mrkAry == null) mrkAry = JsonHelper.GetArray(jRep, "markers");
+		    
+		    for(int m = 0; m < mrkAry.size(); m++)
+            {
+                JsonElement e2 = mrkAry.get(m);
+                if(!(e2 instanceof JsonObject)) continue;
+                
+                JsonObject jMark = e2.getAsJsonObject();
+                
+                int mId = m;
+                if(jMark.has("Id")) mId = JsonHelper.GetNumber(jMark, "Id", mId).intValue();
+                
+                int mVal = 0;
+                if(jMark.has("Value")) mVal = JsonHelper.GetNumber(jMark, "Value", mVal).intValue();
+                if(jMark.has("value")) mVal = JsonHelper.GetNumber(jMark, "value", mVal).intValue();
+                
+                repObj.addMarker(mId, mVal);
+            }
+		    
+			reputations.put(repId, repObj);
 		}
 	}
 	
@@ -118,7 +194,7 @@ public class HQMQuestImporter implements IImporter
         questLine.setProperty(NativeProps.NAME, JsonHelper.GetString(json, "name", "HQM Quest Line"));
 		questLine.setProperty(NativeProps.DESC, JsonHelper.GetString(json, "description", "No description"));
 		
-		LoadReputations(json);
+		LoadReputations(JsonHelper.GetArray(json, "reputations"));
 		
 		JsonArray qlJson = JsonHelper.GetArray(json, "quests");
 		
@@ -308,8 +384,11 @@ public class HQMQuestImporter implements IImporter
 		taskConverters.put("KILL", new HQMTaskKill());
 		taskConverters.put("LOCATION", new HQMTaskLocation());
 		taskConverters.put("CRAFT", new HQMTaskCraft());
+		taskConverters.put("TAME", new HQMTaskTame());
 		taskConverters.put("ADVANCEMENT", new HQMTaskAdvancement());
 		taskConverters.put("BLOCK_BREAK", new HQMTaskBlockBreak());
+		taskConverters.put("BLOCK_PLACE", new HQMTaskBlockPlace());
+		taskConverters.put("REPUTATION", new HQMTaskReputaion());
 		
 		rewardConverters.put("reward", new HQMRewardStandard());
 		rewardConverters.put("rewardchoice", new HQMRewardChoice());

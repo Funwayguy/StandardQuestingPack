@@ -44,6 +44,8 @@ public class CommonProxy
 		taskReg.registerTask(FactoryTaskScoreboard.INSTANCE);
 		taskReg.registerTask(FactoryTaskXP.INSTANCE);
 		taskReg.registerTask(FactoryTaskAdvancement.INSTANCE);
+		taskReg.registerTask(FactoryTaskTame.INSTANCE);
+		taskReg.registerTask(FactoryTaskInteractItem.INSTANCE);
 
 		IRewardRegistry rewardReg = QuestingAPI.getAPI(ApiReference.REWARD_REG);
 		rewardReg.registerReward(FactoryRewardChoice.INSTANCE);
@@ -58,6 +60,7 @@ public class CommonProxy
 		packetReg.registerHandler(new PktHandlerScoreboard());
 		packetReg.registerHandler(new PktHandlerChoice());
 		packetReg.registerHandler(new PktHandlerLootImport());
+		packetReg.registerHandler(new PktHandlerInteract());
 		
 		BQ_Standard.lootChest.setCreativeTab(QuestingAPI.getAPI(ApiReference.CREATIVE_TAB));
 	}

@@ -11,6 +11,7 @@ import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
 import bq_standard.XPHelper;
 import bq_standard.client.gui.tasks.PanelTaskXP;
 import bq_standard.core.BQ_Standard;
@@ -23,6 +24,7 @@ import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,33 +61,26 @@ public class TaskXP implements ITask, IProgression<Long>, ITaskTickable
 	}
 	
 	@Override
-	public void tickTask(IQuest quest, EntityPlayer player)
+	public void tickTask(@Nonnull DBEntry<IQuest> quest, @Nonnull EntityPlayer player)
 	{
-	    if(player.ticksExisted%60 != 0) return;
+	    if(consume || player.ticksExisted%60 != 0) return; // Every 3 seconds
 	    
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
         QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
         
-        if(!consume)
+        long curProg = getUsersProgress(playerID);
+        long nxtProg = XPHelper.getPlayerXP(player);
+        
+        if(curProg != nxtProg)
         {
-            long curProg = getUsersProgress(playerID);
-            long nxtProg = XPHelper.getPlayerXP(player);
-            
-            if(curProg != nxtProg)
-            {
-                setUserProgress(playerID, XPHelper.getPlayerXP(player));
-                if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
-            }
+            setUserProgress(playerID, XPHelper.getPlayerXP(player));
+            if(qc != null) qc.markQuestDirty(quest.getID());
         }
         
         long rawXP = levels? XPHelper.getLevelXP(amount) : amount;
-        long totalXP = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
+        long totalXP = !quest.getValue().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
         
-        if(totalXP >= rawXP)
-        {
-            setComplete(playerID);
-            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
-        }
+        if(totalXP >= rawXP) setComplete(playerID);
 	}
 	
 	@Override
@@ -104,10 +99,13 @@ public class TaskXP implements ITask, IProgression<Long>, ITaskTickable
 		
 		if(consume)
 		{
-			progress += cost;
-			setUserProgress(playerID, progress);
-			XPHelper.addXP(player, -cost);
-            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+		    if(cost != 0)
+            {
+                progress += cost;
+                setUserProgress(playerID, progress);
+                XPHelper.addXP(player, -cost);
+                if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+            }
 		} else
 		{
 		    if(progress != plrXP)
@@ -119,10 +117,7 @@ public class TaskXP implements ITask, IProgression<Long>, ITaskTickable
 		
 		long totalXP = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		
-		if(totalXP >= rawXP)
-		{
-			setComplete(playerID);
-		}
+		if(totalXP >= rawXP) setComplete(playerID);
 	}
 	
 	@Override

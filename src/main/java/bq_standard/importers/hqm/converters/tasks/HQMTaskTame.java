@@ -2,21 +2,21 @@ package bq_standard.importers.hqm.converters.tasks;
 
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.JsonHelper;
-import bq_standard.tasks.TaskHunt;
+import bq_standard.tasks.TaskTame;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class HQMTaskKill implements HQMTask
+public class HQMTaskTame implements HQMTask
 {
-	@Override
-	public List<ITask> Convert(JsonObject json)
-	{
+    @Override
+    public List<ITask> Convert(JsonObject json)
+    {
 		List<ITask> tList = new ArrayList<>();
 		
-		for(JsonElement je : JsonHelper.GetArray(json, "mobs"))
+		for(JsonElement je : JsonHelper.GetArray(json, "tame"))
 		{
 			if(je == null || !je.isJsonObject())
 			{
@@ -25,13 +25,13 @@ public class HQMTaskKill implements HQMTask
 			
 			JsonObject jMob = je.getAsJsonObject();
 			
-			TaskHunt task = new TaskHunt();
-			task.idName = JsonHelper.GetString(jMob, "mob", "minecraft:zombie");
-			task.required = JsonHelper.GetNumber(jMob, "kills", 1).intValue();
+			TaskTame task = new TaskTame();
+			task.idName = JsonHelper.GetString(jMob, "tame", "minecraft:horse");
+			task.required = JsonHelper.GetNumber(jMob, "tames", 1).intValue();
 			task.subtypes = !JsonHelper.GetBoolean(jMob, "exact", false);
 			tList.add(task);
 		}
 		
 		return tList;
-	}
+    }
 }

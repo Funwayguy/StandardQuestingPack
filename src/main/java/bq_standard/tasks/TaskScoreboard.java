@@ -3,11 +3,11 @@ package bq_standard.tasks;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
 import bq_standard.ScoreboardBQ;
 import bq_standard.client.gui.editors.tasks.GuiEditTaskScoreboard;
 import bq_standard.client.gui.tasks.PanelTaskScoreboard;
@@ -24,11 +24,12 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class TaskScoreboard implements ITask, ITaskTickable
+public class TaskScoreboard implements ITaskTickable
 {
 	private final List<UUID> completeUsers = new ArrayList<>();
 	public String scoreName = "Score";
@@ -79,11 +80,11 @@ public class TaskScoreboard implements ITask, ITaskTickable
 	}
 	
 	@Override
-	public void tickTask(IQuest quest, EntityPlayer player)
+	public void tickTask(@Nonnull DBEntry<IQuest> quest, @Nonnull EntityPlayer player)
 	{
 		if(player.ticksExisted%20 == 0) // Auto-detect once per second
 		{
-			detect(player, quest);
+			detect(player, quest.getValue());
 		}
 	}
 	
@@ -91,10 +92,10 @@ public class TaskScoreboard implements ITask, ITaskTickable
 	public void detect(EntityPlayer player, IQuest quest)
 	{
 	    UUID playerID = QuestingAPI.getQuestingUUID(player);
-        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-        
 		if(isComplete(playerID)) return;
 		
+        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+        
 		Scoreboard board = player.getWorldScoreboard();
 		ScoreObjective scoreObj = board.getObjective(scoreName);
 		

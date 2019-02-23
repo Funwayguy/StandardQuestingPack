@@ -7,7 +7,6 @@ import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.IItemTask;
 import betterquesting.api.questing.tasks.IProgression;
-import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api.utils.JsonHelper;
@@ -15,6 +14,7 @@ import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
 import bq_standard.client.gui.tasks.PanelTaskRetrieval;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskRetrieval;
@@ -31,13 +31,14 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITaskTickable
+public class TaskRetrieval implements ITaskInventory, IProgression<int[]>, IItemTask
 {
 	private final List<UUID> completeUsers = new ArrayList<>();
 	public final NonNullList<BigItemStack> requiredItems = NonNullList.create();
@@ -51,7 +52,7 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITa
 	@Override
 	public String getUnlocalisedName()
 	{
-		return "bq_standard.task.retrieval";
+		return BQ_Standard.MODID + ".task.retrieval";
 	}
 	
 	@Override
@@ -76,35 +77,32 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITa
 	}
 	
 	@Override
-	public void tickTask(IQuest quest, EntityPlayer player)
-	{
-		if(player.ticksExisted%60 == 0)
-		{
-			if(!consume || autoConsume)
-			{
-				detect(player, quest);
-			} else
-			{
-				boolean flag = true;
-				
-				int[] totalProgress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(QuestingAPI.getQuestingUUID(player)) : getGlobalProgress();
-				for(int j = 0; j < requiredItems.size(); j++)
-				{
-					BigItemStack rStack = requiredItems.get(j);
-					
-					if(totalProgress[j] >= rStack.stackSize) continue;
-					
-					flag = false;
-					break;
-				}
-				
-				if(flag)
-				{
-					setComplete(QuestingAPI.getQuestingUUID(player));
-				}
-			}
-		}
-	}
+	public void onInventoryChange(@Nonnull DBEntry<IQuest> quest, @Nonnull EntityPlayer player)
+    {
+        if(!consume || autoConsume)
+        {
+            detect(player, quest.getValue());
+        } else
+        {
+            boolean flag = true;
+            
+            int[] totalProgress = !quest.getValue().getProperty(NativeProps.GLOBAL)? getPartyProgress(QuestingAPI.getQuestingUUID(player)) : getGlobalProgress();
+            for(int j = 0; j < requiredItems.size(); j++)
+            {
+                BigItemStack rStack = requiredItems.get(j);
+                
+                if(totalProgress[j] >= rStack.stackSize) continue;
+                
+                flag = false;
+                break;
+            }
+            
+            if(flag)
+            {
+                setComplete(QuestingAPI.getQuestingUUID(player));
+            }
+        }
+    }
 
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
@@ -162,20 +160,16 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITa
 			}
 		}
 		
-		boolean flag = true;
-		int[] totalProgress = progress;
+		boolean syncMe = false;
 		
-		if(consume || idvDetect)
+		if(updated && (consume || idvDetect))
 		{
-		    if(updated)
-            {
-                setUserProgress(playerID, progress);
-                QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-                if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
-                
-            }
-			totalProgress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
+            setUserProgress(playerID, progress);
+            syncMe = true;
 		}
+		
+		boolean hasAll = true;
+		int[] totalProgress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		
 		for(int j = 0; j < requiredItems.size(); j++)
 		{
@@ -183,14 +177,21 @@ public class TaskRetrieval implements ITask, IProgression<int[]>, IItemTask, ITa
 			
 			if(totalProgress[j] >= rStack.stackSize) continue;
 			
-			flag = false;
+			hasAll = false;
 			break;
 		}
 		
-		if(flag)
+		if(hasAll)
 		{
 			setComplete(playerID);
+			syncMe = true;
 		}
+		
+		if(syncMe)
+        {
+            QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+        }
 	}
 
 	@Override

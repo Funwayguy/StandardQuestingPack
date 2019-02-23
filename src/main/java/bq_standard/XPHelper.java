@@ -31,10 +31,7 @@ public class XPHelper
 		player.experience = (float)((double)(experience - expForLevel) / (double)xpBarCap(player));
 		player.experience = Math.max(0F, player.experience); // Sanity check
 		
-		if(sync && player instanceof EntityPlayerMP)
-		{
-			syncXP((EntityPlayerMP)player);
-		}
+		if(sync && player instanceof EntityPlayerMP) syncXP((EntityPlayerMP)player);
 	}
 	
 	public static void syncXP(EntityPlayerMP player)
@@ -65,37 +62,22 @@ public class XPHelper
 	
 	public static int getXPLevel(long xp)
 	{
-		if(xp < 0)
-		{
-			return 0;
-		}
+		if(xp <= 0) return 0;
 		
 		int i = 0;
 		
-		while(i < QUICK_XP.length && QUICK_XP[i] <= xp)
-		{
-			i++;
-		}
+		while(i < QUICK_XP.length && QUICK_XP[i] <= xp) i++;
 		
-		if(i > 0)
-		{
-			i = (i - 1) * 1000000;
-		}
+		if(i > 0) i = (i - 1) * 1000000;
 		
-		while (i < Integer.MAX_VALUE && getLevelXP(i) <= xp)
-		{
-			i++;
-		}
+		while (i < Integer.MAX_VALUE && getLevelXP(i) <= xp) i++;
 		
 		return i - 1;
 	}
 	
 	public static long getLevelXP(int level)
 	{
-		if(level <= 0)
-		{
-			return 0;
-		}
+		if(level <= 0) return 0;
 		
 		if(level < 17)
 		{

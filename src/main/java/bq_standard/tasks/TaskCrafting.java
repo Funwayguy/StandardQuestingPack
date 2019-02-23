@@ -14,6 +14,7 @@ import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
 import bq_standard.client.gui.tasks.PanelTaskCrafting;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskCrafting;
@@ -105,25 +106,25 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 		}
 	}
 	
-	public void onItemCraft(IQuest quest, EntityPlayer player, ItemStack stack)
+	public void onItemCraft(DBEntry<IQuest> quest, EntityPlayer player, ItemStack stack)
     {
         if(!allowCraft) return;
         onItemInternal(quest, player, stack);
     }
 	
-	public void onItemSmelt(IQuest quest, EntityPlayer player, ItemStack stack)
+	public void onItemSmelt(DBEntry<IQuest> quest, EntityPlayer player, ItemStack stack)
     {
         if(!allowSmelt) return;
         onItemInternal(quest, player, stack);
     }
 	
-	public void onItemAnvil(IQuest quest, EntityPlayer player, ItemStack stack)
+	public void onItemAnvil(DBEntry<IQuest> quest, EntityPlayer player, ItemStack stack)
     {
         if(!allowAnvil) return;
         onItemInternal(quest, player, stack);
     }
 	
-	private void onItemInternal(IQuest quest, EntityPlayer player, ItemStack stack)
+	private void onItemInternal(DBEntry<IQuest> quest, EntityPlayer player, ItemStack stack)
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
         QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
@@ -152,10 +153,10 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 		if(updated)
         {
             setUserProgress(playerID, progress);
-            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+            if(qc != null) qc.markQuestDirty(quest.getID());
         }
 		
-		detect(player, quest);
+		detect(player, quest.getValue());
 	}
 	
 	@Override

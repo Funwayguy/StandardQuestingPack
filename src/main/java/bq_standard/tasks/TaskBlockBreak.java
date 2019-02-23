@@ -2,18 +2,18 @@ package bq_standard.tasks;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.placeholders.ItemPlaceholder;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
-import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
+import bq_standard.NbtBlockType;
 import bq_standard.client.gui.tasks.PanelTaskBlockBreak;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskBlockBreak;
@@ -22,8 +22,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
@@ -113,62 +111,53 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		}
 	}
 	
-	public void onBlockBreak(IQuest quest, EntityPlayer player, IBlockState state, BlockPos pos)
+	public void onBlockBreak(DBEntry<IQuest> quest, EntityPlayer player, IBlockState state, BlockPos pos)
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
-		
-		if(isComplete(playerID))
-		{
-			return;
-		}
+		if(isComplete(playerID)) return;
 		
 		int[] progress = getUsersProgress(playerID);
-		TileEntity tile = player.world.getTileEntity(pos);
-		NBTTagCompound tags = new NBTTagCompound();
-		
-		if(tile != null)
-		{
-			tile.writeToNBT(tags);
-		}
+		TileEntity tile = state.getBlock().hasTileEntity(state) ? player.world.getTileEntity(pos) : null;
+		NBTTagCompound tags = tile == null ? null : tile.writeToNBT(new NBTTagCompound());
 		
 		for(int i = 0; i < blockTypes.size(); i++)
 		{
 			NbtBlockType block = blockTypes.get(i);
+			if(progress[i] >= block.n) continue;
 			
-			boolean flag = block.oreDict.length() > 0 && OreDictionary.getOres(block.oreDict).contains(new ItemStack(state.getBlock(), 1, block.m < 0? OreDictionary.WILDCARD_VALUE : state.getBlock().getMetaFromState(state)));
+			boolean oreMatch = block.oreDict.length() > 0 && OreDictionary.getOres(block.oreDict).contains(new ItemStack(state.getBlock(), 1, block.m < 0? OreDictionary.WILDCARD_VALUE : state.getBlock().getMetaFromState(state)));
 			
-			if((flag || (state.getBlock() == block.b && (block.m < 0 || state.getBlock().getMetaFromState(state) == block.m))) && ItemComparison.CompareNBTTag(block.tags, tags, true))
+			if((oreMatch || (state.getBlock() == block.b && (block.m < 0 || state.getBlock().getMetaFromState(state) == block.m))) && ItemComparison.CompareNBTTag(block.tags, tags, true))
 			{
-				progress[i] += 1;
+				progress[i]++;
 				setUserProgress(player.getUniqueID(), progress);
                 QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-                if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+                if(qc != null) qc.markQuestDirty(quest.getID());
 				break;
 			}
 		}
 		
-		detect(player, quest);
+		detect(player, quest.getValue());
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json)
+	public NBTTagCompound writeToNBT(NBTTagCompound nbt)
 	{
 		NBTTagList bAry = new NBTTagList();
 		for(NbtBlockType block : blockTypes)
 		{
-			NBTTagCompound jbt = block.writeToNBT(new NBTTagCompound());
-			bAry.appendTag(jbt);
+			bAry.appendTag(block.writeToNBT(new NBTTagCompound()));
 		}
-		json.setTag("blocks", bAry);
+		nbt.setTag("blocks", bAry);
 		
-		return json;
+		return nbt;
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json)
+	public void readFromNBT(NBTTagCompound nbt)
 	{
 		blockTypes.clear();
-		NBTTagList bList = json.getTagList("blocks", 10);
+		NBTTagList bList = nbt.getTagList("blocks", 10);
 		for(int i = 0; i < bList.tagCount(); i++)
 		{
 			NbtBlockType block = new NbtBlockType();
@@ -176,13 +165,13 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 			blockTypes.add(block);
 		}
 		
-		if(json.hasKey("blockID", 8))
+		if(nbt.hasKey("blockID", 8))
 		{
-			Block targetBlock = Block.REGISTRY.getObject(new ResourceLocation(json.getString("blockID")));
+			Block targetBlock = Block.REGISTRY.getObject(new ResourceLocation(nbt.getString("blockID")));
 			targetBlock = targetBlock != Blocks.AIR ? targetBlock : Blocks.LOG;
-			int targetMeta = json.getInteger("blockMeta");
-			NBTTagCompound targetNbt = json.getCompoundTag("blockNBT");
-			int targetNum = json.getInteger("amount");
+			int targetMeta = nbt.getInteger("blockMeta");
+			NBTTagCompound targetNbt = nbt.getCompoundTag("blockNBT");
+			int targetNum = nbt.getInteger("amount");
 			
 			NbtBlockType leg = new NbtBlockType();
 			leg.b = targetBlock;
@@ -195,10 +184,10 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 	}
 	
 	@Override
-	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
+	public void readProgressFromNBT(NBTTagCompound nbt, boolean merge)
 	{
 		completeUsers.clear();
-		NBTTagList cList = json.getTagList("completeUsers", 8);
+		NBTTagList cList = nbt.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
 			try
@@ -211,7 +200,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		}
 		
 		userProgress.clear();
-		NBTTagList pList = json.getTagList("userProgress", 10);
+		NBTTagList pList = nbt.getTagList("userProgress", 10);
 		for(int n = 0; n < pList.tagCount(); n++)
 		{
 			NBTTagCompound pTag = pList.getCompoundTagAt(n);
@@ -226,12 +215,12 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 			}
 			
 			int[] data = new int[blockTypes.size()];
-			NBTTagList dJson = pTag.getTagList("data", 3);
-			for(int i = 0; i < data.length && i < dJson.tagCount(); i++)
+			NBTTagList dNbt = pTag.getTagList("data", 3);
+			for(int i = 0; i < data.length && i < dNbt.tagCount(); i++)
 			{
 				try
 				{
-					data[i] = dJson.getIntAt(i);
+					data[i] = dNbt.getIntAt(i);
 				} catch(Exception e)
 				{
 					BQ_Standard.logger.log(Level.ERROR, "Incorrect task progress format", e);
@@ -243,14 +232,14 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 	}
 	
 	@Override
-	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound nbt, List<UUID> users)
 	{
 		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
 		{
 			jArray.appendTag(new NBTTagString(uuid.toString()));
 		}
-		json.setTag("completeUsers", jArray);
+		nbt.setTag("completeUsers", jArray);
 		
 		NBTTagList progArray = new NBTTagList();
 		for(Entry<UUID,int[]> entry : userProgress.entrySet())
@@ -265,9 +254,9 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 			pJson.setTag("data", pArray);
 			progArray.appendTag(pJson);
 		}
-		json.setTag("userProgress", progArray);
+		nbt.setTag("userProgress", progArray);
 		
-		return json;
+		return nbt;
 	}
 	
 	@Override
@@ -331,10 +320,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		{
 			int[] tmp = userProgress.get(uuid);
 			
-			if(tmp == null || tmp.length != blockTypes.size())
-			{
-				continue;
-			}
+			if(tmp == null || tmp.length != blockTypes.size()) continue;
 			
 			for(int n = 0; n < progress.length; n++)
 			{
@@ -382,76 +368,14 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		
 		for(int[] up : userProgress.values())
 		{
-			if(up == null)
-			{
-				continue;
-			}
+			if(up == null || up.length != total.length) continue;
 			
-			int[] progress = up.length != blockTypes.size()? new int[blockTypes.size()] : up;
-			
-			for(int i = 0; i < progress.length; i++)
+			for(int i = 0; i < up.length; i++)
 			{
-				total[i] += progress[i];
+				total[i] += up[i];
 			}
 		}
 		
 		return total;
-	}
-	
-	public static class NbtBlockType
-	{
-		public Block b = Blocks.LOG;
-		public int m = -1;
-		public NBTTagCompound tags = new NBTTagCompound();
-		public int n = 1;
-		public String oreDict = "";
-		
-		public NBTTagCompound writeToNBT(NBTTagCompound json)
-		{
-			json.setString("blockID", b.getRegistryName().toString());
-			json.setInteger("meta", m);
-			json.setTag("nbt", tags);
-			json.setInteger("amount", n);
-			json.setString("oreDict", oreDict);
-			return json;
-		}
-		
-		public void readFromNBT(NBTTagCompound json)
-		{
-			b = Block.REGISTRY.getObject(new ResourceLocation(json.getString("blockID")));
-			b = b != Blocks.AIR? b : Blocks.LOG;
-			m = json.getInteger("meta");
-			n = n < 0? OreDictionary.WILDCARD_VALUE : n;
-			tags = json.getCompoundTag("nbt");
-			n = json.getInteger("amount");
-			oreDict = json.getString("oreDict");
-		}
-		
-		public BigItemStack getItemStack()
-		{
-			BigItemStack stack;
-			
-			if(b == null || Item.getItemFromBlock(b) == Items.AIR)
-			{
-				stack = new BigItemStack(ItemPlaceholder.placeholder, n, 0);
-				stack.getBaseStack().setStackDisplayName("NULL");
-				
-				if(b != null)
-				{
-					stack.getBaseStack().setStackDisplayName(b.getLocalizedName());
-					stack.GetTagCompound().setString("orig_id", Block.REGISTRY.getNameForObject(b).toString());
-				} else
-				{
-					stack.getBaseStack().setStackDisplayName("NULL");
-					stack.GetTagCompound().setString("orig_id", "NULL");
-				}
-			} else
-			{
-				stack = new BigItemStack(b, n, m);
-			}
-			
-			stack.oreDict = oreDict;
-			return stack;
-		}
 	}
 }

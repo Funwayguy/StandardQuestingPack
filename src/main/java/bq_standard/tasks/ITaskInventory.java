@@ -7,7 +7,7 @@ import net.minecraft.entity.player.EntityPlayer;
 
 import javax.annotation.Nonnull;
 
-public interface ITaskTickable extends ITask
+public interface ITaskInventory extends ITask
 {
-    void tickTask(@Nonnull DBEntry<IQuest> quest, @Nonnull EntityPlayer player);
+    void onInventoryChange(@Nonnull DBEntry<IQuest> quest, @Nonnull EntityPlayer player);
 }

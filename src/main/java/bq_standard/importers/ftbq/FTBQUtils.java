@@ -13,13 +13,10 @@ public class FTBQUtils
 {
     public static BigItemStack convertItem(NBTBase tag)
     {
-        if(tag == null)
-        {
-            return new BigItemStack(ItemStack.EMPTY);
-        } else if(tag.getId() == 8)
+        if(tag instanceof NBTTagString)
         {
             return convertItemType1(((NBTTagString)tag).getString());
-        } else if(tag.getId() == 10)
+        } else if(tag instanceof NBTTagCompound)
         {
             return convertItemType2((NBTTagCompound)tag);
         }

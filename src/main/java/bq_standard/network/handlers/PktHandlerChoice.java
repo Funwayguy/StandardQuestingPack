@@ -2,6 +2,7 @@ package bq_standard.network.handlers;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.events.DatabaseEvent.Update;
 import betterquesting.api.network.IPacketHandler;
 import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.questing.IQuest;
@@ -13,6 +14,7 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -67,6 +69,10 @@ public class PktHandlerChoice implements IPacketHandler
 		IQuest quest = QuestingAPI.getAPI(ApiReference.QUEST_DB).getValue(qID);
 		IReward reward = quest == null? null : quest.getRewards().getValue(rID);
 		
-		if(reward instanceof RewardChoice) ((RewardChoice)reward).setSelection(QuestingAPI.getQuestingUUID(player), sel);
+		if(reward instanceof RewardChoice)
+		{
+		    ((RewardChoice)reward).setSelection(QuestingAPI.getQuestingUUID(player), sel);
+            MinecraftForge.EVENT_BUS.post(new Update());
+        }
 	}
 }

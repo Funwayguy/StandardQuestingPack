@@ -10,11 +10,12 @@ public enum StandardPacketType
 	LOOT_IMPORT,
 	CHECKBOX,
 	SCORE_SYNC,
-	CHOICE;
+	CHOICE,
+    INTERACT;
 	
 	private final ResourceLocation ID;
 	
-	private StandardPacketType()
+	StandardPacketType()
 	{
 		ID = new ResourceLocation(BQ_Standard.MODID, this.toString().toLowerCase());
 	}

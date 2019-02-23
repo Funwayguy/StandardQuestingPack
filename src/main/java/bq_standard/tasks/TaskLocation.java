@@ -2,9 +2,9 @@ package bq_standard.tasks;
 
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
 import bq_standard.client.gui.tasks.PanelTaskLocation;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskLocation;
@@ -18,11 +18,12 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import org.apache.logging.log4j.Level;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class TaskLocation implements ITask, ITaskTickable
+public class TaskLocation implements ITaskTickable
 {
 	private ArrayList<UUID> completeUsers = new ArrayList<>();
 	public String name = "New Location";
@@ -33,6 +34,7 @@ public class TaskLocation implements ITask, ITaskTickable
 	public int range = -1;
 	public boolean visible = false;
 	public boolean hideInfo = false;
+	public boolean invertDistance = false;
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -74,11 +76,11 @@ public class TaskLocation implements ITask, ITaskTickable
 	}
 	
 	@Override
-	public void tickTask(IQuest quest, EntityPlayer player)
+	public void tickTask(@Nonnull DBEntry<IQuest> quest, @Nonnull EntityPlayer player)
 	{
 		if(player.ticksExisted%100 == 0) // Only auto-detect every 5 seconds
 		{
-			detect(player, quest);
+			detect(player, quest.getValue());
 		}
 	}
 	
@@ -87,12 +89,9 @@ public class TaskLocation implements ITask, ITaskTickable
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
-		if(!player.isEntityAlive() || isComplete(playerID))
-		{
-			return; // Keeps ray casting calls to a minimum
-		}
+		if(!player.isEntityAlive() || isComplete(playerID)) return;
 		
-		if(player.dimension == dim && (range <= 0 || player.getDistance(x, y, z) <= range))
+		if(player.dimension == dim && (range <= 0 || (player.getDistance(x, y, z) <= range) != invertDistance))
 		{
 			if(visible && range > 0) // Do not do ray casting with infinite range!
 			{
@@ -122,6 +121,7 @@ public class TaskLocation implements ITask, ITaskTickable
 		json.setInteger("range", range);
 		json.setBoolean("visible", visible);
 		json.setBoolean("hideInfo", hideInfo);
+		json.setBoolean("invertDistance", invertDistance);
 		
 		return json;
 	}
@@ -137,6 +137,7 @@ public class TaskLocation implements ITask, ITaskTickable
 		range = json.getInteger("range");
 		visible = json.getBoolean("visible");
 		hideInfo = json.getBoolean("hideInfo");
+		invertDistance = json.getBoolean("invertDistance");
 	}
 	
 	@Override

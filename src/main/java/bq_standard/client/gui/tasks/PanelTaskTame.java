@@ -1,0 +1,82 @@
+package bq_standard.client.gui.tasks;
+
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.properties.NativeProps;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api2.client.gui.controls.IValueIO;
+import betterquesting.api2.client.gui.misc.GuiAlign;
+import betterquesting.api2.client.gui.misc.GuiPadding;
+import betterquesting.api2.client.gui.misc.GuiTransform;
+import betterquesting.api2.client.gui.misc.IGuiRect;
+import betterquesting.api2.client.gui.panels.CanvasEmpty;
+import betterquesting.api2.client.gui.panels.content.PanelEntityPreview;
+import betterquesting.api2.client.gui.panels.content.PanelTextBox;
+import betterquesting.api2.client.gui.themes.presets.PresetColor;
+import betterquesting.api2.utils.QuestTranslation;
+import bq_standard.tasks.TaskTame;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
+import net.minecraft.util.ResourceLocation;
+
+public class PanelTaskTame extends CanvasEmpty
+{
+    private final IQuest quest;
+    private final TaskTame task;
+    
+    public PanelTaskTame(IGuiRect rect, IQuest quest, TaskTame task)
+    {
+        super(rect);
+        this.quest = quest;
+        this.task = task;
+    }
+    
+    @Override
+    public void initPanel()
+    {
+        super.initPanel();
+    
+        ResourceLocation targetRes = new ResourceLocation(task.idName);
+        Entity target;
+        
+        if(EntityList.isRegistered(targetRes))
+        {
+            target = EntityList.createEntityByIDFromName(targetRes, Minecraft.getMinecraft().world);
+            if(target != null) target.readFromNBT(task.targetTags);
+        } else
+        {
+            target = null;
+        }
+        
+        int progress = quest == null || !quest.getProperty(NativeProps.GLOBAL) ? task.getPartyProgress(QuestingAPI.getQuestingUUID(Minecraft.getMinecraft().player)) : task.getGlobalProgress();
+		String tnm = target != null? target.getName() : task.idName;
+        
+        this.addPanel(new PanelTextBox(new GuiTransform(GuiAlign.TOP_EDGE, new GuiPadding(0, 0, 0, -16), 0), QuestTranslation.translate("bq_standard.gui.tame", tnm) + " " + progress + "/" + task.required).setAlignment(1).setColor(PresetColor.TEXT_MAIN.getColor()));
+        
+        if(target != null) this.addPanel(new PanelEntityPreview(new GuiTransform(GuiAlign.FULL_BOX, new GuiPadding(0, 16, 0, 0), 0), target).setRotationDriven(new IValueIO<Float>()
+        {
+            @Override
+            public Float readValue()
+            {
+                return 15F;
+            }
+    
+            @Override
+            public void writeValue(Float value)
+            {
+            }
+        }, new IValueIO<Float>()
+        {
+            @Override
+            public Float readValue()
+            {
+                return (float)(Minecraft.getSystemTime()%30000L / 30000D * 360D);
+            }
+    
+            @Override
+            public void writeValue(Float value)
+            {
+            }
+        }));
+    }
+}

@@ -13,10 +13,10 @@ import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.storage.DBEntry;
-import bq_standard.client.gui.editors.tasks.GuiEditTaskHunt;
-import bq_standard.client.gui.tasks.PanelTaskHunt;
+import bq_standard.client.gui.editors.tasks.GuiEditTaskTame;
+import bq_standard.client.gui.tasks.PanelTaskTame;
 import bq_standard.core.BQ_Standard;
-import bq_standard.tasks.factory.FactoryTaskHunt;
+import bq_standard.tasks.factory.FactoryTaskTame;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
@@ -25,24 +25,21 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-public class TaskHunt implements ITask, IProgression<Integer>
+public class TaskTame implements ITask, IProgression<Integer>
 {
 	private final List<UUID> completeUsers = new ArrayList<>();
-	private final HashMap<UUID, Integer> userProgress = new HashMap<>();
+	public final HashMap<UUID, Integer> userProgress = new HashMap<>();
 	public String idName = "minecraft:zombie";
-	public String damageType = "";
 	public int required = 1;
 	public boolean ignoreNBT = true;
 	public boolean subtypes = true;
@@ -52,53 +49,36 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	 */
 	public NBTTagCompound targetTags = new NBTTagCompound();
 	
-	@Override
-	public ResourceLocation getFactoryID()
-	{
-		return FactoryTaskHunt.INSTANCE.getRegistryName();
-	}
-	
-	@Override
-	public boolean isComplete(UUID uuid)
-	{
-		return completeUsers.contains(uuid);
-	}
-	
-	@Override
-	public void setComplete(UUID uuid)
-	{
-		if(!completeUsers.contains(uuid))
-		{
-			completeUsers.add(uuid);
-		}
-	}
-	
-	@Override
-	public String getUnlocalisedName()
-	{
-		return BQ_Standard.MODID + ".task.hunt";
-	}
-	
-	@Override
-	public void detect(EntityPlayer player, IQuest quest)
-	{
+    @Override
+    public String getUnlocalisedName()
+    {
+        return "bq_standard.task.tame";
+    }
+    
+    @Override
+    public ResourceLocation getFactoryID()
+    {
+        return FactoryTaskTame.INSTANCE.getRegistryName();
+    }
+    
+    @Override
+    public void detect(EntityPlayer player, IQuest quest)
+    {
 	    UUID playerID = QuestingAPI.getQuestingUUID(player);
 	    
 		if(isComplete(playerID)) return;
 		
-		int progress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
+		int progress = quest == null || !quest.getProperty(NativeProps.GLOBAL) ? getPartyProgress(playerID) : getGlobalProgress();
 		
 		if(progress >= required) setComplete(playerID);
-	}
+    }
 	
-	public void onKilledByPlayer(DBEntry<IQuest> quest, EntityPlayer player, EntityLivingBase entity, DamageSource source)
+	public void onAnimalTamed(DBEntry<IQuest> quest, EntityPlayer player, EntityLivingBase entity)
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
         QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
 		
 		if(entity == null || this.isComplete(playerID)) return;
-		
-		if(damageType.length() > 0 && (source == null || !damageType.equalsIgnoreCase(source.damageType))) return;
 		
 		int progress = getUsersProgress(playerID);
 		
@@ -132,6 +112,48 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	}
 	
 	@Override
+	public boolean isComplete(UUID uuid)
+	{
+		return completeUsers.contains(uuid);
+	}
+	
+	@Override
+	public void setComplete(UUID uuid)
+	{
+		if(!completeUsers.contains(uuid))
+		{
+			completeUsers.add(uuid);
+		}
+	}
+ 
+	@Override
+	public void resetUser(UUID uuid)
+	{
+		completeUsers.remove(uuid);
+		userProgress.remove(uuid);
+	}
+ 
+	@Override
+	public void resetAll()
+	{
+		completeUsers.clear();
+		userProgress.clear();
+	}
+    
+    @Override
+    public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
+    {
+        return new PanelTaskTame(rect, quest, this);
+    }
+    
+    @Nullable
+    @Override
+    public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
+    {
+        return new GuiEditTaskTame(parent, quest, this);
+    }
+	
+	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
 		json.setString("target", idName);
@@ -139,7 +161,6 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		json.setBoolean("subtypes", subtypes);
 		json.setBoolean("ignoreNBT", ignoreNBT);
 		json.setTag("targetNBT", targetTags);
-		json.setString("damageType", damageType);
 		
 		return json;
 	}
@@ -152,7 +173,6 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		subtypes = json.getBoolean("subtypes");
 		ignoreNBT = json.getBoolean("ignoreNBT");
 		targetTags = json.getCompoundTag("targetNBT");
-		damageType = json.getString("damageType");
 	}
 	
 	@Override
@@ -214,48 +234,6 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		return json;
 	}
 	
-	/**
-	 * Returns a new editor screen for this Reward type to edit the given data
-	 */
-	@Override
-	@SideOnly(Side.CLIENT)
-	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
-	{
-	    return new GuiEditTaskHunt(parent, quest, this);
-	}
-
-	@Override
-	public void resetUser(UUID uuid)
-	{
-		completeUsers.remove(uuid);
-		userProgress.remove(uuid);
-	}
-
-	@Override
-	public void resetAll()
-	{
-		completeUsers.clear();
-		userProgress.clear();
-	}
-	
-	@Override
-	public float getParticipation(UUID uuid)
-	{
-		if(required <= 0)
-		{
-			return 1F;
-		}
-		
-		return getUsersProgress(uuid) / (float)required;
-	}
-
-	@Override
-	@SideOnly(Side.CLIENT)
-	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
-	{
-	    return new PanelTaskHunt(rect, quest, this);
-	}
-	
 	@Override
 	public void setUserProgress(UUID uuid, Integer progress)
 	{
@@ -312,5 +290,16 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		}
 		
 		return total;
+	}
+	
+	@Override
+	public float getParticipation(UUID uuid)
+	{
+		if(required <= 0)
+		{
+			return 1F;
+		}
+		
+		return getUsersProgress(uuid) / (float)required;
 	}
 }

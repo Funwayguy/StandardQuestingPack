@@ -8,12 +8,12 @@ import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.IFluidTask;
 import betterquesting.api.questing.tasks.IItemTask;
 import betterquesting.api.questing.tasks.IProgression;
-import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
 import bq_standard.client.gui.tasks.PanelTaskFluid;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskFluid;
@@ -33,10 +33,11 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.Map.Entry;
 
-public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int[]>, ITaskTickable
+public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask, IProgression<int[]>
 {
 	private final List<UUID> completeUsers = new ArrayList<>();
 	public NonNullList<FluidStack> requiredFluids = NonNullList.create();
@@ -73,35 +74,34 @@ public class TaskFluid implements ITask, IFluidTask, IItemTask, IProgression<int
 	}
 	
 	@Override
-	public void tickTask(IQuest quest, EntityPlayer player)
+	public void onInventoryChange(@Nonnull DBEntry<IQuest> quest, @Nonnull EntityPlayer player)
 	{
-		if(player.ticksExisted%60 == 0)
-		{
-			if(!consume || autoConsume)
-			{
-				detect(player, quest);
-			} else
-			{
-				boolean flag = true;
-				
-				int[] totalProgress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(QuestingAPI.getQuestingUUID(player)) : getGlobalProgress();
-				
-				for(int j = 0; j < requiredFluids.size(); j++)
-				{
-					FluidStack rStack = requiredFluids.get(j);
-					
-					if(totalProgress[j] >= rStack.amount) continue;
-					
-					flag = false;
-					break;
-				}
-				
-				if(flag)
-				{
-					setComplete(QuestingAPI.getQuestingUUID(player));
-				}
-			}
-		}
+        if(!consume || autoConsume)
+        {
+            detect(player, quest.getValue());
+        } else
+        {
+            boolean flag = true;
+            
+            int[] totalProgress = !quest.getValue().getProperty(NativeProps.GLOBAL)? getPartyProgress(QuestingAPI.getQuestingUUID(player)) : getGlobalProgress();
+            
+            for(int j = 0; j < requiredFluids.size(); j++)
+            {
+                FluidStack rStack = requiredFluids.get(j);
+                
+                if(totalProgress[j] >= rStack.amount) continue;
+                
+                flag = false;
+                break;
+            }
+            
+            if(flag)
+            {
+                setComplete(QuestingAPI.getQuestingUUID(player));
+                QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+                if(qc != null) qc.markQuestDirty(quest.getID());
+            }
+        }
 	}
 
 	@Override
