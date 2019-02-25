@@ -31,14 +31,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 
 public class HQMQuestImporter implements IImporter
 {
 	public static final HQMQuestImporter INSTANCE = new HQMQuestImporter();
 	private static final FileFilter FILTER = new FileExtensionFilter(".json");
 	
-	private static HashMap<String, HQMTask> taskConverters = new HashMap<>();
-	private static HashMap<String, HQMReward> rewardConverters = new HashMap<>();
+	private static HashMap<String, Function<JsonObject, ITask[]>> taskConverters = new HashMap<>();
+	private static HashMap<String, Function<JsonElement, IReward[]>> rewardConverters = new HashMap<>();
 	
 	public HashMap<String, HQMRep> reputations = new HashMap<>();
 	
@@ -310,32 +311,29 @@ public class HQMQuestImporter implements IImporter
 					continue;
 				} else if(!taskConverters.containsKey(tType))
 				{
-					BQ_Standard.logger.log(Level.WARN, "Unsupported HQM task \"" + tType + "\"! Skipping...");
+					BQ_Standard.logger.warn("Unsupported HQM task \"" + tType + "\"! Skipping...");
 					continue;
 				}
 				
-				List<ITask> tsks = taskConverters.get(tType).Convert(jTask);
+				ITask[] tsks = taskConverters.get(tType).apply(jTask);
 				
-				if(tsks != null && tsks.size() > 0)
+				if(tsks != null && tsks.length > 0)
 				{
 					IDatabaseNBT<ITask, NBTTagList, NBTTagList> taskReg = quest.getTasks();
-					for(ITask t : tsks)
-					{
-						taskReg.add(taskReg.nextID(), t);
-					}
+					for(ITask t : tsks) taskReg.add(taskReg.nextID(), t);
 				}
 			}
 			
-			for(Entry<String,HQMReward> entry : rewardConverters.entrySet())
+			for(Entry<String,Function<JsonElement, IReward[]>> entry : rewardConverters.entrySet())
 			{
 				if(!jQuest.has(entry.getKey()))
 				{
 					continue;
 				}
 				
-				List<IReward> rews = entry.getValue().Convert(jQuest.get(entry.getKey()));
+				IReward[] rews = entry.getValue().apply(jQuest.get(entry.getKey()));
 				
-				if(rews != null && rews.size() > 0)
+				if(rews != null && rews.length > 0)
 				{
 					IDatabaseNBT<IReward, NBTTagList, NBTTagList> rewardReg = quest.getRewards();
 					for(IReward r : rews)
@@ -378,21 +376,21 @@ public class HQMQuestImporter implements IImporter
 	
 	static
 	{
-		taskConverters.put("DETECT", new HQMTaskDetect(false));
-		taskConverters.put("CONSUME", new HQMTaskDetect(true));
-		taskConverters.put("CONSUME_QDS", new HQMTaskDetect(true));
-		taskConverters.put("KILL", new HQMTaskKill());
-		taskConverters.put("LOCATION", new HQMTaskLocation());
-		taskConverters.put("CRAFT", new HQMTaskCraft());
-		taskConverters.put("TAME", new HQMTaskTame());
-		taskConverters.put("ADVANCEMENT", new HQMTaskAdvancement());
-		taskConverters.put("BLOCK_BREAK", new HQMTaskBlockBreak());
-		taskConverters.put("BLOCK_PLACE", new HQMTaskBlockPlace());
-		taskConverters.put("REPUTATION", new HQMTaskReputaion());
+		taskConverters.put("DETECT", new HQMTaskDetect(false)::convertTask);
+		taskConverters.put("CONSUME", new HQMTaskDetect(true)::convertTask);
+		taskConverters.put("CONSUME_QDS", new HQMTaskDetect(true)::convertTask);
+		taskConverters.put("KILL", new HQMTaskKill()::convertTask);
+		taskConverters.put("LOCATION", new HQMTaskLocation()::convertTask);
+		taskConverters.put("CRAFT", new HQMTaskCraft()::convertTask);
+		taskConverters.put("TAME", new HQMTaskTame()::convertTask);
+		taskConverters.put("ADVANCEMENT", new HQMTaskAdvancement()::convertTask);
+		taskConverters.put("BLOCK_BREAK", new HQMTaskBlockBreak()::convertTask);
+		taskConverters.put("BLOCK_PLACE", new HQMTaskBlockPlace()::convertTask);
+		taskConverters.put("REPUTATION", new HQMTaskReputaion()::convertTask);
 		
-		rewardConverters.put("reward", new HQMRewardStandard());
-		rewardConverters.put("rewardchoice", new HQMRewardChoice());
-		rewardConverters.put("reputationrewards", new HQMRewardReputation());
-		rewardConverters.put("commandrewards", new HQMRewardCommand());
+		rewardConverters.put("reward", new HQMRewardStandard()::convertReward);
+		rewardConverters.put("rewardchoice", new HQMRewardChoice()::convertReward);
+		rewardConverters.put("reputationrewards", new HQMRewardReputation()::convertReward);
+		rewardConverters.put("commandrewards", new HQMRewardCommand()::convertReward);
 	}
 }

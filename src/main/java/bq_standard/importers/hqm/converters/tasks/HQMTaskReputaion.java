@@ -12,10 +12,9 @@ import com.google.gson.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HQMTaskReputaion implements HQMTask
+public class HQMTaskReputaion
 {
-    @Override
-    public List<ITask> Convert(JsonObject json)
+    public ITask[] convertTask(JsonObject json)
     {
         List<ITask> tasks = new ArrayList<>();
         
@@ -60,6 +59,6 @@ public class HQMTaskReputaion implements HQMTask
             tasks.add(task);
         }
         
-        return tasks;
+        return tasks.toArray(new ITask[0]);
     }
 }

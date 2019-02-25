@@ -10,16 +10,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.item.ItemBlock;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class HQMTaskBlockBreak implements HQMTask
+public class HQMTaskBlockBreak
 {
-    @Override
-    public List<ITask> Convert(JsonObject json)
+    public ITask[] convertTask(JsonObject json)
     {
-        List<ITask> tasks = new ArrayList<>();
-        
         TaskBlockBreak taskBreak = new TaskBlockBreak();
         
         for(JsonElement je2 : JsonHelper.GetArray(json, "blocks"))
@@ -36,8 +30,6 @@ public class HQMTaskBlockBreak implements HQMTask
             taskBreak.blockTypes.add(blockType);
         }
         
-        tasks.add(taskBreak);
-        
-        return tasks;
+        return new ITask[]{taskBreak};
     }
 }

@@ -7,30 +7,18 @@ import bq_standard.tasks.TaskCrafting;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class HQMTaskCraft implements HQMTask
+public class HQMTaskCraft
 {
-	@Override
-	public List<ITask> Convert(JsonObject json)
+	public ITask[] convertTask(JsonObject json)
 	{
-		List<ITask> tList = new ArrayList<>();
-		
 		TaskCrafting task = new TaskCrafting();
 		
 		for(JsonElement element : JsonHelper.GetArray(json, "items"))
 		{
-			if(element == null || !element.isJsonObject())
-			{
-				continue;
-			}
-			
+			if(!(element instanceof JsonObject)) continue;
 			task.requiredItems.add(HQMUtilities.HQMStackT2(element.getAsJsonObject()));
 		}
 		
-		tList.add(task);
-		
-		return tList;
+		return new ITask[]{task};
 	}
 }

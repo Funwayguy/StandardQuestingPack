@@ -1,7 +1,6 @@
 package bq_standard.importers.hqm;
 
-import betterquesting.api.placeholders.FluidPlaceholder;
-import betterquesting.api.placeholders.ItemPlaceholder;
+import betterquesting.api.placeholders.PlaceholderConverter;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.JsonHelper;
 import bq_standard.core.BQ_Standard;
@@ -57,31 +56,10 @@ public class HQMUtilities
 			}
 		}
 		
-		HQMItem hqm = itemConverters.get(iID);
+		HQMItem hqm = itemConverters.get(iID.toLowerCase());
+		if(hqm != null) return hqm.convertItem(damage, amount, tags);
 		
-		if(hqm != null)
-		{
-			return hqm.convertItem(damage, amount, tags);
-		} else if(item == null)
-		{
-			item = ItemPlaceholder.placeholder;
-			NBTTagCompound tmp = new NBTTagCompound();
-			if(tags != null)
-			{
-				tmp.setTag("orig_tag", tags);
-			}
-			tmp.setString("orig_id", iID);
-			tags = tmp;
-		}
-		
-		BigItemStack stack = new BigItemStack(item, amount, damage);
-		
-		if(tags != null)
-		{
-			stack.SetTagCompound(tags);
-		}
-		
-		return stack;
+		return PlaceholderConverter.convertItem(item, iID, amount, damage, "", tags);
 	}
 	
 	/**
@@ -121,38 +99,15 @@ public class HQMUtilities
 			}
 		}
 		
-		HQMItem hqm = itemConverters.get(iID);
+		HQMItem hqm = itemConverters.get(iID.toLowerCase());
+		if(hqm != null) return hqm.convertItem(damage, amount, tags);
 		
-		if(hqm != null)
-		{
-			return hqm.convertItem(damage, amount, tags);
-		} else if(item == null)
-		{
-			item = ItemPlaceholder.placeholder;
-			NBTTagCompound tmp = new NBTTagCompound();
-			if(tags != null)
-			{
-				tmp.setTag("orig_tag", tags);
-			}
-			tmp.setString("orig_id", iID);
-			tags = tmp;
-		}
+		BigItemStack stack = PlaceholderConverter.convertItem(item, iID, amount, damage, "", tags);
 		
-		BigItemStack stack = new BigItemStack(item, amount, damage);
-		
-		if(tags != null)
-		{
-			stack.SetTagCompound(tags);
-		}
-		
-		if(oreDict)
+		if(oreDict && item != null)
 		{
 			int[] oreId = OreDictionary.getOreIDs(stack.getBaseStack());
-			
-			if(oreId.length > 0)
-			{
-				stack.oreDict = OreDictionary.getOreName(oreId[0]);
-			}
+			if(oreId.length > 0) stack.oreDict = OreDictionary.getOreName(oreId[0]);
 		}
 		
 		return stack;
@@ -163,24 +118,15 @@ public class HQMUtilities
 		String name = JsonHelper.GetString(json, "fluid", "water");
 		Fluid fluid = FluidRegistry.getFluid(name);
 		int amount = JsonHelper.GetNumber(json, "required", 1000).intValue();
-		
-		if(fluid == null)
-		{
-			NBTTagCompound tags = new NBTTagCompound();
-			tags.setString("orig_id", name);
-			FluidStack stack = new FluidStack(FluidPlaceholder.fluidPlaceholder, amount);
-			stack.tag = tags;
-			return stack;
-		}
-		
-		return new FluidStack(fluid, amount);
+        
+        return PlaceholderConverter.convertFluid(fluid, name, amount, null);
 	}
 	
 	private static HashMap<String,HQMItem> itemConverters = new HashMap<>();
 	
 	static
 	{
-		itemConverters.put("HardcoreQuesting:hearts", new HQMItemHeart());
-		itemConverters.put("HardcoreQuesting:bags", new HQMItemBag());
+		itemConverters.put("hardcorequesting:hearts", new HQMItemHeart());
+		itemConverters.put("hardcorequesting:bags", new HQMItemBag());
 	}
 }

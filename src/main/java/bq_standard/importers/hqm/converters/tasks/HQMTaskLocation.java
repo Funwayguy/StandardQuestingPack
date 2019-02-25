@@ -9,20 +9,15 @@ import com.google.gson.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HQMTaskLocation implements HQMTask
+public class HQMTaskLocation
 {
-	@Override
-	public List<ITask> Convert(JsonObject json)
+	public ITask[] convertTask(JsonObject json)
 	{
 		List<ITask> tList = new ArrayList<>();
 		
 		for(JsonElement element : JsonHelper.GetArray(json, "locations"))
 		{
-			if(element == null || !element.isJsonObject())
-			{
-				continue;
-			}
-			
+			if(!(element instanceof JsonObject)) continue;
 			JsonObject jLoc = element.getAsJsonObject();
 			
 			TaskLocation task = new TaskLocation();
@@ -36,6 +31,6 @@ public class HQMTaskLocation implements HQMTask
 			tList.add(task);
 		}
 		
-		return tList;
+		return tList.toArray(new ITask[0]);
 	}
 }

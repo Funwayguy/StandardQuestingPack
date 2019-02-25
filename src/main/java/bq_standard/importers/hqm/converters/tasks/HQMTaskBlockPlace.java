@@ -12,10 +12,9 @@ import net.minecraft.nbt.NBTTagCompound;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HQMTaskBlockPlace implements HQMTask
+public class HQMTaskBlockPlace
 {
-    @Override
-    public List<ITask> Convert(JsonObject json)
+    public ITask[] convertTask(JsonObject json)
     {
 		List<ITask> tList = new ArrayList<>();
 		
@@ -31,6 +30,6 @@ public class HQMTaskBlockPlace implements HQMTask
 			tList.add(task);
 		}
 		
-		return tList;
+		return tList.toArray(new ITask[0]);
     }
 }

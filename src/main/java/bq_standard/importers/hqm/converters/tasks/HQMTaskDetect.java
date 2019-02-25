@@ -11,7 +11,7 @@ import com.google.gson.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HQMTaskDetect implements HQMTask
+public class HQMTaskDetect
 {
 	private final boolean consume;
 	
@@ -20,8 +20,7 @@ public class HQMTaskDetect implements HQMTask
 		this.consume = consume;
 	}
 	
-	@Override
-	public List<ITask> Convert(JsonObject json)
+	public ITask[] convertTask(JsonObject json)
 	{
 		List<ITask> tList = new ArrayList<>();
 		TaskRetrieval retTask = new TaskRetrieval();
@@ -31,11 +30,7 @@ public class HQMTaskDetect implements HQMTask
 		
 		for(JsonElement je : JsonHelper.GetArray(json, "items"))
 		{
-			if(je == null || !je.isJsonObject())
-			{
-				continue;
-			}
-			
+			if(!(je instanceof JsonObject)) continue;
 			JsonObject ji = je.getAsJsonObject();
 			
 			if(ji.has("fluid"))
@@ -47,16 +42,10 @@ public class HQMTaskDetect implements HQMTask
 			}
 		}
 		
-		if(retTask.requiredItems.size() > 0)
-		{
-			tList.add(retTask);
-		}
+		if(retTask.requiredItems.size() > 0) tList.add(retTask);
 		
-		if(fluTask.requiredFluids.size() > 0)
-		{
-			tList.add(fluTask);
-		}
+		if(fluTask.requiredFluids.size() > 0) tList.add(fluTask);
 		
-		return tList;
+		return tList.toArray(new ITask[0]);
 	}
 }

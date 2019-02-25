@@ -10,10 +10,9 @@ import net.minecraft.util.ResourceLocation;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HQMTaskAdvancement implements HQMTask
+public class HQMTaskAdvancement
 {
-    @Override
-    public List<ITask> Convert(JsonObject json)
+    public ITask[] convertTask(JsonObject json)
     {
         List<ITask> tasks = new ArrayList<>();
         
@@ -26,6 +25,6 @@ public class HQMTaskAdvancement implements HQMTask
             tasks.add(taskAdv);
         }
         
-        return tasks;
+        return tasks.toArray(new ITask[0]);
     }
 }

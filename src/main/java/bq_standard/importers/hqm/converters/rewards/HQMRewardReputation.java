@@ -12,14 +12,12 @@ import com.google.gson.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HQMRewardReputation implements HQMReward
+public class HQMRewardReputation
 {
-	@Override
-	public List<IReward> Convert(JsonElement json)
+	public IReward[] convertReward(JsonElement json)
 	{
+		if(!(json instanceof JsonArray)) return null;
 		List<IReward> rList = new ArrayList<>();
-		
-		if(!(json instanceof JsonArray)) return rList;
 		
 		for(JsonElement je : json.getAsJsonArray())
 		{
@@ -47,6 +45,6 @@ public class HQMRewardReputation implements HQMReward
 			rList.add(reward);
 		}
 		
-		return rList;
+		return rList.toArray(new IReward[0]);
 	}
 }

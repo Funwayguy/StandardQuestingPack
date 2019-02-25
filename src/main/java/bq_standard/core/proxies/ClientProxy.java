@@ -7,6 +7,7 @@ import bq_standard.client.theme.BQSTextures;
 import bq_standard.client.theme.ThemeStandard;
 import bq_standard.core.BQ_Standard;
 import bq_standard.importers.NativeFileImporter;
+import bq_standard.importers.ftbq.FTBQQuestImporter;
 import bq_standard.importers.hqm.HQMBagImporter;
 import bq_standard.importers.hqm.HQMQuestImporter;
 import bq_standard.network.handlers.PktHandlerLootClaim;
@@ -49,8 +50,7 @@ public class ClientProxy extends CommonProxy
 		QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(HQMQuestImporter.INSTANCE);
 		QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(HQMBagImporter.INSTANCE);
 		
-		// Soon...
-		//QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(FTBQQuestImporter.INSTANCE);
+		QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(FTBQQuestImporter.INSTANCE);
         
         BQSTextures.registerTextures();
 		

@@ -9,20 +9,15 @@ import com.google.gson.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HQMTaskKill implements HQMTask
+public class HQMTaskKill
 {
-	@Override
-	public List<ITask> Convert(JsonObject json)
+	public ITask[] convertTask(JsonObject json)
 	{
 		List<ITask> tList = new ArrayList<>();
 		
 		for(JsonElement je : JsonHelper.GetArray(json, "mobs"))
 		{
-			if(je == null || !je.isJsonObject())
-			{
-				continue;
-			}
-			
+			if(!(je instanceof JsonObject)) continue;
 			JsonObject jMob = je.getAsJsonObject();
 			
 			TaskHunt task = new TaskHunt();
@@ -32,6 +27,6 @@ public class HQMTaskKill implements HQMTask
 			tList.add(task);
 		}
 		
-		return tList;
+		return tList.toArray(new ITask[0]);
 	}
 }

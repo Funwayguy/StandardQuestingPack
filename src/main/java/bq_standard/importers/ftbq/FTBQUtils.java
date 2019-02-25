@@ -1,6 +1,6 @@
 package bq_standard.importers.ftbq;
 
-import betterquesting.api.placeholders.ItemPlaceholder;
+import betterquesting.api.placeholders.PlaceholderConverter;
 import betterquesting.api.utils.BigItemStack;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -30,20 +30,11 @@ public class FTBQUtils
         if(split.length <= 0) new BigItemStack(ItemStack.EMPTY);
         
         Item item = Item.REGISTRY.getObject(new ResourceLocation(split[0]));
-        int count = split.length < 2 ? 0 : Integer.parseInt(split[1]);
-        int meta = split.length < 3 ? 0 : Integer.parseInt(split[2]);
+        int count = split.length < 2 ? 1 : tryParseInt(split[1], 1);
+        int meta = split.length < 3 ? 0 : tryParseInt(split[2], 0);
         NBTTagCompound tags = null;
         
-        if(item == null)
-        {
-            tags = new NBTTagCompound();
-            tags.setString("orig_id", split[0]);
-            item = ItemPlaceholder.placeholder;
-        }
-        
-        BigItemStack stack = new BigItemStack(item, count, meta);
-        if(tags != null) stack.SetTagCompound(tags);
-        return stack;
+        return PlaceholderConverter.convertItem(item, split[0], count, meta, "", tags);
     }
     
     private static BigItemStack convertItemType2(NBTTagCompound tag)
@@ -52,22 +43,21 @@ public class FTBQUtils
         if(split.length <= 0) new BigItemStack(ItemStack.EMPTY);
         
         Item item = Item.REGISTRY.getObject(new ResourceLocation(split[0]));
-        int count = split.length < 2 ? 0 : Integer.parseInt(split[1]);
-        int meta = split.length < 3 ? 0 : Integer.parseInt(split[2]);
-        NBTTagCompound tags;
+        int count = split.length < 2 ? 1 : tryParseInt(split[1], 1);
+        int meta = split.length < 3 ? 0 : tryParseInt(split[2], 0);
+        NBTTagCompound tags = !tag.hasKey("tag", 10) ? null : tag.getCompoundTag("tag");
         
-        if(item == null)
+        return PlaceholderConverter.convertItem(item, split[0], count, meta, "", tags);
+    }
+    
+    private static int tryParseInt(String text, int def)
+    {
+        try
         {
-            tags = new NBTTagCompound();
-            tags.setString("orig_id", split[0]);
-            item = ItemPlaceholder.placeholder;
-        } else
+            return Integer.parseInt(text);
+        } catch(NumberFormatException e)
         {
-            tags = tag.getCompoundTag("tag");
+            return def;
         }
-        
-        BigItemStack stack = new BigItemStack(item, count, meta);
-        stack.SetTagCompound(tags);
-        return stack;
     }
 }
