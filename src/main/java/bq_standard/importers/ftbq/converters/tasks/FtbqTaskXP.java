@@ -1,7 +1,10 @@
 package bq_standard.importers.ftbq.converters.tasks;
 
 import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api.utils.BigItemStack;
+import bq_standard.importers.ftbq.FTBQQuestImporter;
 import bq_standard.tasks.TaskXP;
+import net.minecraft.init.Items;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class FtbqTaskXP
@@ -15,6 +18,7 @@ public class FtbqTaskXP
         TaskXP task = new TaskXP();
         task.consume = true; // FTBQ is consume only. Not really sure why it doesn't allow detect
         task.amount = (int)(tag.getLong("value") % Integer.MAX_VALUE); // Suuuure FTBQ. The vanilla int XP level can totally exceed 2.14B
+        FTBQQuestImporter.provideIcon(new BigItemStack(Items.EXPERIENCE_BOTTLE));
         
         return new ITask[]{task};
     }

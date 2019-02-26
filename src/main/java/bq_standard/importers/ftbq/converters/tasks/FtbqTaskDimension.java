@@ -1,7 +1,10 @@
 package bq_standard.importers.ftbq.converters.tasks;
 
 import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api.utils.BigItemStack;
+import bq_standard.importers.ftbq.FTBQQuestImporter;
 import bq_standard.tasks.TaskLocation;
+import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.DimensionType;
 
@@ -18,6 +21,8 @@ public class FtbqTaskDimension
         task.z = 0;
         task.visible = true;
         task.name = tag.hasKey("title", 8) ? tag.getString("title") : DimensionType.getById(task.dim).getName();
+    
+        FTBQQuestImporter.provideIcon(new BigItemStack(Blocks.PORTAL));
         
         return new ITask[]{task};
     }

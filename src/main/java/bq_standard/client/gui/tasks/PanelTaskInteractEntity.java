@@ -3,14 +3,14 @@ package bq_standard.client.gui.tasks;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.CanvasEmpty;
-import bq_standard.tasks.TaskInteractItem;
+import bq_standard.tasks.TaskInteractEntity;
 
-public class PanelTaskInteractItem extends CanvasEmpty
+public class PanelTaskInteractEntity extends CanvasEmpty
 {
-    private final TaskInteractItem task;
+    private final TaskInteractEntity task;
     private final IQuest quest;
     
-    public PanelTaskInteractItem(IGuiRect rect, IQuest quest, TaskInteractItem task)
+    public PanelTaskInteractEntity(IGuiRect rect, IQuest quest, TaskInteractEntity task)
     {
         super(rect);
         this.quest = quest;

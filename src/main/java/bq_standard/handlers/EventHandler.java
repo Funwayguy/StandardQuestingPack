@@ -121,13 +121,37 @@ public class EventHandler
     @SubscribeEvent
     public void onEntityAttack(AttackEntityEvent event)
     {
-        // TODO: Entity Interaction Task
+        if(event.getEntityPlayer() == null || event.getTarget() == null || event.getEntityPlayer().world.isRemote || event.isCanceled()) return;
+        
+		EntityPlayer player = event.getEntityPlayer();
+        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+		if(qc == null) return;
+		
+		for(DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(qc.getActiveQuests()))
+		{
+		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
+            {
+                if(task.getValue() instanceof TaskInteractEntity) ((TaskInteractEntity)task.getValue()).onInteract(entry, player, EnumHand.MAIN_HAND, player.getHeldItemMainhand(), event.getTarget(), true);
+            }
+		}
     }
     
     @SubscribeEvent
     public void onEntityInteract(EntityInteract event)
     {
-        // TODO: Entity Interaction Task
+        if(event.getEntityPlayer() == null || event.getTarget() == null || event.getEntityPlayer().world.isRemote || event.isCanceled()) return;
+        
+		EntityPlayer player = event.getEntityPlayer();
+        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+		if(qc == null) return;
+		
+		for(DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(qc.getActiveQuests()))
+		{
+		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
+            {
+                if(task.getValue() instanceof TaskInteractEntity) ((TaskInteractEntity)task.getValue()).onInteract(entry, player, event.getHand(), event.getItemStack(), event.getTarget(), true);
+            }
+		}
     }
     
 	@SubscribeEvent

@@ -1,15 +1,19 @@
 package bq_standard.importers.ftbq;
 
 import betterquesting.api.client.importers.IImporter;
+import betterquesting.api.enums.EnumQuestVisibility;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.*;
 import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.BigItemStack;
+import betterquesting.api2.storage.DBEntry;
 import betterquesting.api2.storage.IDatabaseNBT;
 import bq_standard.core.BQ_Standard;
 import bq_standard.importers.ftbq.FTBEntry.FTBEntryType;
-import bq_standard.importers.ftbq.converters.rewards.*;
+import bq_standard.importers.ftbq.converters.rewards.FtbqRewardCommand;
+import bq_standard.importers.ftbq.converters.rewards.FtbqRewardItem;
+import bq_standard.importers.ftbq.converters.rewards.FtbqRewardXP;
 import bq_standard.importers.ftbq.converters.tasks.*;
 import bq_standard.tasks.TaskCheckbox;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -19,7 +23,10 @@ import net.minecraft.nbt.NBTTagList;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.function.Function;
 
 public class FTBQQuestImporter implements IImporter
@@ -66,18 +73,20 @@ public class FTBQQuestImporter implements IImporter
     }
     
     // NOTE: FTBQ shares IDs between multiple object types (WHY?!). Check type before use
-    protected final HashMap<String, FTBEntry> ID_MAP = new HashMap<>();
+    private final HashMap<String, FTBEntry> ID_MAP = new HashMap<>();
     
     private void startImport(IQuestDatabase questDB, IQuestLineDatabase lineDB, NBTTagCompound tagIndex, File folder)
     {
         int[] indexIDs = tagIndex.getIntArray("index"); // Read out the chapter index names
         ID_MAP.clear();
+        requestIcon(null);
         
-        System.out.println("Found " + indexIDs.length + " quest line(s)");
+        HashMap<IQuest, String[]> parentMap = new HashMap<>();
+        
+        BQ_Standard.logger.info("Found " + indexIDs.length + " quest chapter(s) to import");
         for(int id : indexIDs)
         {
-            String hexName = Integer.toHexString(id);
-            System.out.println("Importing folder '" + Integer.toHexString(id) + "'...");
+            String hexName = String.format("%1$08x", id);
             
             File qlFolder = new File(folder, hexName);
             if(!qlFolder.exists() || !qlFolder.isDirectory()) continue;
@@ -86,7 +95,7 @@ public class FTBQQuestImporter implements IImporter
             
             int lineID = lineDB.nextID();
             IQuestLine questLine = lineDB.createNew(lineID);
-            ID_MAP.put(hexName, new FTBEntry(lineID, FTBEntryType.LINE));
+            ID_MAP.put(hexName, new FTBEntry(lineID, questLine, FTBEntryType.LINE));
 
             for(File questFile : contents)
             {
@@ -95,10 +104,10 @@ public class FTBQQuestImporter implements IImporter
                 NBTTagCompound qTag; // Read NBT file
                 try(FileInputStream chFis = new FileInputStream(questFile))
                 {
-                        qTag = CompressedStreamTools.readCompressed(chFis);
+                    qTag = CompressedStreamTools.readCompressed(chFis);
                 } catch(Exception e)
                 {
-                    BQ_Standard.logger.error("Failed to import quest line file entry: " + questFile, e);
+                    BQ_Standard.logger.error("Failed to import chapter file entry: " + questFile, e);
                     continue;
                 }
                 
@@ -120,11 +129,12 @@ public class FTBQQuestImporter implements IImporter
                 
                 // === QUEST DATA ===
                 
+                String hexID = questFile.getName().substring(0, questFile.getName().length() - 4);
                 int questID = questDB.nextID();
                 IQuest quest = questDB.createNew(questID);
                 IQuestLineEntry qle = questLine.createNew(questID);
-                ID_MAP.put(Integer.toHexString(qTag.getInteger("id")), new FTBEntry(questID, FTBEntryType.QUEST)); // Add this to the weird ass ID mapping
-                quest.setProperty(NativeProps.NAME, qTag.getString("title"));
+                ID_MAP.put(hexID, new FTBEntry(questID, quest, FTBEntryType.QUEST)); // Add this to the weird ass ID mapping
+                quest.setProperty(NativeProps.NAME, qTag.hasKey("title", 8) ? qTag.getString("title") : hexID);
                 NBTTagList desc = qTag.getTagList("text", 8);
                 StringBuilder sb = new StringBuilder();
                 for(int i = 0; i < desc.tagCount(); i++)
@@ -133,9 +143,32 @@ public class FTBQQuestImporter implements IImporter
                     if(i + 1 < desc.tagCount()) sb.append("\n");
                 }
                 quest.setProperty(NativeProps.DESC, sb.toString());
-                BigItemStack icoStack = FTBQUtils.convertItem(qTag.getTag("icon"));
-                if(!icoStack.getBaseStack().isEmpty()) quest.setProperty(NativeProps.ICON, icoStack); // We're not even going to try and make an equivalent dynamic icon
-                qle.setPosition(qTag.getInteger("x") * 24, qTag.getInteger("y") * 24);
+                quest.setProperty(NativeProps.VISIBILITY, EnumQuestVisibility.ALWAYS);
+                
+                if(qTag.hasKey("icon"))
+                {
+                    // We're not even going to try and make an equivalent dynamic icon (although BQ could support it later)
+                    BigItemStack icoStack = FTBQUtils.convertItem(qTag.getTag("icon"));
+                    if(!icoStack.getBaseStack().isEmpty()) quest.setProperty(NativeProps.ICON, icoStack);
+                    requestIcon(null);
+                } else
+                {
+                    requestIcon(quest);
+                }
+                qle.setPosition(qTag.getInteger("x") * 24, qTag.getInteger("y") * 24); // Fun Fact: FTBQ has a hard limit of -25 to +25 for it's quest coordinates even if you try forcing it higher
+                
+                // === PARENTING INFO ===
+                
+                int[] depend = null; // Seriously?! WTF is with this format swapping names and datatypes?!
+                if(qTag.hasKey("dependencies", 11)) depend = qTag.getIntArray("dependencies");
+                if(qTag.hasKey("dependency", 3)) depend = new int[]{qTag.getInteger("dependency")};
+                
+                if(depend != null && depend.length > 0)
+                {
+                    String[] depKeys = new String[depend.length];
+                    for(int d = 0; d < depend.length; d++) depKeys[d] = String.format("%1$08x", depend[d]);
+                    parentMap.put(quest, depKeys);
+                }
                 
                 // === IMPORT TASKS ===
                 
@@ -181,6 +214,52 @@ public class FTBQQuestImporter implements IImporter
                     }
                 }
             }
+        }
+        
+        // === PARENTING SET ===
+        
+        for(Entry<IQuest,String[]> entry : parentMap.entrySet())
+        {
+            List<Integer> qIDs = new ArrayList<>();
+            
+            for(String key : entry.getValue())
+            {
+                FTBEntry type = ID_MAP.get(key);
+                
+                if(type == null)
+                {
+                    BQ_Standard.logger.warn("Unable to find quest dependency '" + key + "'");
+                    continue;
+                } else if(type.type == FTBEntryType.VAR) continue;
+                
+                if(type.type == FTBEntryType.QUEST)
+                {
+                    qIDs.add(questDB.getID((IQuest)type.obj));
+                } else if(type.type == FTBEntryType.LINE)
+                {
+                    for(DBEntry<IQuestLineEntry> qle : ((IQuestLine)type.obj).getEntries()) qIDs.add(qle.getID());
+                }
+            }
+            
+            int[] preReq = new int[qIDs.size()];
+            for(int i = 0; i < qIDs.size(); i++) preReq[i] = qIDs.get(i);
+            entry.getKey().setRequirements(preReq);
+        }
+    }
+    
+    private static IQuest iconQuest;
+    
+    private static void requestIcon(IQuest quest)
+    {
+        iconQuest = quest;
+    }
+    
+    public static void provideIcon(BigItemStack stack)
+    {
+        if(iconQuest != null && stack != null)
+        {
+            iconQuest.setProperty(NativeProps.ICON, stack);
+            iconQuest = null; // Request fufilled
         }
     }
     

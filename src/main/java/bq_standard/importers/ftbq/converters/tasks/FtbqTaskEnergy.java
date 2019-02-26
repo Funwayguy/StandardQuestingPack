@@ -4,6 +4,9 @@ import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.placeholders.tasks.TaskPlaceholder;
 import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api.utils.BigItemStack;
+import bq_standard.importers.ftbq.FTBQQuestImporter;
+import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
@@ -26,6 +29,8 @@ public class FtbqTaskEnergy
         {
             task.readFromNBT(rfTaskTag);
         }
+    
+        FTBQQuestImporter.provideIcon(new BigItemStack(Blocks.REDSTONE_BLOCK));
         
         return new ITask[]{task};
     }

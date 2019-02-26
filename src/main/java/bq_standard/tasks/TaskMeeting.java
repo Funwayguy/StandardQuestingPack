@@ -124,11 +124,11 @@ public class TaskMeeting implements ITaskTickable
 				continue; // This isn't the exact target required
 			}
 			
-			NBTTagCompound subjectTags = new NBTTagCompound();
-			entity.writeToNBTOptional(subjectTags);
-			if(!ignoreNBT && !ItemComparison.CompareNBTTag(targetTags, subjectTags, true))
+			if(!ignoreNBT)
 			{
-				continue;
+			    NBTTagCompound subjectTags = new NBTTagCompound();
+			    entity.writeToNBTOptional(subjectTags);
+				if(!ItemComparison.CompareNBTTag(targetTags, subjectTags, true)) continue;
 			}
 			
 			n++;

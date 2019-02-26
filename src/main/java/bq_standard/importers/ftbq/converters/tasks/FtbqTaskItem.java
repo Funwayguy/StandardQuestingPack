@@ -2,6 +2,8 @@ package bq_standard.importers.ftbq.converters.tasks;
 
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.BigItemStack;
+import bq_standard.core.BQ_Standard;
+import bq_standard.importers.ftbq.FTBQQuestImporter;
 import bq_standard.importers.ftbq.FTBQUtils;
 import bq_standard.tasks.TaskRetrieval;
 import net.minecraft.nbt.NBTTagCompound;
@@ -18,9 +20,9 @@ public class FtbqTaskItem
     {
         TaskRetrieval task = new TaskRetrieval();
         task.consume = nbt.getBoolean("consume_items"); // If the default were changed to true and this was redacted then too bad. I'm not going looking for the root file just for this task
-        long count = nbt.getLong("count"); // Why this isn't per item I have no idea. Ask the FTBQ dev. Also not a fan of supporting stack counts in excess of 2 BILLION items.
+        long count = !nbt.hasKey("count") ? 1 : nbt.getLong("count"); // Why this isn't per item I have no idea. Ask the FTBQ dev. Also not a fan of supporting stack counts in excess of 2 BILLION items.
         
-        if(nbt.hasKey("item", 8) || nbt.hasKey("item, 10"))
+        if(nbt.hasKey("item", 8) || nbt.hasKey("item", 10))
         {
             BigItemStack item = FTBQUtils.convertItem(nbt.getTag("item"));
             long rem = count;
@@ -32,6 +34,8 @@ public class FtbqTaskItem
                 task.requiredItems.add(item.copy());
                 rem -= split;
             }
+            
+            FTBQQuestImporter.provideIcon(item);
         } else if(nbt.hasKey("items", 9)) // Note: Non-NBT items in this list are stored in Compound > String because... I have no idea
         {
             NBTTagList tagList = nbt.getTagList("items", 10);
@@ -56,8 +60,10 @@ public class FtbqTaskItem
                     task.requiredItems.add(item.copy());
                     rem -= split;
                 }
+                
+                FTBQQuestImporter.provideIcon(item);
             }
-        }
+        } else BQ_Standard.logger.error("Unable read item tag!");
         
         return new ITask[]{task};
     }

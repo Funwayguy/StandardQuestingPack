@@ -2,7 +2,10 @@ package bq_standard.importers.ftbq.converters.tasks;
 
 import betterquesting.api.placeholders.PlaceholderConverter;
 import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api.utils.BigItemStack;
+import bq_standard.importers.ftbq.FTBQQuestImporter;
 import bq_standard.tasks.TaskFluid;
+import net.minecraft.init.Items;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
@@ -28,6 +31,8 @@ public class FtbqTaskFluid
             task.requiredFluids.add(stack.copy());
             rem -= split;
         }
+    
+        FTBQQuestImporter.provideIcon(new BigItemStack(Items.BUCKET));
         
         return new ITask[]{task};
     }
