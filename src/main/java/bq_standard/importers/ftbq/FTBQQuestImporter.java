@@ -42,7 +42,7 @@ public class FTBQQuestImporter implements IImporter
 	{
 		return "bq_standard.importer.ftbq_quest.name";
 	}
-
+ 
 	@Override
 	public String getUnlocalisedDescription()
 	{

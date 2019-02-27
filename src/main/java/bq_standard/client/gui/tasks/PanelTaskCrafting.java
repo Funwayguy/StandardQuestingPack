@@ -13,6 +13,7 @@ import betterquesting.api2.client.gui.panels.content.PanelTextBox;
 import betterquesting.api2.client.gui.panels.lists.CanvasScrolling;
 import betterquesting.api2.client.gui.resources.colors.GuiColorStatic;
 import betterquesting.api2.client.gui.resources.textures.GuiTextureColored;
+import betterquesting.api2.client.gui.resources.textures.IGuiTexture;
 import betterquesting.api2.client.gui.resources.textures.ItemTexture;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
 import betterquesting.api2.client.gui.themes.presets.PresetIcon;
@@ -45,15 +46,18 @@ public class PanelTaskCrafting extends CanvasEmpty
         UUID uuid = QuestingAPI.getQuestingUUID(Minecraft.getMinecraft().player);
         int[] progress = quest == null || !quest.getProperty(NativeProps.GLOBAL) ? task.getPartyProgress(uuid) : task.getGlobalProgress();
         boolean isComplete = task.isComplete(uuid);
+    
+        IGuiTexture txTick = new GuiTextureColored(PresetIcon.ICON_TICK.getTexture(), new GuiColorStatic(0xFF00FF00));
+        IGuiTexture txCross = new GuiTextureColored(PresetIcon.ICON_CROSS.getTexture(), new GuiColorStatic(0xFFFF0000));
         
         this.addPanel(new PanelGeneric(new GuiRectangle(0, 0, 24, 24, 0), new ItemTexture(new BigItemStack(Blocks.CRAFTING_TABLE))));
-        this.addPanel(new PanelGeneric(new GuiRectangle(16, 16, 8, 8, 0), task.allowCraft ? new GuiTextureColored(PresetIcon.ICON_TICK.getTexture(), new GuiColorStatic(0xFF00FF00)) : new GuiTextureColored(PresetIcon.ICON_CROSS.getTexture(), new GuiColorStatic(0xFFFF0000))));
+        this.addPanel(new PanelGeneric(new GuiRectangle(16, 16, 8, 8, 0), task.allowCraft ? txTick : txCross));
         
         this.addPanel(new PanelGeneric(new GuiRectangle(32, 0, 24, 24, 0), new ItemTexture(new BigItemStack(Blocks.FURNACE))));
-        this.addPanel(new PanelGeneric(new GuiRectangle(48, 16, 8, 8, 0), task.allowSmelt ? new GuiTextureColored(PresetIcon.ICON_TICK.getTexture(), new GuiColorStatic(0xFF00FF00)) : new GuiTextureColored(PresetIcon.ICON_CROSS.getTexture(), new GuiColorStatic(0xFFFF0000))));
+        this.addPanel(new PanelGeneric(new GuiRectangle(48, 16, 8, 8, 0), task.allowSmelt ? txTick : txCross));
         
         this.addPanel(new PanelGeneric(new GuiRectangle(64, 0, 24, 24, 0), new ItemTexture(new BigItemStack(Blocks.ANVIL))));
-        this.addPanel(new PanelGeneric(new GuiRectangle(80, 16, 8, 8, 0), task.allowAnvil ? new GuiTextureColored(PresetIcon.ICON_TICK.getTexture(), new GuiColorStatic(0xFF00FF00)) : new GuiTextureColored(PresetIcon.ICON_CROSS.getTexture(), new GuiColorStatic(0xFFFF0000))));
+        this.addPanel(new PanelGeneric(new GuiRectangle(80, 16, 8, 8, 0), task.allowAnvil ? txTick : txCross));
         
         CanvasScrolling cvList = new CanvasScrolling(new GuiTransform(GuiAlign.FULL_BOX, new GuiPadding(0, 32, 8, 0), 0));
         this.addPanel(cvList);
