@@ -7,10 +7,10 @@ import betterquesting.api.enums.EnumPacketAction;
 import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api2.client.gui.GuiScreenCanvas;
-import betterquesting.api2.client.gui.controls.IValueIO;
 import betterquesting.api2.client.gui.controls.PanelButton;
 import betterquesting.api2.client.gui.controls.PanelTextField;
 import betterquesting.api2.client.gui.controls.filters.FieldFilterNumber;
+import betterquesting.api2.client.gui.controls.io.ValueFuncIO;
 import betterquesting.api2.client.gui.misc.GuiAlign;
 import betterquesting.api2.client.gui.misc.GuiPadding;
 import betterquesting.api2.client.gui.misc.GuiTransform;
@@ -64,31 +64,7 @@ public class GuiEditTaskHunt extends GuiScreenCanvas implements IVolatileScreen
             if(target != null) target.readFromNBT(task.targetTags);
         } else target = null;
         
-        this.addPanel(new PanelEntityPreview(new GuiTransform(GuiAlign.HALF_TOP, new GuiPadding(16, 32, 16, 0), 0), target).setRotationDriven(new IValueIO<Float>()
-        {
-            @Override
-            public Float readValue()
-            {
-                return 15F;
-            }
-    
-            @Override
-            public void writeValue(Float value)
-            {
-            }
-        }, new IValueIO<Float>()
-        {
-            @Override
-            public Float readValue()
-            {
-                return (float)(Minecraft.getSystemTime()%30000L / 30000D * 360D);
-            }
-    
-            @Override
-            public void writeValue(Float value)
-            {
-            }
-        })); // Preview works with null. It's fine (or should be)
+        this.addPanel(new PanelEntityPreview(new GuiTransform(GuiAlign.HALF_TOP, new GuiPadding(16, 32, 16, 0), 0), target).setRotationDriven(new ValueFuncIO<>(() -> 15F), new ValueFuncIO<>(() -> (float)(Minecraft.getSystemTime()%30000L / 30000D * 360D)))); // Preview works with null. It's fine (or should be)
         
         cvBackground.addPanel(new PanelTextBox(new GuiTransform(GuiAlign.MID_CENTER, -100, 4, 96, 12, 0), QuestTranslation.translate("bq_standard.gui.amount")).setAlignment(2).setColor(PresetColor.TEXT_MAIN.getColor()));
         cvBackground.addPanel( new PanelTextField<>(new GuiTransform(GuiAlign.MID_CENTER, 0, 0, 100, 16, 0), "" + task.required, FieldFilterNumber.INT).setCallback(value -> task.required = value));

@@ -107,7 +107,7 @@ public class HQMUtilities
 		if(oreDict && item != null)
 		{
 			int[] oreId = OreDictionary.getOreIDs(stack.getBaseStack());
-			if(oreId.length > 0) stack.oreDict = OreDictionary.getOreName(oreId[0]);
+			if(oreId.length > 0) stack.setOreDict(OreDictionary.getOreName(oreId[0]));
 		}
 		
 		return stack;

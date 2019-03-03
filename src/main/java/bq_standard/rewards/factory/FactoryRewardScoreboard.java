@@ -1,12 +1,13 @@
 package bq_standard.rewards.factory;
 
-import betterquesting.api.misc.IFactory;
+import betterquesting.api.questing.rewards.IReward;
+import betterquesting.api2.registry.IFactoryData;
 import bq_standard.core.BQ_Standard;
 import bq_standard.rewards.RewardScoreboard;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
-public class FactoryRewardScoreboard implements IFactory<RewardScoreboard>
+public class FactoryRewardScoreboard implements IFactoryData<IReward, NBTTagCompound>
 {
 	public static final FactoryRewardScoreboard INSTANCE = new FactoryRewardScoreboard();
 	
@@ -23,7 +24,7 @@ public class FactoryRewardScoreboard implements IFactory<RewardScoreboard>
 	}
 
 	@Override
-	public RewardScoreboard loadFromNBT(NBTTagCompound json)
+	public RewardScoreboard loadFromData(NBTTagCompound json)
 	{
 		RewardScoreboard reward = new RewardScoreboard();
 		reward.readFromNBT(json);

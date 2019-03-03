@@ -4,7 +4,7 @@ import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.utils.BigItemStack;
-import betterquesting.api2.client.gui.controls.IValueIO;
+import betterquesting.api2.client.gui.controls.io.ValueFuncIO;
 import betterquesting.api2.client.gui.misc.GuiAlign;
 import betterquesting.api2.client.gui.misc.GuiPadding;
 import betterquesting.api2.client.gui.misc.GuiTransform;
@@ -47,19 +47,7 @@ public class PanelTaskXP extends CanvasEmpty
         
         PanelHBarFill fillBar = new PanelHBarFill(new GuiTransform(new Vector4f(0.25F, 0.5F, 0.75F, 0.5F), new GuiPadding(0, 0, 0, -16), 0));
         fillBar.setFillColor(new GuiColorStatic(0xFF00FF00));
-        fillBar.setFillDriver(new IValueIO<Float>()
-        {
-            @Override
-            public Float readValue()
-            {
-                return xpPercent;
-            }
-            
-            @Override
-            public void writeValue(Float value)
-            {
-            }
-        });
+        fillBar.setFillDriver(new ValueFuncIO<>(() -> xpPercent));
         this.addPanel(fillBar);
         
         this.addPanel(new PanelTextBox(new GuiTransform(new Vector4f(0.25F, 0.5F, 0.75F, 0.5F), new GuiPadding(0, 4, 0, -16), -1), TextFormatting.BOLD + "" + xp + "/" + task.amount + (task.levels ? "L" : "XP")).setAlignment(1));

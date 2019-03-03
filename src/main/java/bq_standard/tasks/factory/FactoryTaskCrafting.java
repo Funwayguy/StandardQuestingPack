@@ -1,12 +1,13 @@
 package bq_standard.tasks.factory;
 
-import betterquesting.api.misc.IFactory;
+import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api2.registry.IFactoryData;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskCrafting;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
-public class FactoryTaskCrafting implements IFactory<TaskCrafting>
+public class FactoryTaskCrafting implements IFactoryData<ITask, NBTTagCompound>
 {
 	public static final FactoryTaskCrafting INSTANCE = new FactoryTaskCrafting();
 	
@@ -23,7 +24,7 @@ public class FactoryTaskCrafting implements IFactory<TaskCrafting>
 	}
 
 	@Override
-	public TaskCrafting loadFromNBT(NBTTagCompound json)
+	public TaskCrafting loadFromData(NBTTagCompound json)
 	{
 		TaskCrafting task = new TaskCrafting();
 		task.readFromNBT(json);

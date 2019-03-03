@@ -69,7 +69,7 @@ public class PanelTaskRetrieval extends CanvasEmpty
             
             sb.append(stack.getBaseStack().getDisplayName());
             
-			if(stack.oreDict.length() > 0) sb.append(" (").append(stack.oreDict).append(")");
+			if(stack.hasOreDict()) sb.append(" (").append(stack.getOreDict()).append(")");
 			
 			sb.append("\n").append(progress[i]).append("/").append(stack.stackSize).append("\n");
 			

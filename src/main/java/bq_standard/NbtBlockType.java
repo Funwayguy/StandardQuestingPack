@@ -82,7 +82,7 @@ public class NbtBlockType // TODO: Make a version of this for the base mod and g
             stack = new BigItemStack(b, n, m);
         }
         
-        stack.oreDict = oreDict;
+        stack.setOreDict(oreDict);
         return stack;
     }
 }

@@ -2,9 +2,7 @@ package bq_standard.core.proxies;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api2.client.gui.themes.IThemeRegistry;
 import bq_standard.client.theme.BQSTextures;
-import bq_standard.client.theme.ThemeStandard;
 import bq_standard.core.BQ_Standard;
 import bq_standard.importers.NativeFileImporter;
 import bq_standard.importers.ftbq.FTBQQuestImporter;
@@ -15,12 +13,9 @@ import net.minecraft.block.Block;
 import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-
-import java.awt.*;
 
 public class ClientProxy extends CommonProxy
 {
@@ -53,15 +48,6 @@ public class ClientProxy extends CommonProxy
 		QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(FTBQQuestImporter.INSTANCE);
         
         BQSTextures.registerTextures();
-		
-		IThemeRegistry themeReg = QuestingAPI.getAPI(ApiReference.THEME_REG);
-		themeReg.registerTheme(new ThemeStandard("Standard Light", new ResourceLocation("bq_standard", "textures/gui/editor_gui_light.png"), new ResourceLocation("bq_standard", "light")));
-		themeReg.registerTheme(new ThemeStandard("Standard Dark", new ResourceLocation("bq_standard", "textures/gui/editor_gui_dark.png"), new ResourceLocation("bq_standard", "dark")).setTextColor(Color.WHITE.getRGB()));
-		themeReg.registerTheme(new ThemeStandard("Stronghold", new ResourceLocation("bq_standard", "textures/gui/editor_gui_stronghold.png"), new ResourceLocation("bq_standard", "stronghold")).setTextColor(Color.WHITE.getRGB()));
-		themeReg.registerTheme(new ThemeStandard("Overworld", new ResourceLocation("bq_standard", "textures/gui/editor_gui_overworld.png"), new ResourceLocation("bq_standard", "overworld")).setTextColor(Color.WHITE.getRGB()));
-		themeReg.registerTheme(new ThemeStandard("Nether", new ResourceLocation("bq_standard", "textures/gui/editor_gui_nether.png"), new ResourceLocation("bq_standard", "nether")).setTextColor(Color.WHITE.getRGB()));
-		themeReg.registerTheme(new ThemeStandard("End", new ResourceLocation("bq_standard", "textures/gui/editor_gui_end.png"), new ResourceLocation("bq_standard", "end")).setTextColor(Color.WHITE.getRGB()));
-		themeReg.registerTheme(new ThemeStandard("Vanilla", new ResourceLocation("bq_standard", "textures/gui/editor_gui_vanilla.png"), new ResourceLocation("bq_standard", "vanilla")));
 	}
 	
 	@Override

@@ -22,6 +22,8 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StringUtils;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nullable;
@@ -94,13 +96,15 @@ public class TaskAdvancement implements ITask
     }
     
     @Override
+	@SideOnly(Side.CLIENT)
     public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
     {
         return new PanelTaskAdvancement(rect, quest, this);
     }
     
-    @Nullable
     @Override
+    @Nullable
+	@SideOnly(Side.CLIENT)
     public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
     {
         return new GuiEditTaskAdvancement(parent, quest, this);

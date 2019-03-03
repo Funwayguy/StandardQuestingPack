@@ -29,8 +29,9 @@ import net.minecraft.nbt.NBTTagString;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.StringUtils;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.Level;
 
@@ -91,7 +92,7 @@ public class TaskInteractItem implements ITask, IProgression<Integer>
         
         if(targetItem.getBaseStack().getItem() != Items.AIR)
         {
-            if(!StringUtils.isNullOrEmpty(targetItem.oreDict) && !ItemComparison.OreDictionaryMatch(targetItem.oreDict, targetItem.GetTagCompound(), item, !ignoreNBT, partialMatch))
+            if(targetItem.hasOreDict() && !ItemComparison.OreDictionaryMatch(targetItem.getOreIngredient(), targetItem.GetTagCompound(), item, !ignoreNBT, partialMatch))
             {
                 return;
             } else if(!ItemComparison.StackMatch(targetItem.getBaseStack(), item, !ignoreNBT, partialMatch))
@@ -152,13 +153,15 @@ public class TaskInteractItem implements ITask, IProgression<Integer>
 	}
     
     @Override
+	@SideOnly(Side.CLIENT)
     public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
     {
         return new PanelTaskInteractItem(rect, quest, this);
     }
     
-    @Nullable
     @Override
+    @Nullable
+	@SideOnly(Side.CLIENT)
     public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
     {
         return null;

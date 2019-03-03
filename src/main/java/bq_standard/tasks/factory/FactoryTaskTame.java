@@ -1,12 +1,13 @@
 package bq_standard.tasks.factory;
 
-import betterquesting.api.misc.IFactory;
+import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api2.registry.IFactoryData;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskTame;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
-public final class FactoryTaskTame implements IFactory<TaskTame>
+public final class FactoryTaskTame implements IFactoryData<ITask, NBTTagCompound>
 {
     public static final FactoryTaskTame INSTANCE = new FactoryTaskTame();
     
@@ -25,7 +26,7 @@ public final class FactoryTaskTame implements IFactory<TaskTame>
     }
     
     @Override
-    public TaskTame loadFromNBT(NBTTagCompound nbt)
+    public TaskTame loadFromData(NBTTagCompound nbt)
     {
         TaskTame task = new TaskTame();
         task.readFromNBT(nbt);

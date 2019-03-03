@@ -3,14 +3,17 @@ package bq_standard.core.proxies;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.network.IPacketRegistry;
-import betterquesting.api.questing.rewards.IRewardRegistry;
-import betterquesting.api.questing.tasks.ITaskRegistry;
+import betterquesting.api.questing.rewards.IReward;
+import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api2.registry.IFactoryData;
+import betterquesting.api2.registry.IRegistry;
 import bq_standard.core.BQ_Standard;
 import bq_standard.handlers.EventHandler;
 import bq_standard.network.handlers.*;
 import bq_standard.rewards.factory.*;
 import bq_standard.rewards.loot.LootRegistry;
 import bq_standard.tasks.factory.*;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.MinecraftForge;
 
 public class CommonProxy
@@ -32,28 +35,28 @@ public class CommonProxy
 	
 	public void registerExpansion()
 	{
-		ITaskRegistry taskReg = QuestingAPI.getAPI(ApiReference.TASK_REG);
-		taskReg.registerTask(FactoryTaskBlockBreak.INSTANCE);
-		taskReg.registerTask(FactoryTaskCheckbox.INSTANCE);
-		taskReg.registerTask(FactoryTaskCrafting.INSTANCE);
-		taskReg.registerTask(FactoryTaskFluid.INSTANCE);
-		taskReg.registerTask(FactoryTaskHunt.INSTANCE);
-		taskReg.registerTask(FactoryTaskLocation.INSTANCE);
-		taskReg.registerTask(FactoryTaskMeeting.INSTANCE);
-		taskReg.registerTask(FactoryTaskRetrieval.INSTANCE);
-		taskReg.registerTask(FactoryTaskScoreboard.INSTANCE);
-		taskReg.registerTask(FactoryTaskXP.INSTANCE);
-		taskReg.registerTask(FactoryTaskAdvancement.INSTANCE);
-		taskReg.registerTask(FactoryTaskTame.INSTANCE);
-		taskReg.registerTask(FactoryTaskInteractItem.INSTANCE);
-		taskReg.registerTask(FactoryTaskInteractEntity.INSTANCE);
+		IRegistry<IFactoryData<ITask, NBTTagCompound>, ITask> taskReg = QuestingAPI.getAPI(ApiReference.TASK_REG);
+		taskReg.register(FactoryTaskBlockBreak.INSTANCE);
+		taskReg.register(FactoryTaskCheckbox.INSTANCE);
+		taskReg.register(FactoryTaskCrafting.INSTANCE);
+		taskReg.register(FactoryTaskFluid.INSTANCE);
+		taskReg.register(FactoryTaskHunt.INSTANCE);
+		taskReg.register(FactoryTaskLocation.INSTANCE);
+		taskReg.register(FactoryTaskMeeting.INSTANCE);
+		taskReg.register(FactoryTaskRetrieval.INSTANCE);
+		taskReg.register(FactoryTaskScoreboard.INSTANCE);
+		taskReg.register(FactoryTaskXP.INSTANCE);
+		taskReg.register(FactoryTaskAdvancement.INSTANCE);
+		taskReg.register(FactoryTaskTame.INSTANCE);
+		taskReg.register(FactoryTaskInteractItem.INSTANCE);
+		taskReg.register(FactoryTaskInteractEntity.INSTANCE);
 
-		IRewardRegistry rewardReg = QuestingAPI.getAPI(ApiReference.REWARD_REG);
-		rewardReg.registerReward(FactoryRewardChoice.INSTANCE);
-		rewardReg.registerReward(FactoryRewardCommand.INSTANCE);
-		rewardReg.registerReward(FactoryRewardItem.INSTANCE);
-		rewardReg.registerReward(FactoryRewardScoreboard.INSTANCE);
-		rewardReg.registerReward(FactoryRewardXP.INSTANCE);
+		IRegistry<IFactoryData<IReward, NBTTagCompound>, IReward> rewardReg = QuestingAPI.getAPI(ApiReference.REWARD_REG);
+		rewardReg.register(FactoryRewardChoice.INSTANCE);
+		rewardReg.register(FactoryRewardCommand.INSTANCE);
+		rewardReg.register(FactoryRewardItem.INSTANCE);
+		rewardReg.register(FactoryRewardScoreboard.INSTANCE);
+		rewardReg.register(FactoryRewardXP.INSTANCE);
 		
 		IPacketRegistry packetReg = QuestingAPI.getAPI(ApiReference.PACKET_REG);
 		packetReg.registerHandler(new PktHandlerLootDatabase());

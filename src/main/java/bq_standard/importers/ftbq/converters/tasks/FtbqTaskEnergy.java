@@ -19,7 +19,7 @@ public class FtbqTaskEnergy
         rfTaskTag.setString("taskID", "bq_rf:rf_charge");
         rfTaskTag.setLong("rf", tag.getLong("value"));
         
-        ITask task = QuestingAPI.getAPI(ApiReference.TASK_REG).createTask(new ResourceLocation("bq_rf:rf_charge"));
+        ITask task = QuestingAPI.getAPI(ApiReference.TASK_REG).createNew(new ResourceLocation("bq_rf:rf_charge"));
         
         if(task == null)
         {

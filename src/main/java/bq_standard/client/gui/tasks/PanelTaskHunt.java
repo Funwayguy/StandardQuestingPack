@@ -3,7 +3,7 @@ package bq_standard.client.gui.tasks;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
-import betterquesting.api2.client.gui.controls.IValueIO;
+import betterquesting.api2.client.gui.controls.io.ValueFuncIO;
 import betterquesting.api2.client.gui.misc.GuiAlign;
 import betterquesting.api2.client.gui.misc.GuiPadding;
 import betterquesting.api2.client.gui.misc.GuiTransform;
@@ -53,30 +53,6 @@ public class PanelTaskHunt extends CanvasEmpty
         
         this.addPanel(new PanelTextBox(new GuiTransform(GuiAlign.TOP_EDGE, new GuiPadding(0, 0, 0, -16), 0), QuestTranslation.translate("bq_standard.gui.kill", tnm) + " " + progress + "/" + task.required).setAlignment(1).setColor(PresetColor.TEXT_MAIN.getColor()));
         
-        if(target != null) this.addPanel(new PanelEntityPreview(new GuiTransform(GuiAlign.FULL_BOX, new GuiPadding(0, 16, 0, 0), 0), target).setRotationDriven(new IValueIO<Float>()
-        {
-            @Override
-            public Float readValue()
-            {
-                return 15F;
-            }
-    
-            @Override
-            public void writeValue(Float value)
-            {
-            }
-        }, new IValueIO<Float>()
-        {
-            @Override
-            public Float readValue()
-            {
-                return (float)(Minecraft.getSystemTime()%30000L / 30000D * 360D);
-            }
-    
-            @Override
-            public void writeValue(Float value)
-            {
-            }
-        }));
+        if(target != null) this.addPanel(new PanelEntityPreview(new GuiTransform(GuiAlign.FULL_BOX, new GuiPadding(0, 16, 0, 0), 0), target).setRotationDriven(new ValueFuncIO<>(() -> 15F), new ValueFuncIO<>(() -> (float)(Minecraft.getSystemTime()%30000L / 30000D * 360D))));
     }
 }
