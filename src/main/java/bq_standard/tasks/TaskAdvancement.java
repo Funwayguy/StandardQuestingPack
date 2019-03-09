@@ -60,7 +60,6 @@ public class TaskAdvancement implements ITask
         if(!(player instanceof EntityPlayerMP) || player.getServer() == null || advID == null) return;
         
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
-        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
         
         Advancement adv = player.getServer().getAdvancementManager().getAdvancement(advID);
         PlayerAdvancements playerAdv = player.getServer().getPlayerList().getPlayerAdvancements((EntityPlayerMP)player);
@@ -68,6 +67,8 @@ public class TaskAdvancement implements ITask
         if(adv == null) return;
         
         if(playerAdv.getProgress(adv).isDone()) setComplete(playerID);
+        
+        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
         if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
     }
     

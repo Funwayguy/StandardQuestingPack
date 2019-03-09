@@ -14,6 +14,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import org.apache.logging.log4j.Level;
@@ -35,6 +36,7 @@ public class TaskLocation implements ITaskTickable
 	public boolean visible = false;
 	public boolean hideInfo = false;
 	public boolean invertDistance = false;
+	public boolean taxiCab = false;
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -91,7 +93,7 @@ public class TaskLocation implements ITaskTickable
 		
 		if(!player.isEntityAlive() || isComplete(playerID)) return;
 		
-		if(player.dimension == dim && (range <= 0 || (player.getDistance(x, y, z) <= range) != invertDistance))
+		if(player.dimension == dim && (range <= 0 || (getDistance(player) <= range) != invertDistance))
 		{
 			if(visible && range > 0) // Do not do ray casting with infinite range!
 			{
@@ -110,6 +112,18 @@ public class TaskLocation implements ITaskTickable
 		}
 	}
 	
+	private double getDistance(EntityPlayer player)
+    {
+        if(!taxiCab)
+        {
+            return player.getDistance(x, y, z);
+        } else
+        {
+            BlockPos pPos = player.getPosition();
+            return Math.abs(pPos.getX() - x) + Math.abs(pPos.getY() - y) + Math.abs(pPos.getZ() - z);
+        }
+    }
+	
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
@@ -122,6 +136,7 @@ public class TaskLocation implements ITaskTickable
 		json.setBoolean("visible", visible);
 		json.setBoolean("hideInfo", hideInfo);
 		json.setBoolean("invertDistance", invertDistance);
+		json.setBoolean("taxiCabDist", taxiCab);
 		
 		return json;
 	}
@@ -138,6 +153,7 @@ public class TaskLocation implements ITaskTickable
 		visible = json.getBoolean("visible");
 		hideInfo = json.getBoolean("hideInfo");
 		invertDistance = json.getBoolean("invertDistance");
+		taxiCab = json.getBoolean("taxiCabDist");
 	}
 	
 	@Override

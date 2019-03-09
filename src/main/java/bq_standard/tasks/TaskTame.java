@@ -256,27 +256,8 @@ public class TaskTame implements ITask, IProgression<Integer>
 	
 	public Integer getPartyProgress(UUID uuid)
 	{
-		int total = 0;
-		
 		IParty party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getUserParty(uuid);
-		
-		if(party == null)
-		{
-			return getUsersProgress(uuid);
-		} else
-		{
-			for(UUID mem : party.getMembers())
-			{
-				if(mem != null && party.getStatus(mem).ordinal() <= 0)
-				{
-					continue;
-				}
-				
-				total += getUsersProgress(mem);
-			}
-		}
-		
-		return total;
+        return getUsersProgress(party == null ? new UUID[]{uuid} : party.getMembers().toArray(new UUID[0]));
 	}
 	
 	@Override

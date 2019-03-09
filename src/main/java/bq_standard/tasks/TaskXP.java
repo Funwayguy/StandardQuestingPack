@@ -87,7 +87,6 @@ public class TaskXP implements ITask, IProgression<Long>, ITaskTickable
 	public void detect(EntityPlayer player, IQuest quest)
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
-        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
 		
 		if(isComplete(playerID)) return;
 		
@@ -97,27 +96,33 @@ public class TaskXP implements ITask, IProgression<Long>, ITaskTickable
 		long remaining = rawXP - progress;
 		long cost = Math.min(remaining, plrXP);
 		
-		if(consume)
-		{
-		    if(cost != 0)
-            {
-                progress += cost;
-                setUserProgress(playerID, progress);
-                XPHelper.addXP(player, -cost);
-                if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
-            }
-		} else
-		{
-		    if(progress != plrXP)
-            {
-                setUserProgress(playerID, plrXP);
-                if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
-            }
-		}
+		boolean changed = false;
+		
+		if(consume && cost != 0)
+        {
+            progress += cost;
+            setUserProgress(playerID, progress);
+            XPHelper.addXP(player, -cost);
+            changed = true;
+		} else if(!consume && progress != plrXP)
+        {
+            setUserProgress(playerID, plrXP);
+            changed = true;
+        }
 		
 		long totalXP = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		
-		if(totalXP >= rawXP) setComplete(playerID);
+		if(totalXP >= rawXP)
+        {
+            setComplete(playerID);
+            changed = true;
+        }
+		
+		if(changed) // Needs to be here because even if no additional progress was added, a party memeber may have completed the task anyway
+        {
+            QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+        }
 	}
 	
 	@Override
@@ -263,27 +268,8 @@ public class TaskXP implements ITask, IProgression<Long>, ITaskTickable
 
 	public Long getPartyProgress(UUID uuid)
 	{
-		long total = 0;
-		
 		IParty party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getUserParty(uuid);
-		
-		if(party == null)
-		{
-			return getUsersProgress(uuid);
-		} else
-		{
-			for(UUID mem : party.getMembers())
-			{
-				if(mem != null && party.getStatus(mem).ordinal() <= 0)
-				{
-					continue;
-				}
-				
-				total += getUsersProgress(mem);
-			}
-		}
-		
-		return total;
+        return getUsersProgress(party == null ? new UUID[]{uuid} : party.getMembers().toArray(new UUID[0]));
 	}
 	
 	@Override

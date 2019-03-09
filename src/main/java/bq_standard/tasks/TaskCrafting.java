@@ -80,10 +80,7 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
-		if(isComplete(playerID))
-		{
-			return;
-		}
+		if(isComplete(playerID)) return;
 		
 		int[] progress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		
@@ -103,6 +100,8 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 		if(flag)
 		{
 			setComplete(playerID);
+            QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
 		}
 	}
 	
@@ -126,8 +125,11 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	
 	private void onItemInternal(DBEntry<IQuest> quest, EntityPlayer player, ItemStack stack)
 	{
+	    if(stack.isEmpty()) return;
+	    
+	    System.out.println("Created item: " + stack.writeToNBT(new NBTTagCompound()));
+	    
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
-        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
 		
 		if(isComplete(playerID)) return;
 		
@@ -138,14 +140,11 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 		{
 			BigItemStack rStack = requiredItems.get(i);
 			
-			if(progress[i] >= rStack.stackSize)
-			{
-				continue;
-			}
+			if(progress[i] >= rStack.stackSize) continue;
 			
 			if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.getOreIngredient(), rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
 			{
-				progress[i] += stack.getCount();
+				progress[i] += stack.getCount(); // Clamp?
 				updated = true;
 			}
 		}
@@ -153,6 +152,7 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 		if(updated)
         {
             setUserProgress(playerID, progress);
+            QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
             if(qc != null) qc.markQuestDirty(quest.getID());
         }
 		
@@ -333,10 +333,7 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 		{
 			int[] tmp = userProgress.get(uuid);
 			
-			if(tmp == null || tmp.length != requiredItems.size())
-			{
-				continue;
-			}
+			if(tmp == null || tmp.length != requiredItems.size()) continue;
 			
 			for(int n = 0; n < progress.length; n++)
 			{
@@ -349,32 +346,8 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	
 	public int[] getPartyProgress(UUID uuid)
 	{
-		int[] total = new int[requiredItems.size()];
-		
 		IParty party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getUserParty(uuid);
-		
-		if(party == null)
-		{
-			return getUsersProgress(uuid);
-		} else
-		{
-			for(UUID mem : party.getMembers())
-			{
-				if(mem != null && party.getStatus(mem).ordinal() <= 0)
-				{
-					continue;
-				}
-
-				int[] progress = getUsersProgress(mem);
-				
-				for(int i = 0; i < progress.length; i++)
-				{
-					total[i] += progress[i];
-				}
-			}
-		}
-		
-		return total;
+        return getUsersProgress(party == null ? new UUID[]{uuid} : party.getMembers().toArray(new UUID[0]));
 	}
 	
 	@Override
@@ -384,16 +357,11 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 		
 		for(int[] up : userProgress.values())
 		{
-			if(up == null)
-			{
-				continue;
-			}
+			if(up == null || up.length != requiredItems.size()) continue;
 			
-			int[] progress = up.length != requiredItems.size()? new int[requiredItems.size()] : up;
-			
-			for(int i = 0; i < progress.length; i++)
+			for(int i = 0; i < up.length; i++)
 			{
-				total[i] += progress[i];
+				total[i] += up[i];
 			}
 		}
 		

@@ -32,11 +32,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.UUID;
 
 public class TaskRetrieval implements ITaskInventory, IProgression<int[]>, IItemTask
 {
@@ -46,7 +43,7 @@ public class TaskRetrieval implements ITaskInventory, IProgression<int[]>, IItem
 	public boolean partialMatch = true;
 	public boolean ignoreNBT = false;
 	public boolean consume = true;
-	public boolean idvDetect = true;
+	public boolean groupDetect = false;
 	public boolean autoConsume = false;
 	
 	@Override
@@ -82,28 +79,9 @@ public class TaskRetrieval implements ITaskInventory, IProgression<int[]>, IItem
         if(!consume || autoConsume)
         {
             detect(player, quest.getValue());
-        } else
-        {
-            boolean flag = true;
-            
-            int[] totalProgress = !quest.getValue().getProperty(NativeProps.GLOBAL)? getPartyProgress(QuestingAPI.getQuestingUUID(player)) : getGlobalProgress();
-            for(int j = 0; j < requiredItems.size(); j++)
-            {
-                BigItemStack rStack = requiredItems.get(j);
-                
-                if(totalProgress[j] >= rStack.stackSize) continue;
-                
-                flag = false;
-                break;
-            }
-            
-            if(flag)
-            {
-                setComplete(QuestingAPI.getQuestingUUID(player));
-            }
         }
     }
-
+    
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
@@ -114,23 +92,37 @@ public class TaskRetrieval implements ITaskInventory, IProgression<int[]>, IItem
 		int[] progress = this.getUsersProgress(playerID);
 		boolean updated = false;
 		
+		if(!consume)
+        {
+            if(groupDetect) // Reset all detect progress
+            {
+                Arrays.fill(progress, 0);
+            } else
+            {
+                for(int i = 0; i < progress.length; i++)
+                {
+                    if(progress[i] != 0 && progress[i] < requiredItems.get(i).stackSize) // Only reset progress for incomplete entries
+                    {
+                        progress[i] = 0;
+                        updated = true;
+                    }
+                }
+            }
+        }
+		
 		for(int i = 0; i < player.inventory.getSizeInventory(); i++)
 		{
+            ItemStack stack = player.inventory.getStackInSlot(i);
+            if(stack.isEmpty()) continue;
+            int remStack = stack.getCount(); // Allows the stack detection to split across multiple requirements
+            
 			for(int j = 0; j < requiredItems.size(); j++)
 			{
-				ItemStack stack = player.inventory.getStackInSlot(i);
-				
-				if(stack.isEmpty())
-				{
-					break;
-				}
-				
 				BigItemStack rStack = requiredItems.get(j);
 				
 				if(progress[j] >= rStack.stackSize) continue;
 				
 				int remaining = rStack.stackSize - progress[j];
-				if(remaining <= 0) continue;
 				
 				if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.getOreIngredient(), rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
 				{
@@ -140,7 +132,9 @@ public class TaskRetrieval implements ITaskInventory, IProgression<int[]>, IItem
 						progress[j] += removed.getCount();
 					} else
 					{
-						progress[j] += Math.min(remaining, stack.getCount());
+					    int temp = Math.min(remaining, remStack);
+					    remStack -= temp;
+						progress[j] += temp;
 					}
 					
 					updated = true;
@@ -148,25 +142,7 @@ public class TaskRetrieval implements ITaskInventory, IProgression<int[]>, IItem
 			}
 		}
 		
-		if(!consume && idvDetect) // Resets incomplete detections
-		{
-			for(int i = 0; i < progress.length; i++)
-			{
-				if(progress[i] != 0 && progress[i] < requiredItems.get(i).stackSize)
-				{
-					progress[i] = 0;
-					updated = true;
-				}
-			}
-		}
-		
-		boolean syncMe = false;
-		
-		if(updated && (consume || idvDetect))
-		{
-            setUserProgress(playerID, progress);
-            syncMe = true;
-		}
+		if(updated) setUserProgress(playerID, progress);
 		
 		boolean hasAll = true;
 		int[] totalProgress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
@@ -184,10 +160,10 @@ public class TaskRetrieval implements ITaskInventory, IProgression<int[]>, IItem
 		if(hasAll)
 		{
 			setComplete(playerID);
-			syncMe = true;
+			updated = true;
 		}
 		
-		if(syncMe)
+		if(updated)
         {
             QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
             if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
@@ -200,7 +176,7 @@ public class TaskRetrieval implements ITaskInventory, IProgression<int[]>, IItem
 		json.setBoolean("partialMatch", partialMatch);
 		json.setBoolean("ignoreNBT", ignoreNBT);
 		json.setBoolean("consume", consume);
-		json.setBoolean("groupDetect", !idvDetect);
+		json.setBoolean("groupDetect", groupDetect);
 		json.setBoolean("autoConsume", autoConsume);
 		
 		NBTTagList itemArray = new NBTTagList();
@@ -219,7 +195,7 @@ public class TaskRetrieval implements ITaskInventory, IProgression<int[]>, IItem
 		partialMatch = json.getBoolean("partialMatch");
 		ignoreNBT = json.getBoolean("ignoreNBT");
 		consume = json.getBoolean("consume");
-		idvDetect = !json.getBoolean("groupDetect");
+		groupDetect = json.getBoolean("groupDetect");
 		autoConsume = json.getBoolean("autoConsume");
 		
 		requiredItems.clear();
@@ -375,9 +351,9 @@ public class TaskRetrieval implements ITaskInventory, IProgression<int[]>, IItem
 	@Override
 	public ItemStack submitItem(UUID owner, IQuest quest, ItemStack input)
 	{
-		ItemStack stack = input.copy();
+		if(owner == null || input.isEmpty() || !consume || isComplete(owner)) return input;
 		
-		if(owner == null || stack.isEmpty() || !consume || isComplete(owner)) return stack;
+		ItemStack stack = input.copy();
 		
 		int[] progress = getUsersProgress(owner);
 		boolean updated = false;
@@ -432,54 +408,27 @@ public class TaskRetrieval implements ITaskInventory, IProgression<int[]>, IItem
 		{
 			int[] tmp = userProgress.get(uuid);
 			
-			if(tmp == null || tmp.length != requiredItems.size())
-			{
-				continue;
-			}
+			if(tmp == null || tmp.length != requiredItems.size()) continue;
 			
 			for(int n = 0; n < progress.length; n++)
 			{
-				progress[n] += tmp[n];
+			    if(!consume)
+                {
+                    progress[n] = Math.max(progress[n], tmp[n]);
+                } else
+                {
+				    progress[n] += tmp[n];
+                }
 			}
 		}
 		
-		return progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
+		return progress;
 	}
 	
 	public int[] getPartyProgress(UUID uuid)
 	{
-		int[] total = new int[requiredItems.size()];
-		
 		IParty party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getUserParty(uuid);
-		
-		if(party == null)
-		{
-			return getUsersProgress(uuid);
-		} else
-		{
-			for(UUID mem : party.getMembers())
-			{
-				if(mem != null && party.getStatus(mem).ordinal() <= 0)
-				{
-					continue;
-				}
-
-				int[] progress = getUsersProgress(mem);
-				
-				for(int i = 0; i < progress.length; i++)
-				{
-					if(idvDetect)
-					{
-						total[i] = Math.max(total[i], progress[i]);
-					} else
-					{
-						total[i] += progress[i];
-					}
-				}
-			}
-		}
-		
-		return total;
+        return getUsersProgress(party == null ? new UUID[]{uuid} : party.getMembers().toArray(new UUID[0]));
 	}
 
 	@Override
@@ -489,21 +438,16 @@ public class TaskRetrieval implements ITaskInventory, IProgression<int[]>, IItem
 		
 		for(int[] up : userProgress.values())
 		{
-			if(up == null)
-			{
-				continue;
-			}
+			if(up == null || up.length != requiredItems.size()) continue;
 			
-			int[] progress = up.length != requiredItems.size()? new int[requiredItems.size()] : up;
-			
-			for(int i = 0; i < progress.length; i++)
+			for(int i = 0; i < up.length; i++)
 			{
-				if(idvDetect)
+				if(!consume)
 				{
-					total[i] = Math.max(total[i], progress[i]);
+					total[i] = Math.max(total[i], up[i]);
 				} else
 				{
-					total[i] += progress[i];
+					total[i] += up[i];
 				}
 			}
 		}

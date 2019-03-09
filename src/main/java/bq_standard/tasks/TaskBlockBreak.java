@@ -84,31 +84,21 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
-		if(isComplete(playerID))
-		{
-			return;
-		}
+		if(isComplete(playerID)) return;
 		
-		boolean flag = true;
 		int[] progress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		
 		for(int j = 0; j < blockTypes.size(); j++)
 		{
 			NbtBlockType block = blockTypes.get(j);
 			
-			if(block == null || progress[j] >= block.n)
-			{
-				continue;
-			}
-			
-			flag = false;
-			break;
+			if(block == null || progress[j] >= block.n) continue;
+			return;
 		}
 		
-		if(flag)
-		{
-			setComplete(playerID);
-		}
+        setComplete(playerID);
+        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+        if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
 	}
 	
 	public void onBlockBreak(DBEntry<IQuest> quest, EntityPlayer player, IBlockState state, BlockPos pos)
@@ -133,7 +123,7 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 				setUserProgress(player.getUniqueID(), progress);
                 QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
                 if(qc != null) qc.markQuestDirty(quest.getID());
-				break;
+				break; // NOTE: We're only tracking one break at a time so doing all the progress setting above is fine
 			}
 		}
 		
@@ -333,32 +323,8 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 	
 	public int[] getPartyProgress(UUID uuid)
 	{
-		int[] total = new int[blockTypes.size()];
-		
 		IParty party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getUserParty(uuid);
-		
-		if(party == null)
-		{
-			return getUsersProgress(uuid);
-		} else
-		{
-			for(UUID mem : party.getMembers())
-			{
-				if(mem != null && party.getStatus(mem).ordinal() <= 0)
-				{
-					continue;
-				}
-
-				int[] progress = getUsersProgress(mem);
-				
-				for(int i = 0; i < progress.length; i++)
-				{
-					total[i] += progress[i];
-				}
-			}
-		}
-		
-		return total;
+        return getUsersProgress(party == null ? new UUID[]{uuid} : party.getMembers().toArray(new UUID[0]));
 	}
 	
 	@Override

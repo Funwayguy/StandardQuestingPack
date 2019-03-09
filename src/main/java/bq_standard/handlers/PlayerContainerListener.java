@@ -21,7 +21,7 @@ import java.util.UUID;
 
 public class PlayerContainerListener implements IContainerListener
 {
-    private static HashMap<UUID, PlayerContainerListener> LISTEN_MAP = new HashMap<>();
+    private static final HashMap<UUID, PlayerContainerListener> LISTEN_MAP = new HashMap<>();
     
     static void refreshListener(@Nonnull EntityPlayer player)
     {

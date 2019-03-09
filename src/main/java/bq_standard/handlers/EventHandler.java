@@ -118,7 +118,7 @@ public class EventHandler
         QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(StandardPacketType.INTERACT.GetLocation(), nbt));
     }
     
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onEntityAttack(AttackEntityEvent event)
     {
         if(event.getEntityPlayer() == null || event.getTarget() == null || event.getEntityPlayer().world.isRemote || event.isCanceled()) return;
@@ -136,7 +136,7 @@ public class EventHandler
 		}
     }
     
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onEntityInteract(EntityInteract event)
     {
         if(event.getEntityPlayer() == null || event.getTarget() == null || event.getEntityPlayer().world.isRemote || event.isCanceled()) return;
@@ -154,7 +154,7 @@ public class EventHandler
 		}
     }
     
-	@SubscribeEvent
+	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void onItemCrafted(ItemCraftedEvent event)
 	{
 		if(event.player == null || event.player.world.isRemote) return;
@@ -171,7 +171,7 @@ public class EventHandler
 		}
 	}
 	
-	@SubscribeEvent
+	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void onItemSmelted(ItemSmeltedEvent event)
 	{
 		if(event.player == null || event.player.world.isRemote) return;
@@ -188,7 +188,7 @@ public class EventHandler
 		}
 	}
 	
-	@SubscribeEvent
+	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void onItemAnvil(AnvilRepairEvent event)
 	{
 		if(event.getEntityPlayer() == null || event.getEntityPlayer().world.isRemote) return;
