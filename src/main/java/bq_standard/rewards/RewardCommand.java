@@ -1,5 +1,13 @@
 package bq_standard.rewards;
 
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.rewards.IReward;
+import betterquesting.api2.client.gui.misc.IGuiRect;
+import betterquesting.api2.client.gui.panels.IGuiPanel;
+import bq_standard.AdminExecute;
+import bq_standard.client.gui.rewards.PanelRewardCommand;
+import bq_standard.rewards.factory.FactoryRewardCommand;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
@@ -11,15 +19,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.client.gui.misc.IGuiEmbedded;
-import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.jdoc.IJsonDoc;
-import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.rewards.IReward;
-import bq_standard.AdminExecute;
-import bq_standard.client.gui.rewards.GuiRewardCommand;
-import bq_standard.rewards.factory.FactoryRewardCommand;
 
 public class RewardCommand implements IReward
 {
@@ -59,31 +58,17 @@ public class RewardCommand implements IReward
 		
 		if(viaPlayer)
 		{
-			server.addScheduledTask(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					server.getCommandManager().executeCommand(new AdminExecute(player), finCom);
-				}
-			});
+			server.addScheduledTask(() -> server.getCommandManager().executeCommand(new AdminExecute(player), finCom));
 		} else
 		{
 			final RewardCommandSender cmdSender = new RewardCommandSender(player.worldObj, (int)player.posX, (int)player.posY, (int)player.posZ);
 			
-			server.addScheduledTask(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					server.getCommandManager().executeCommand(cmdSender, finCom);
-				}
-			});
+			server.addScheduledTask(() -> server.getCommandManager().executeCommand(cmdSender, finCom));
 		}
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json)
 	{
 		command = json.getString("command");
 		hideCmd = json.getBoolean("hideCommand");
@@ -91,7 +76,7 @@ public class RewardCommand implements IReward
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
 		json.setString("command", command);
 		json.setBoolean("hideCommand", hideCmd);
@@ -100,9 +85,9 @@ public class RewardCommand implements IReward
 	}
 	
 	@Override
-	public IGuiEmbedded getRewardGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	public IGuiPanel getRewardGui(IGuiRect rect, IQuest quest)
 	{
-		return new GuiRewardCommand(this, posX, posY, sizeX, sizeY);
+	    return new PanelRewardCommand(rect, quest, this);
 	}
 	
 	@Override
@@ -172,11 +157,5 @@ public class RewardCommand implements IReward
 		{
 			return world.getMinecraftServer();
 		}
-	}
-
-	@Override
-	public IJsonDoc getDocumentation()
-	{
-		return null;
 	}
 }

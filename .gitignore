@@ -212,3 +212,16 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+
+#############
+## IntelliJ
+#############
+
+*.iml
+.gradle/
+.idea/
+jars/
+classes/
+out/
+libs/

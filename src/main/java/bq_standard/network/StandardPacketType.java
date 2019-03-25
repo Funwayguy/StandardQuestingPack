@@ -1,7 +1,7 @@
 package bq_standard.network;
 
-import net.minecraft.util.ResourceLocation;
 import bq_standard.core.BQ_Standard;
+import net.minecraft.util.ResourceLocation;
 
 public enum StandardPacketType
 {
@@ -10,11 +10,12 @@ public enum StandardPacketType
 	LOOT_IMPORT,
 	CHECKBOX,
 	SCORE_SYNC,
-	CHOICE;
+	CHOICE,
+    INTERACT;
 	
 	private final ResourceLocation ID;
 	
-	private StandardPacketType()
+	StandardPacketType()
 	{
 		ID = new ResourceLocation(BQ_Standard.MODID, this.toString().toLowerCase());
 	}

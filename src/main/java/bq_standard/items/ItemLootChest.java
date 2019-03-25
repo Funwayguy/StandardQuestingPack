@@ -1,7 +1,14 @@
 package bq_standard.items;
 
-import java.util.ArrayList;
-import java.util.List;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.network.QuestingPacket;
+import betterquesting.api.properties.NativeProps;
+import betterquesting.api.utils.BigItemStack;
+import bq_standard.core.BQ_Standard;
+import bq_standard.network.StandardPacketType;
+import bq_standard.rewards.loot.LootGroup;
+import bq_standard.rewards.loot.LootRegistry;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,15 +25,9 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.network.QuestingPacket;
-import betterquesting.api.properties.NativeProps;
-import betterquesting.api.utils.BigItemStack;
-import bq_standard.core.BQ_Standard;
-import bq_standard.network.StandardPacketType;
-import bq_standard.rewards.loot.LootGroup;
-import bq_standard.rewards.loot.LootRegistry;
+
+import javax.annotation.Nonnull;
+import java.util.List;
 
 public class ItemLootChest extends Item
 {
@@ -34,6 +35,7 @@ public class ItemLootChest extends Item
 	{
 		this.setMaxStackSize(1);
 		this.setUnlocalizedName("bq_standard.loot_chest");
+		this.setCreativeTab(QuestingAPI.getAPI(ApiReference.CREATIVE_TAB));
 	}
 
     /**
@@ -44,7 +46,7 @@ public class ItemLootChest extends Item
     {
 		if(hand != EnumHand.MAIN_HAND)
 		{
-			return new ActionResult<ItemStack>(EnumActionResult.PASS, stack);
+			return new ActionResult<>(EnumActionResult.PASS, stack);
 		}
 		
     	if(stack.getItemDamage() >= 102)
@@ -53,18 +55,18 @@ public class ItemLootChest extends Item
     		{
     			player.openGui(BQ_Standard.instance, 0, world, (int)player.posX, (int)player.posY, (int)player.posZ);
     		}
-			return new ActionResult<ItemStack>(EnumActionResult.PASS, stack);
+			return new ActionResult<>(EnumActionResult.PASS, stack);
     	} else if(!world.isRemote)
     	{
     		LootGroup group;
     		if(stack.getItemDamage() == 101)
     		{
-    			group = LootRegistry.getWeightedGroup(itemRand.nextFloat(), itemRand);
+    			group = LootRegistry.INSTANCE.getWeightedGroup(itemRand.nextFloat(), itemRand);
     		} else
     		{
-    			group = LootRegistry.getWeightedGroup(MathHelper.clamp_int(stack.getItemDamage(), 0, 100)/100F, itemRand);
+    			group = LootRegistry.INSTANCE.getWeightedGroup(MathHelper.clamp_int(stack.getItemDamage(), 0, 100)/100F, itemRand);
     		}
-	    	ArrayList<BigItemStack> loot = new ArrayList<BigItemStack>();
+	    	List<BigItemStack> loot;
 	    	String title = "Dungeon Loot";
 	    	
 	    	if(group == null)
@@ -108,10 +110,10 @@ public class ItemLootChest extends Item
     		stack.stackSize--;
     	}
     	
-    	return new ActionResult<ItemStack>(EnumActionResult.PASS, stack);
+    	return new ActionResult<>(EnumActionResult.PASS, stack);
     }
 	
-	public void sendGui(EntityPlayerMP player, ArrayList<BigItemStack> loot, String title)
+	private void sendGui(EntityPlayerMP player, List<BigItemStack> loot, String title)
 	{
 		NBTTagCompound tags = new NBTTagCompound();
 		tags.setString("title", title);
@@ -136,17 +138,20 @@ public class ItemLootChest extends Item
     /**
      * returns a list of items with the same ID, but different meta (eg: dye returns 16 items)
      */
+	@Override
 	@SideOnly(Side.CLIENT)
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public void getSubItems(Item item, CreativeTabs tab, List list)
+    public void getSubItems(@Nonnull Item item, CreativeTabs tab, List<ItemStack> list)
     {
-        list.add(new ItemStack(item, 1, 0));
-        list.add(new ItemStack(item, 1, 25));
-        list.add(new ItemStack(item, 1, 50));
-        list.add(new ItemStack(item, 1, 75));
-        list.add(new ItemStack(item, 1, 100));
-        list.add(new ItemStack(item, 1, 101));
-        list.add(new ItemStack(item, 1, 102));
+    	if(tab == CreativeTabs.SEARCH || tab == this.getCreativeTab())
+		{
+			list.add(new ItemStack(this, 1, 0));
+			list.add(new ItemStack(this, 1, 25));
+			list.add(new ItemStack(this, 1, 50));
+			list.add(new ItemStack(this, 1, 75));
+			list.add(new ItemStack(this, 1, 100));
+			list.add(new ItemStack(this, 1, 101));
+			list.add(new ItemStack(this, 1, 102));
+		}
     }
 	
 	@Override
@@ -159,21 +164,21 @@ public class ItemLootChest extends Item
     /**
      * allows items to add custom lines of information to the mouseover description
      */
+    @Override
 	@SideOnly(Side.CLIENT)
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public void addInformation(ItemStack stack, EntityPlayer player, List list, boolean advanced)
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltip, boolean advanced)
     {
 		if(stack.getItemDamage() > 101)
 		{
-			list.add(I18n.format("betterquesting.btn.edit"));
+			tooltip.add(I18n.format("betterquesting.btn.edit"));
 		} else if(QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
 		{
 			if(stack.getItemDamage() == 101)
 			{
-				list.add(I18n.format("bq_standard.tooltip.loot_chest", "???"));
+				tooltip.add(I18n.format("bq_standard.tooltip.loot_chest", "???"));
 			} else
 			{
-				list.add(I18n.format("bq_standard.tooltip.loot_chest", MathHelper.clamp_int(stack.getItemDamage(), 0, 100) + "%"));
+				tooltip.add(I18n.format("bq_standard.tooltip.loot_chest", MathHelper.clamp_int(stack.getItemDamage(), 0, 100) + "%"));
 			}
 		}
     }

@@ -1,13 +1,22 @@
 package bq_standard.tasks;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.utils.ItemComparison;
+import betterquesting.api2.cache.CapabilityProviderQuestCache;
+import betterquesting.api2.cache.QuestCache;
+import betterquesting.api2.client.gui.misc.IGuiRect;
+import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
+import bq_standard.client.gui.editors.tasks.GuiEditTaskMeeting;
+import bq_standard.client.gui.tasks.PanelTaskMeeting;
+import bq_standard.core.BQ_Standard;
+import bq_standard.tasks.factory.FactoryTaskMeeting;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
@@ -15,24 +24,15 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.client.gui.misc.IGuiEmbedded;
-import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.jdoc.IJsonDoc;
-import betterquesting.api.properties.NativeProps;
-import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.tasks.ITask;
-import betterquesting.api.questing.tasks.ITickableTask;
-import betterquesting.api.utils.ItemComparison;
-import bq_standard.client.gui.editors.GuiMeetingEditor;
-import bq_standard.client.gui.tasks.GuiTaskMeeting;
-import bq_standard.core.BQ_Standard;
-import bq_standard.tasks.factory.FactoryTaskMeeting;
 
-public class TaskMeeting implements ITask, ITickableTask
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+public class TaskMeeting implements ITaskTickable
 {
-	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
+	private final List<UUID> completeUsers = new ArrayList<>();
 	
 	public String idName = "Villager";
 	public int range = 4;
@@ -43,7 +43,7 @@ public class TaskMeeting implements ITask, ITickableTask
 	/**
 	 * NBT representation of the intended target. Used only for NBT comparison checks
 	 */
-	public NBTTagCompound targetTags;
+	public NBTTagCompound targetTags = new NBTTagCompound();
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -85,11 +85,11 @@ public class TaskMeeting implements ITask, ITickableTask
 	}
 	
 	@Override
-	public void updateTask(EntityPlayer player, IQuest quest)
+	public void tickTask(@Nonnull DBEntry<IQuest> quest, @Nonnull EntityPlayer player)
 	{
-		if(player.ticksExisted%60 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
+		if(player.ticksExisted%60 == 0)
 		{
-			detect(player, quest);
+			detect(player, quest.getValue());
 		}
 	}
 	
@@ -98,27 +98,21 @@ public class TaskMeeting implements ITask, ITickableTask
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
-		if(!player.isEntityAlive() || isComplete(playerID))
-		{
-			return;
-		}
+		if(!player.isEntityAlive() || isComplete(playerID)) return;
 		
 		List<Entity> list = player.worldObj.getEntitiesWithinAABBExcludingEntity(player, player.getEntityBoundingBox().expand(range, range, range));
-		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.NAME_TO_CLASS.get(idName);
+		Class<? extends Entity> target = EntityList.NAME_TO_CLASS.get(idName);
 		
-		if(target == null)
-		{
-			return;
-		}
+		if(target == null) return;
 		
 		int n = 0;
 		
 		for(Entity entity : list)
 		{
 			Class<? extends Entity> subject = entity.getClass();
-			String subjectID = subject == null? null : EntityList.CLASS_TO_NAME.get(subject);
+			String subjectID = EntityList.getEntityString(entity);
 			
-			if(subject == null || subjectID == null)
+			if(subjectID == null)
 			{
 				continue;
 			} else if(subtypes && !target.isAssignableFrom(subject))
@@ -129,11 +123,11 @@ public class TaskMeeting implements ITask, ITickableTask
 				continue; // This isn't the exact target required
 			}
 			
-			NBTTagCompound subjectTags = new NBTTagCompound();
-			entity.writeToNBTOptional(subjectTags);
-			if(!ignoreNBT && !ItemComparison.CompareNBTTag(targetTags, subjectTags, true))
+			if(!ignoreNBT)
 			{
-				continue;
+			    NBTTagCompound subjectTags = new NBTTagCompound();
+			    entity.writeToNBTOptional(subjectTags);
+				if(!ItemComparison.CompareNBTTag(targetTags, subjectTags, true)) continue;
 			}
 			
 			n++;
@@ -141,22 +135,16 @@ public class TaskMeeting implements ITask, ITickableTask
 			if(n >= amount)
 			{
 				setComplete(playerID);
+                QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+                if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
 				return;
 			}
 		}
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			return this.writeProgressToJson(json);
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return json;
-		}
-		
 		json.setString("target", idName);
 		json.setInteger("range", range);
 		json.setInteger("amount", amount);
@@ -168,26 +156,18 @@ public class TaskMeeting implements ITask, ITickableTask
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			this.readProgressFromJson(json);
-			return;
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return;
-		}
-		
-		idName = json.hasKey("target", 8) ? json.getString("target") : "Villager";
+		idName = json.hasKey("target", 8) ? json.getString("target") : "minecraft:villager";
 		range = json.getInteger("range");
 		amount = json.getInteger("amount");
 		subtypes = json.getBoolean("subtypes");
-		ignoreNBT = json.getBoolean("ingoreNBT");
+		ignoreNBT = json.getBoolean("ignoreNBT");
 		targetTags = json.getCompoundTag("targetNBT");
 	}
 
-	private NBTTagCompound writeProgressToJson(NBTTagCompound json)
+	@Override
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
 	{
 		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
@@ -198,23 +178,17 @@ public class TaskMeeting implements ITask, ITickableTask
 		
 		return json;
 	}
-
-	private void readProgressFromJson(NBTTagCompound json)
+	
+	@Override
+	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers = new ArrayList<UUID>();
+		completeUsers.clear();
 		NBTTagList cList = json.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			NBTBase entry = cList.get(i);
-			
-			if(entry == null || entry.getId() != 8)
-			{
-				continue;
-			}
-			
 			try
 			{
-				completeUsers.add(UUID.fromString(((NBTTagString)entry).getString()));
+				completeUsers.add(UUID.fromString(cList.getStringTagAt(i)));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
@@ -229,18 +203,12 @@ public class TaskMeeting implements ITask, ITickableTask
 	@SideOnly(Side.CLIENT)
 	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
 	{
-		return new GuiMeetingEditor(parent, this);
+	    return new GuiEditTaskMeeting(parent, quest, this);
 	}
 
 	@Override
-	public IGuiEmbedded getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-		return new GuiTaskMeeting(this, posX, posY, sizeX, sizeY);
-	}
-
-	@Override
-	public IJsonDoc getDocumentation()
-	{
-		return null;
+	    return new PanelTaskMeeting(rect, quest, this);
 	}
 }

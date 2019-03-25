@@ -1,103 +1,61 @@
 package bq_standard.client.gui;
 
-import java.awt.Color;
-import java.util.ArrayList;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api2.client.gui.GuiScreenCanvas;
+import betterquesting.api2.client.gui.misc.GuiAlign;
+import betterquesting.api2.client.gui.misc.GuiTransform;
+import betterquesting.api2.client.gui.panels.content.PanelGeneric;
+import betterquesting.api2.client.gui.panels.content.PanelItemSlot;
+import betterquesting.api2.client.gui.panels.content.PanelTextBox;
+import betterquesting.api2.client.gui.resources.textures.IGuiTexture;
+import betterquesting.api2.utils.QuestTranslation;
+import bq_standard.client.theme.BQSTextures;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.GlStateManager.DestFactor;
-import net.minecraft.client.renderer.GlStateManager.SourceFactor;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.TextFormatting;
-import betterquesting.api.utils.BigItemStack;
-import betterquesting.api.utils.RenderUtils;
 
-public class GuiLootChest extends GuiScreen
+import java.util.List;
+
+public class GuiLootChest extends GuiScreenCanvas
 {
-	static ResourceLocation guiChest = new ResourceLocation("bq_standard","textures/gui/gui_loot_chest.png");
-	ArrayList<BigItemStack> rewards = new ArrayList<BigItemStack>();
-	String title;
-	
-	public GuiLootChest(ArrayList<BigItemStack> rewards2, String title)
-	{
-		this.rewards = rewards2;
-		this.title = title;
-	}
-	
-	@Override
-	public void initGui()
-	{
-		super.initGui();
+    private final String title;
+    private final List<BigItemStack> rewards;
+    
+    public GuiLootChest(GuiScreen parent, List<BigItemStack> rewards, String title)
+    {
+        super(parent);
+        this.rewards = rewards;
+        this.title = title;
+    }
+    
+    @Override
+    public void initPanel()
+    {
+        super.initPanel();
 		
 		mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(new SoundEvent(new ResourceLocation("random.chestopen")), 1.0F));
-	}
-	
-	@Override
-	public void drawScreen(int mx, int my, float partialTick)
-	{
-		super.drawScreen(mx, my, partialTick);
-		
-		this.drawDefaultBackground();
-		
-		mc.renderEngine.bindTexture(guiChest);
-		
-		int cw = 128;
-		int ch = 68;
-		
-		this.drawTexturedModalRect(width/2 - cw/2, height/2, 0, 0, cw, ch);
-		
-		String txt = TextFormatting.BOLD + "" + TextFormatting.UNDERLINE + I18n.format(title);
-		mc.fontRendererObj.drawString(txt, width/2 - mc.fontRendererObj.getStringWidth(txt)/2, height/2 + ch + 8, Color.WHITE.getRGB(), false);
-		
-		// Auto balance row size
-		int rowL = MathHelper.ceiling_float_int(rewards.size()/8F);
-		rowL = MathHelper.ceiling_float_int(rewards.size()/rowL);
-		
-		BigItemStack ttStack = null;
-		
-		GlStateManager.pushMatrix();
-		
-		for(int i = 0; i < rewards.size(); i++)
-		{
-			mc.renderEngine.bindTexture(guiChest);
-			
-			int n1 = i%rowL;
-			int n2 = i/rowL;
-			int n3 = Math.min(rewards.size() - n2*rowL, rowL);
-			
-			int rx = (width/2) - (36 * n3)/2 + (36 * n1);
-			int ry = height/2 - 36 - (n2 * 36);
-			
-			GlStateManager.enableBlend();
-			GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
-			
-			this.drawTexturedModalRect(rx, ry, 128, 0, 32, 32);
-			
-			BigItemStack stack = rewards.get(i);
-			RenderUtils.RenderItemStack(mc, stack.getBaseStack(), rx + 8, ry + 8, stack == null || stack.stackSize <= 1? "" : "" + stack.stackSize);
-			
-			if(mx >= rx + 8 && mx < rx + 24 && my >= ry + 8 && my < ry + 24)
-			{
-				ttStack = stack;
-			}
-		}
-		
-		GlStateManager.popMatrix();
-		
-		if(ttStack != null)
-		{
-			this.drawHoveringText(ttStack.getBaseStack().getTooltip(mc.thePlayer, mc.gameSettings.advancedItemTooltips), mx, my, fontRendererObj);
-		}
-		
-		// TODO: Finish rewards renderer then finish reward registry/editor/importer
-	}
-	
-	@Override
-	public boolean doesGuiPauseGame()
-	{
-		return false;
-	}
+    
+        this.addPanel(new PanelGeneric(new GuiTransform(GuiAlign.MID_CENTER, -64, 0, 128, 68, 0), BQSTextures.LOOT_CHEST.getTexture()));
+        this.addPanel(new PanelTextBox(new GuiTransform(GuiAlign.MID_CENTER, -64, 40, 128, 56, -1), QuestTranslation.translate(title)).setAlignment(1));
+    
+        IGuiTexture texGlow = BQSTextures.LOOT_GLOW.getTexture();
+        int rowMax = (int)Math.ceil(rewards.size()/8F);
+        rowMax = rewards.size()/rowMax;
+        
+        for(int i = 0; i < rewards.size(); i++)
+        {
+            BigItemStack stack = rewards.get(i);
+            
+            int rowX = i%rowMax;
+            int rowY = i/rowMax;
+            int rowSize = Math.min(rewards.size() - rowY*rowMax, rowMax);
+            
+            rowX = -(rowSize * 36)/2 + (rowX * 36);
+            rowY = -36 - (rowY * 36);
+            
+            this.addPanel(new PanelGeneric(new GuiTransform(GuiAlign.MID_CENTER, rowX + 2, rowY + 2, 32, 32, 0), texGlow));
+            this.addPanel(new PanelItemSlot(new GuiTransform(GuiAlign.MID_CENTER, rowX + 10, rowY + 10, 16, 16, -1), -1, stack).setTextures(null, null, null));
+        }
+    }
 }

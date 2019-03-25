@@ -1,11 +1,12 @@
 package bq_standard;
 
-import java.util.ArrayList;
+import betterquesting.api.utils.NBTConverter;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
-import betterquesting.api.utils.NBTConverter;
+
+import java.util.ArrayList;
 
 public class NBTReplaceUtil
 {

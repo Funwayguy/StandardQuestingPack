@@ -1,144 +1,141 @@
 package bq_standard.rewards.loot;
 
-import java.util.ArrayList;
-import java.util.Random;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.JsonHelper;
+import betterquesting.api2.storage.DBEntry;
+import betterquesting.api2.storage.INBTSaveLoad;
+import betterquesting.api2.storage.SimpleDatabase;
+import bq_standard.rewards.loot.LootGroup.LootEntry;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 
-public class LootGroup implements Comparable<LootGroup>
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+
+public class LootGroup extends SimpleDatabase<LootEntry> implements INBTSaveLoad<NBTTagCompound>
 {
 	public String name = "Loot Group";
 	public int weight = 1;
-	public ArrayList<LootEntry> lootEntry = new ArrayList<LootEntry>();
 	
-	public ArrayList<BigItemStack> getRandomReward(Random rand)
+	public List<BigItemStack> getRandomReward(Random rand)
 	{
 		int total = getTotalWeight();
 		float r = rand.nextFloat() * total;
 		int cnt = 0;
 		
-		for(LootEntry entry : lootEntry)
+		for(DBEntry<LootEntry> entry : getEntries())
 		{
-			cnt += entry.weight;
+			cnt += entry.getValue().weight;
 			if(cnt >= r)
 			{
-				return entry.items;
+				return entry.getValue().items;
 			}
 		}
 		
-		return new ArrayList<BigItemStack>();
+		return Collections.emptyList();
 	}
 	
 	public int getTotalWeight()
 	{
 		int i = 0;
 		
-		for(LootEntry entry : lootEntry)
+		for(DBEntry<LootEntry> entry : getEntries())
 		{
-			i += entry.weight;
+			i += entry.getValue().weight;
 		}
 		
 		return i;
 	}
 	
-	public void readFromJson(NBTTagCompound json)
+	@Override
+	public void readFromNBT(NBTTagCompound tag)
 	{
-		name = json.hasKey("name", 8) ? json.getString("name") : "Loot Group";
-		weight = json.getInteger("weight");;
-		weight = Math.max(1, weight);
+	    this.reset();
+	    
+		name = tag.getString("name");
+		weight = Math.max(tag.getInteger("weight"), 1);
 		
-		lootEntry = new ArrayList<LootEntry>();
-		NBTTagList jRew = json.getTagList("rewards", 10);
+		// Old entries that were never given IDs
+		List<LootEntry> legacyEntry = new ArrayList<>();
+		
+		NBTTagList jRew = tag.getTagList("rewards", 10);
 		for(int i = 0; i < jRew.tagCount(); i++)
 		{
-			NBTBase entry = jRew.get(i);
-			
-			if(entry == null || entry.getId() != 10)
-			{
-				continue;
-			}
+			NBTTagCompound entry = jRew.getCompoundTagAt(i);
+			int id = entry.hasKey("ID", 99) ? entry.getInteger("ID") : -1;
 			
 			LootEntry loot = new LootEntry();
-			loot.readFromJson((NBTTagCompound)entry);
-			lootEntry.add(loot);
+			loot.readFromNBT(entry);
+			
+			if(id >= 0)
+            {
+                this.add(id, loot);
+            } else
+            {
+                legacyEntry.add(loot);
+            }
 		}
+		
+		for(LootEntry entry : legacyEntry)
+        {
+            this.add(this.nextID(), entry);
+        }
 	}
 	
-	public void writeToJson(NBTTagCompound json)
+	@Override
+	public NBTTagCompound writeToNBT(NBTTagCompound tag)
 	{
-		json.setString("name", name);
-		json.setInteger("weight", weight);
+		tag.setString("name", name);
+		tag.setInteger("weight", weight);
 		
 		NBTTagList jRew = new NBTTagList();
-		for(LootEntry entry : lootEntry)
+		for(DBEntry<LootEntry> entry : getEntries())
 		{
-			if(entry == null)
-			{
-				continue;
-			}
+			if(entry == null) continue;
 			
-			NBTTagCompound jLoot = new NBTTagCompound();
-			entry.writeToJson(jLoot);
+			NBTTagCompound jLoot = entry.getValue().writeToNBT(new NBTTagCompound());
+			jLoot.setInteger("ID", entry.getID());
 			jRew.appendTag(jLoot);
 		}
-		json.setTag("rewards", jRew);
-	}
-
-	@Override
-	public int compareTo(LootGroup group)
-	{
-		return (int)Math.signum(group.weight - weight);
+		tag.setTag("rewards", jRew);
+		
+		return tag;
 	}
 	
-	public static class LootEntry implements Comparable<LootEntry>
+	public static class LootEntry implements INBTSaveLoad<NBTTagCompound>
 	{
 		public int weight = 1;
-		public ArrayList<BigItemStack> items = new ArrayList<BigItemStack>();
+		public final List<BigItemStack> items = new ArrayList<>();
 		
-		public void readFromJson(NBTTagCompound json)
+		@Override
+		public void readFromNBT(NBTTagCompound json)
 		{
 			weight = json.getInteger("weight");
 			weight = Math.max(1, weight);
 			
-			items = new ArrayList<BigItemStack>();
+			items.clear();
 			NBTTagList jItm = json.getTagList("items", 10);
 			for(int i = 0; i < jItm.tagCount(); i++)
 			{
-				NBTBase entry = jItm.get(i);
-				
-				if(entry == null || entry.getId() != 10)
-				{
-					continue;
-				}
-				
-				BigItemStack stack = JsonHelper.JsonToItemStack((NBTTagCompound)entry);
-				
-				if(stack != null)
-				{
-					items.add(stack);
-				}
+				items.add(JsonHelper.JsonToItemStack(jItm.getCompoundTagAt(i)));
 			}
 		}
 		
-		public void writeToJson(NBTTagCompound json)
+		@Override
+		public NBTTagCompound writeToNBT(NBTTagCompound tag)
 		{
-			json.setInteger("weight", weight);
+			tag.setInteger("weight", weight);
 			
 			NBTTagList jItm = new NBTTagList();
 			for(BigItemStack stack : items)
 			{
 				jItm.appendTag(JsonHelper.ItemStackToJson(stack, new NBTTagCompound()));
 			}
-			json.setTag("items", jItm);
-		}
-
-		@Override
-		public int compareTo(LootEntry entry)
-		{
-			return (int)Math.signum(entry.weight - weight);
+			tag.setTag("items", jItm);
+			
+			return tag;
 		}
 	}
 }

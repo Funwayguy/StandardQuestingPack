@@ -1,8 +1,16 @@
 package bq_standard.rewards;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.UUID;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.rewards.IReward;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api.utils.JsonHelper;
+import betterquesting.api2.client.gui.misc.IGuiRect;
+import betterquesting.api2.client.gui.panels.IGuiPanel;
+import bq_standard.NBTReplaceUtil;
+import bq_standard.client.gui.rewards.PanelRewardChoice;
+import bq_standard.core.BQ_Standard;
+import bq_standard.rewards.factory.FactoryRewardChoice;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -13,24 +21,16 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.client.gui.misc.IGuiEmbedded;
-import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.jdoc.IJsonDoc;
-import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.rewards.IReward;
-import betterquesting.api.utils.BigItemStack;
-import betterquesting.api.utils.JsonHelper;
-import bq_standard.NBTReplaceUtil;
-import bq_standard.client.gui.rewards.GuiRewardChoice;
-import bq_standard.core.BQ_Standard;
-import bq_standard.rewards.factory.FactoryRewardChoice;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.UUID;
 
 public class RewardChoice implements IReward
 {
 	/**
 	 * The selected reward index to be claimed.<br>
-	 * Should only ever be used client side. NEVER on server
+	 * Should only ever be used client side. NEVER onHit server
 	 */
 	public ArrayList<BigItemStack> choices = new ArrayList<BigItemStack>();
 	private HashMap<UUID,Integer> selected = new HashMap<UUID,Integer>();
@@ -120,7 +120,7 @@ public class RewardChoice implements IReward
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json)
 	{
 		choices = new ArrayList<BigItemStack>();
 		NBTTagList cList = json.getTagList("choices", 10);
@@ -146,7 +146,7 @@ public class RewardChoice implements IReward
 	}
 
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
 		NBTTagList rJson = new NBTTagList();
 		for(BigItemStack stack : choices)
@@ -159,20 +159,14 @@ public class RewardChoice implements IReward
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public IGuiEmbedded getRewardGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	public IGuiPanel getRewardGui(IGuiRect rect, IQuest quest)
 	{
-		return new GuiRewardChoice(this, quest, posX, posY, sizeX, sizeY);
+	    return new PanelRewardChoice(rect, quest, this);
 	}
 	
 	@Override
 	@SideOnly(Side.CLIENT)
 	public GuiScreen getRewardEditor(GuiScreen screen, IQuest quest)
-	{
-		return null;
-	}
-
-	@Override
-	public IJsonDoc getDocumentation()
 	{
 		return null;
 	}

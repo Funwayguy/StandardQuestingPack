@@ -1,9 +1,9 @@
 package bq_standard.handlers;
 
-import net.minecraftforge.common.config.Configuration;
-import org.apache.logging.log4j.Level;
 import bq_standard.core.BQS_Settings;
 import bq_standard.core.BQ_Standard;
+import net.minecraftforge.common.config.Configuration;
+import org.apache.logging.log4j.Level;
 
 public class ConfigHandler
 {

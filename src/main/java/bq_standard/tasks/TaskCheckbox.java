@@ -1,10 +1,14 @@
 package bq_standard.tasks;
 
-import java.util.ArrayList;
-import java.util.UUID;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api2.client.gui.misc.IGuiRect;
+import betterquesting.api2.client.gui.panels.IGuiPanel;
+import bq_standard.client.gui.tasks.PanelTaskCheckbox;
+import bq_standard.core.BQ_Standard;
+import bq_standard.tasks.factory.FactoryTaskCheckbox;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
@@ -12,18 +16,14 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.client.gui.misc.IGuiEmbedded;
-import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.jdoc.IJsonDoc;
-import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.tasks.ITask;
-import bq_standard.client.gui.tasks.GuiTaskCheckbox;
-import bq_standard.core.BQ_Standard;
-import bq_standard.tasks.factory.FactoryTaskCheckbox;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class TaskCheckbox implements ITask
 {
-	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
+	private final List<UUID> completeUsers = new ArrayList<>();
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -65,33 +65,18 @@ public class TaskCheckbox implements ITask
 	}
 
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			return this.writeProgressToJson(json);
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return json;
-		}
-		
 		return json;
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			this.readProgressFromJson(json);
-			return;
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return;
-		}
 	}
-
-	private NBTTagCompound writeProgressToJson(NBTTagCompound json)
+	
+	@Override
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
 	{
 		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
@@ -102,23 +87,17 @@ public class TaskCheckbox implements ITask
 		
 		return json;
 	}
-
-	private void readProgressFromJson(NBTTagCompound json)
+	
+	@Override
+	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers = new ArrayList<UUID>();
+		completeUsers.clear();
 		NBTTagList cList = json.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			NBTBase entry = cList.get(i);
-			
-			if(entry == null || entry.getId() != 8)
-			{
-				continue;
-			}
-			
 			try
 			{
-				completeUsers.add(UUID.fromString(((NBTTagString)entry).getString()));
+				completeUsers.add(UUID.fromString(cList.getStringTagAt(i)));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
@@ -133,20 +112,14 @@ public class TaskCheckbox implements ITask
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public IGuiEmbedded getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-		return new GuiTaskCheckbox(this, posX, posY, sizeX, sizeY);
+	    return new PanelTaskCheckbox(rect, quest, this);
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
-	{
-		return null;
-	}
-
-	@Override
-	public IJsonDoc getDocumentation()
 	{
 		return null;
 	}
