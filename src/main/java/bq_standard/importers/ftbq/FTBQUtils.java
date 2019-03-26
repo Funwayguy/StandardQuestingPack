@@ -27,7 +27,7 @@ public class FTBQUtils
     private static BigItemStack convertItemType1(String string)
     {
         String[] split = string.split(" ");
-        if(split.length <= 0) new BigItemStack(ItemStack.EMPTY);
+        if(split.length <= 0) return new BigItemStack(ItemStack.EMPTY);
         
         Item item = Item.REGISTRY.getObject(new ResourceLocation(split[0]));
         int count = split.length < 2 ? 1 : tryParseInt(split[1], 1);
@@ -40,7 +40,7 @@ public class FTBQUtils
     private static BigItemStack convertItemType2(NBTTagCompound tag)
     {
         String[] split = tag.getString("id").split(" ");
-        if(split.length <= 0) new BigItemStack(ItemStack.EMPTY);
+        if(split.length <= 0) return new BigItemStack(ItemStack.EMPTY);
         
         Item item = Item.REGISTRY.getObject(new ResourceLocation(split[0]));
         int count = split.length < 2 ? 1 : tryParseInt(split[1], 1);

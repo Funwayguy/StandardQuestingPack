@@ -17,7 +17,10 @@ import betterquesting.api2.client.gui.misc.GuiTransform;
 import betterquesting.api2.client.gui.panels.CanvasTextured;
 import betterquesting.api2.client.gui.panels.content.PanelEntityPreview;
 import betterquesting.api2.client.gui.panels.content.PanelTextBox;
+import betterquesting.api2.client.gui.themes.gui_args.GArgsCallback;
+import betterquesting.api2.client.gui.themes.gui_args.GArgsNBT;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
+import betterquesting.api2.client.gui.themes.presets.PresetGUIs;
 import betterquesting.api2.client.gui.themes.presets.PresetTexture;
 import betterquesting.api2.utils.QuestTranslation;
 import bq_standard.tasks.TaskHunt;
@@ -75,7 +78,7 @@ public class GuiEditTaskHunt extends GuiScreenCanvas implements IVolatileScreen
             @Override
             public void onButtonClick()
             {
-                mc.displayGuiScreen(QuestingAPI.getAPI(ApiReference.THEME_REG).getGuiHook().getEntityEditor(screenRef, value -> {
+                mc.displayGuiScreen(QuestingAPI.getAPI(ApiReference.THEME_REG).getGui(PresetGUIs.EDIT_ENTITY, new GArgsCallback<>(screenRef, target, value -> {
                     Entity tmp = value != null ? value : new EntityZombie(mc.world);
                     ResourceLocation res = EntityList.getKey(tmp.getClass());
                     task.idName = res != null ? res.toString() : "minecraft:zombie";
@@ -83,7 +86,7 @@ public class GuiEditTaskHunt extends GuiScreenCanvas implements IVolatileScreen
                     tmp.writeToNBTOptional(task.targetTags);
                     
                     sendChanges();
-                }, target));
+                })));
             }
         });
         
@@ -92,7 +95,7 @@ public class GuiEditTaskHunt extends GuiScreenCanvas implements IVolatileScreen
             @Override
             public void onButtonClick()
             {
-                mc.displayGuiScreen(QuestingAPI.getAPI(ApiReference.THEME_REG).getGuiHook().getNbtEditor(screenRef, task::readFromNBT, task.writeToNBT(new NBTTagCompound()), null));
+                mc.displayGuiScreen(QuestingAPI.getAPI(ApiReference.THEME_REG).getGui(PresetGUIs.EDIT_NBT, new GArgsNBT<>(screenRef, task.writeToNBT(new NBTTagCompound()), task::readFromNBT, null)));
             }
         });
         

@@ -127,8 +127,6 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	{
 	    if(stack.isEmpty()) return;
 	    
-	    System.out.println("Created item: " + stack.writeToNBT(new NBTTagCompound()));
-	    
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
 		if(isComplete(playerID)) return;

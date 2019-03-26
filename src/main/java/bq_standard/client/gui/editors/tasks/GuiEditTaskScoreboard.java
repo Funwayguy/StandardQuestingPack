@@ -17,7 +17,9 @@ import betterquesting.api2.client.gui.misc.GuiPadding;
 import betterquesting.api2.client.gui.misc.GuiTransform;
 import betterquesting.api2.client.gui.panels.CanvasTextured;
 import betterquesting.api2.client.gui.panels.content.PanelTextBox;
+import betterquesting.api2.client.gui.themes.gui_args.GArgsNBT;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
+import betterquesting.api2.client.gui.themes.presets.PresetGUIs;
 import betterquesting.api2.client.gui.themes.presets.PresetTexture;
 import betterquesting.api2.utils.QuestTranslation;
 import bq_standard.tasks.TaskScoreboard;
@@ -78,7 +80,7 @@ public class GuiEditTaskScoreboard extends GuiScreenCanvas implements IVolatileS
             @Override
             public void onButtonClick()
             {
-                mc.displayGuiScreen(QuestingAPI.getAPI(ApiReference.THEME_REG).getGuiHook().getNbtEditor(screenRef, task::readFromNBT, task.writeToNBT(new NBTTagCompound()), null));
+                mc.displayGuiScreen(QuestingAPI.getAPI(ApiReference.THEME_REG).getGui(PresetGUIs.EDIT_NBT, new GArgsNBT<>(screenRef, task.writeToNBT(new NBTTagCompound()), task::readFromNBT, null)));
             }
         });
         
