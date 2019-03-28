@@ -1,8 +1,8 @@
 package bq_standard.importers.hqm.converters.items;
 
+import betterquesting.api.utils.BigItemStack;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
-import betterquesting.api.utils.BigItemStack;
 
 public class HQMItemHeart implements HQMItem
 {
@@ -30,9 +30,6 @@ public class HQMItemHeart implements HQMItem
 			case 2:
 				dmg = 2;
 				amt *= 3;
-				break;
-			default:
-				dmg = 0;
 				break;
 		}
 		

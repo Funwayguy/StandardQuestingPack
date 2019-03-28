@@ -1,47 +1,47 @@
 package bq_standard.tasks;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.UUID;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.ResourceLocation;
-import org.apache.logging.log4j.Level;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.client.gui.misc.IGuiEmbedded;
-import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.ItemComparison;
-import betterquesting.api.utils.JsonHelper;
-import betterquesting.api.utils.NBTConverter;
-import bq_standard.client.gui.editors.GuiHuntEditor;
-import bq_standard.client.gui.tasks.GuiTaskHunt;
+import betterquesting.api2.cache.QuestCache;
+import betterquesting.api2.client.gui.misc.IGuiRect;
+import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
+import bq_standard.client.gui.editors.tasks.GuiEditTaskHunt;
+import bq_standard.client.gui.tasks.PanelTaskHunt;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskHunt;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.ResourceLocation;
+import org.apache.logging.log4j.Level;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.UUID;
 
 public class TaskHunt implements ITask, IProgression<Integer>
 {
-	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
-	public HashMap<UUID, Integer> userProgress = new HashMap<UUID, Integer>();
+	private final List<UUID> completeUsers = new ArrayList<>();
+	private final HashMap<UUID, Integer> userProgress = new HashMap<>();
 	public String idName = "Zombie";
+	public String damageType = "";
 	public int required = 1;
 	public boolean ignoreNBT = true;
 	public boolean subtypes = true;
@@ -75,48 +75,38 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	@Override
 	public String getUnlocalisedName()
 	{
-		return "bq_standard.task.hunt";
+		return BQ_Standard.MODID + ".task.hunt";
 	}
-	
-	@Override
-	@Deprecated
-	public void update(EntityPlayer player, IQuest quest){}
 	
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
-		if(isComplete(QuestingAPI.getQuestingUUID(player)))
-		{
-			return;
-		}
+	    UUID playerID = QuestingAPI.getQuestingUUID(player);
+	    
+		if(isComplete(playerID)) return;
 		
-		int progress = quest == null || !quest.getProperties().getProperty(NativeProps.GLOBAL)? getPartyProgress(QuestingAPI.getQuestingUUID(player)) : getGlobalProgress();
+		int progress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
 		
-		if(progress >= required)
-		{
-			setComplete(QuestingAPI.getQuestingUUID(player));
-		}
+		if(progress >= required) setComplete(playerID);
 	}
 	
-	public void onKilledByPlayer(IQuest quest, EntityLivingBase entity, DamageSource source)
+	@SuppressWarnings("unchecked")
+	public void onKilledByPlayer(DBEntry<IQuest> quest, EntityPlayer player, EntityLivingBase entity, DamageSource source)
 	{
-		EntityPlayer player = (EntityPlayer)source.getEntity();
-		
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
+        QuestCache qc = (QuestCache)player.getExtendedProperties(QuestCache.LOC_QUEST_CACHE.toString());
 		
-		if(player == null || entity == null || this.isComplete(playerID))
-		{
-			return;
-		}
+		if(entity == null || this.isComplete(playerID)) return;
+		
+		if(damageType.length() > 0 && (source == null || !damageType.equalsIgnoreCase(source.damageType))) return;
 		
 		int progress = getUsersProgress(playerID);
 		
 		Class<? extends Entity> subject = entity.getClass();
-		@SuppressWarnings("unchecked")
 		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.stringToClassMapping.get(idName);
-		String subjectID = subject == null? null : (String)EntityList.classToStringMapping.get(subject);
+		String subjectID = EntityList.getEntityString(entity);
 		
-		if(subject == null || subjectID == null || target == null)
+		if(subjectID == null || target == null)
 		{
 			return; // Missing necessary data
 		} else if(subtypes && !target.isAssignableFrom(subject))
@@ -135,108 +125,90 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		}
 		
 		setUserProgress(playerID, progress + 1);
+		if(qc != null) qc.markQuestDirty(quest.getID());
 		
-		detect(player, quest);
+		detect(player, quest.getValue());
 	}
 	
 	@Override
-	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			return this.writeProgressToJson(json);
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return json;
-		}
-		
-		json.addProperty("target", idName);
-		json.addProperty("required", required);
-		json.addProperty("subtypes", subtypes);
-		json.addProperty("ignoreNBT", ignoreNBT);
-		json.add("targetNBT", NBTConverter.NBTtoJSON_Compound(targetTags, new JsonObject(), true));
+		json.setString("target", idName);
+		json.setInteger("required", required);
+		json.setBoolean("subtypes", subtypes);
+		json.setBoolean("ignoreNBT", ignoreNBT);
+		json.setTag("targetNBT", targetTags);
+		json.setString("damageType", damageType);
 		
 		return json;
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			this.readProgressFromJson(json);
-			return;
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return;
-		}
-		
-		idName = JsonHelper.GetString(json, "target", "Zombie");
-		required = JsonHelper.GetNumber(json, "required", 1).intValue();
-		subtypes = JsonHelper.GetBoolean(json, "subtypes", true);
-		ignoreNBT = JsonHelper.GetBoolean(json, "ignoreNBT", true);
-		targetTags = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "targetNBT"), new NBTTagCompound(), true);
+		idName = json.getString("target");
+		required = json.getInteger("required");
+		subtypes = json.getBoolean("subtypes");
+		ignoreNBT = json.getBoolean("ignoreNBT");
+		targetTags = json.getCompoundTag("targetNBT");
+		damageType = json.getString("damageType");
 	}
 	
-	private void readProgressFromJson(JsonObject json)
+	@Override
+	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers = new ArrayList<UUID>();
-		for(JsonElement entry : JsonHelper.GetArray(json, "completeUsers"))
+		completeUsers.clear();
+		NBTTagList cList = json.getTagList("completeUsers", 8);
+		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			if(entry == null || !entry.isJsonPrimitive())
-			{
-				continue;
-			}
 			
 			try
 			{
-				completeUsers.add(UUID.fromString(entry.getAsString()));
+				completeUsers.add(UUID.fromString(cList.getStringTagAt(i)));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
 			}
 		}
 		
-		userProgress = new HashMap<UUID,Integer>();
-		for(JsonElement entry : JsonHelper.GetArray(json, "userProgress"))
+		userProgress.clear();
+		NBTTagList pList = json.getTagList("userProgress", 10);
+		for(int i = 0; i < pList.tagCount(); i++)
 		{
-			if(entry == null || !entry.isJsonObject())
-			{
-				continue;
-			}
-			
+			NBTTagCompound pTag = pList.getCompoundTagAt(i);
 			UUID uuid;
 			try
 			{
-				uuid = UUID.fromString(JsonHelper.GetString(entry.getAsJsonObject(), "uuid", ""));
+				uuid = UUID.fromString(pTag.getString("uuid"));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load user progress for task", e);
 				continue;
 			}
 			
-			userProgress.put(uuid, JsonHelper.GetNumber(entry.getAsJsonObject(), "value", 0).intValue());
+			userProgress.put(uuid, pTag.getInteger("value"));
 		}
 	}
 	
-	private JsonObject writeProgressToJson(JsonObject json)
+	@Override
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
 	{
-		JsonArray jArray = new JsonArray();
+		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
 		{
-			jArray.add(new JsonPrimitive(uuid.toString()));
+			jArray.appendTag(new NBTTagString(uuid.toString()));
 		}
-		json.add("completeUsers", jArray);
+		json.setTag("completeUsers", jArray);
 		
-		JsonArray progArray = new JsonArray();
+		NBTTagList progArray = new NBTTagList();
 		for(Entry<UUID,Integer> entry : userProgress.entrySet())
 		{
-			JsonObject pJson = new JsonObject();
-			pJson.addProperty("uuid", entry.getKey().toString());
-			pJson.addProperty("value", entry.getValue());
-			progArray.add(pJson);
+			NBTTagCompound pJson = new NBTTagCompound();
+			pJson.setString("uuid", entry.getKey().toString());
+			pJson.setInteger("value", entry.getValue());
+			progArray.appendTag(pJson);
 		}
-		json.add("userProgress", progArray);
+		json.setTag("userProgress", progArray);
 		
 		return json;
 	}
@@ -248,7 +220,7 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	@SideOnly(Side.CLIENT)
 	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
 	{
-		return new GuiHuntEditor(parent, this);
+	    return new GuiEditTaskHunt(parent, quest, this);
 	}
 
 	@Override
@@ -278,9 +250,9 @@ public class TaskHunt implements ITask, IProgression<Integer>
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public IGuiEmbedded getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-		return new GuiTaskHunt(this, quest, posX, posY, sizeX, sizeY);
+	    return new PanelTaskHunt(rect, quest, this);
 	}
 	
 	@Override
@@ -305,27 +277,8 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	
 	public Integer getPartyProgress(UUID uuid)
 	{
-		int total = 0;
-		
 		IParty party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getUserParty(uuid);
-		
-		if(party == null)
-		{
-			return getUsersProgress(uuid);
-		} else
-		{
-			for(UUID mem : party.getMembers())
-			{
-				if(mem != null && party.getStatus(mem).ordinal() <= 0)
-				{
-					continue;
-				}
-				
-				total += getUsersProgress(mem);
-			}
-		}
-		
-		return total;
+        return getUsersProgress(party == null ? new UUID[]{uuid} : party.getMembers().toArray(new UUID[0]));
 	}
 	
 	@Override
@@ -339,11 +292,5 @@ public class TaskHunt implements ITask, IProgression<Integer>
 		}
 		
 		return total;
-	}
-
-	@Override
-	public IJsonDoc getDocumentation()
-	{
-		return null;
 	}
 }

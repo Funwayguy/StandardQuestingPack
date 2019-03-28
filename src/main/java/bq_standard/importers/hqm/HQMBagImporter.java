@@ -1,13 +1,5 @@
 package bq_standard.importers.hqm;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import net.minecraft.nbt.NBTTagCompound;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.importers.IImporter;
@@ -16,7 +8,6 @@ import betterquesting.api.questing.IQuestDatabase;
 import betterquesting.api.questing.IQuestLineDatabase;
 import betterquesting.api.utils.FileExtensionFilter;
 import betterquesting.api.utils.JsonHelper;
-import betterquesting.api.utils.NBTConverter;
 import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootGroup.LootEntry;
@@ -24,12 +15,22 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HQMBagImporter implements IImporter
 {
-	public static HQMBagImporter instance = new HQMBagImporter();
+	public static final HQMBagImporter INSTANCE = new HQMBagImporter();
 	
-	public List<LootGroup> hqmLoot = new ArrayList<LootGroup>();
+	private List<LootGroup> hqmLoot = new ArrayList<>();
 	
 	@Override
 	public String getUnlocalisedName()
@@ -105,7 +106,7 @@ public class HQMBagImporter implements IImporter
 					
 					lEntry.items.add(HQMUtilities.HQMStackT1(ji.getAsJsonObject()));
 				}
-				group.lootEntry.add(lEntry);
+				group.add(group.nextID(), lEntry);
 			}
 			
 			hqmLoot.add(group);
@@ -133,18 +134,18 @@ public class HQMBagImporter implements IImporter
 		}
 		
 		NBTTagCompound tags = new NBTTagCompound();
-		JsonObject base = new JsonObject();
-		JsonArray jAry = new JsonArray();
+		NBTTagCompound base = new NBTTagCompound();
+		NBTTagList jAry = new NBTTagList();
 		
 		for(LootGroup group : hqmLoot)
 		{
-			JsonObject jGrp = new JsonObject();
-			group.writeToJson(jGrp);
-			jAry.add(jGrp);
+			NBTTagCompound jGrp = new NBTTagCompound();
+			group.writeToNBT(jGrp);
+			jAry.appendTag(jGrp);
 		}
 		
-		base.add("groups", jAry);
-		tags.setTag("data", NBTConverter.JSONtoNBT_Object(base, new NBTTagCompound()));
+		base.setTag("groups", jAry);
+		tags.setTag("data", base);
 		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(StandardPacketType.LOOT_IMPORT.GetLocation(), tags));
 	}
 	

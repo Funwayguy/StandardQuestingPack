@@ -1,16 +1,15 @@
 package bq_standard;
 
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
-import betterquesting.api.utils.JsonHelper;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 public class ScoreBQ
 {
-	HashMap<UUID, Integer> playerScores = new HashMap<UUID, Integer>();
+	private HashMap<UUID, Integer> playerScores = new HashMap<>();
 	
 	public int getScore(UUID uuid)
 	{
@@ -23,39 +22,32 @@ public class ScoreBQ
 		playerScores.put(uuid, value);
 	}
 	
-	public void writeJson(JsonObject json)
+	public NBTTagList writeJson(NBTTagList json)
 	{
-		JsonArray ary = new JsonArray();
 		for(Entry<UUID,Integer> entry : playerScores.entrySet())
 		{
-			JsonObject jObj = new JsonObject();
-			jObj.addProperty("uuid", entry.getKey().toString());
-			jObj.addProperty("value", entry.getValue());
-			ary.add(jObj);
+			NBTTagCompound jObj = new NBTTagCompound();
+			jObj.setString("uuid", entry.getKey().toString());
+			jObj.setInteger("value", entry.getValue());
+			json.appendTag(jObj);
 		}
-		json.add("scores", ary);
+		
+		return json;
 	}
 	
-	public void readJson(JsonObject json)
+	public void readJson(NBTTagList json)
 	{
 		playerScores.clear();
-		for(JsonElement element : JsonHelper.GetArray(json, "scores"))
+		
+		for(int i = 0; i < json.tagCount(); i++)
 		{
-			if(element == null || !element.isJsonObject())
-			{
-				continue;
-			}
+			NBTTagCompound jObj = json.getCompoundTagAt(i);
 			
-			JsonObject jObj = element.getAsJsonObject();
 			try
 			{
-				UUID uuid = UUID.fromString(JsonHelper.GetString(jObj, "uuid", ""));
-				playerScores.put(uuid, JsonHelper.GetNumber(jObj, "value", 0).intValue());
+				playerScores.put(UUID.fromString(jObj.getString("uuid")), jObj.getInteger("value"));
 				
-			} catch(Exception e)
-			{
-				continue;
-			}
+			} catch(Exception ignroed){}
 		}
 	}
 }

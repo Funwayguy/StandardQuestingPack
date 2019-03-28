@@ -1,12 +1,13 @@
 package bq_standard;
 
-import java.util.ArrayList;
-import java.util.Set;
+import betterquesting.api.utils.NBTConverter;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
-import betterquesting.api.utils.NBTConverter;
+
+import java.util.List;
+import java.util.Set;
 
 public class NBTReplaceUtil
 {
@@ -29,7 +30,7 @@ public class NBTReplaceUtil
 		} else if(baseTag instanceof NBTTagList)
 		{
 			NBTTagList list = (NBTTagList)baseTag;
-			ArrayList<NBTBase> tList = NBTConverter.getTagList(list);
+			List<NBTBase> tList = NBTConverter.getTagList(list);
 			
 			for(int i = 0; i < tList.size(); i++)
 			{

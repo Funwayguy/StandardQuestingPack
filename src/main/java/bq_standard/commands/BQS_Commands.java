@@ -1,21 +1,22 @@
 package bq_standard.commands;
 
-import java.io.File;
-import net.minecraft.client.resources.I18n;
+import betterquesting.api.utils.JsonHelper;
+import betterquesting.api.utils.NBTConverter;
+import bq_standard.rewards.loot.LootRegistry;
+import com.google.gson.JsonObject;
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
-import betterquesting.api.utils.JsonHelper;
-import bq_standard.rewards.loot.LootGroup;
-import bq_standard.rewards.loot.LootRegistry;
-import com.google.gson.JsonObject;
+
+import java.io.File;
 
 public class BQS_Commands extends CommandBase
 {
-
 	@Override
 	public String getCommandName()
 	{
@@ -25,11 +26,17 @@ public class BQS_Commands extends CommandBase
 	@Override
 	public String getCommandUsage(ICommandSender sender)
 	{
-		return "/bq_loot default [save|load], /bq_loot delete [all|<loot_index>]";
+		return "/bqs_loot default [save|load], /bqs_loot delete [all|<loot_id>]";
 	}
+	
+	@Override
+    public int getRequiredPermissionLevel()
+    {
+        return 2;
+    }
 
 	@Override
-	public void processCommand(ICommandSender sender, String[] args)
+	public void processCommand(ICommandSender sender, String[] args) throws CommandException
 	{
 		if(args.length != 2)
 		{
@@ -40,20 +47,20 @@ public class BQS_Commands extends CommandBase
 		{
 			if(args[1].equalsIgnoreCase("save"))
 			{
-				JsonObject jsonQ = new JsonObject();
-				LootRegistry.writeToJson(jsonQ);
-				JsonHelper.WriteToFile(new File(MinecraftServer.getServer().getFile("config/betterquesting/"), "DefaultLoot.json"), jsonQ);
+				NBTTagCompound jsonQ = new NBTTagCompound();
+				LootRegistry.INSTANCE.writeToNBT(jsonQ);
+				JsonHelper.WriteToFile(new File(MinecraftServer.getServer().getFile("config/betterquesting/"), "DefaultLoot.json"), NBTConverter.NBTtoJSON_Compound(jsonQ, new JsonObject(), true));
 				sender.addChatMessage(new ChatComponentText("Loot database set as global default"));
 			} else if(args[1].equalsIgnoreCase("load"))
 			{
 		    	File f1 = new File("config/betterquesting/DefaultLoot.json");
-				JsonObject j1 = new JsonObject();
+				NBTTagCompound j1;
 				
 				if(f1.exists())
 				{
-					j1 = JsonHelper.ReadFromFile(f1);
-					LootRegistry.readFromJson(j1);
-					LootRegistry.updateClients();
+					j1 = NBTConverter.JSONtoNBT_Object(JsonHelper.ReadFromFile(f1), new NBTTagCompound(), true);
+					LootRegistry.INSTANCE.readFromNBT(j1);
+					LootRegistry.INSTANCE.updateClients();
 					sender.addChatMessage(new ChatComponentText("Reloaded default loot database"));
 				} else
 				{
@@ -67,17 +74,22 @@ public class BQS_Commands extends CommandBase
 		{
 			if(args[1].equalsIgnoreCase("all"))
 			{
-				LootRegistry.lootGroups.clear();
-				LootRegistry.updateClients();
+				LootRegistry.INSTANCE.reset();
+				LootRegistry.INSTANCE.updateClients();
 				sender.addChatMessage(new ChatComponentText("Deleted all loot groups"));
 			} else
 			{
 				try
 				{
 					int idx = Integer.parseInt(args[1]);
-					LootGroup group = LootRegistry.lootGroups.remove(idx);
-					LootRegistry.updateClients();
-					sender.addChatMessage(new ChatComponentText("Deleted loot group '" + I18n.format(group.name) + "'"));
+					if(LootRegistry.INSTANCE.removeID(idx))
+                    {
+                        LootRegistry.INSTANCE.updateClients();
+                        sender.addChatMessage(new ChatComponentText("Deleted loot group with ID " + idx));
+                    } else
+                    {
+                        sender.addChatMessage(new ChatComponentText("Unable to find loot group with ID " + idx));
+                    }
 				} catch(Exception e)
 				{
 					throw new WrongUsageException(getCommandUsage(sender));

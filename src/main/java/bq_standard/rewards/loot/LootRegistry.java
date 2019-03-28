@@ -1,221 +1,154 @@
 package bq_standard.rewards.loot;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Random;
-import java.util.concurrent.CopyOnWriteArrayList;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.common.ChestGenHooks;
-import net.minecraftforge.event.world.WorldEvent;
-import org.apache.logging.log4j.Level;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.utils.BigItemStack;
-import betterquesting.api.utils.JsonHelper;
-import betterquesting.api.utils.NBTConverter;
-import bq_standard.core.BQ_Standard;
+import betterquesting.api2.storage.DBEntry;
+import betterquesting.api2.storage.INBTSaveLoad;
+import betterquesting.api2.storage.SimpleDatabase;
 import bq_standard.network.StandardPacketType;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.PlayerEvent;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraftforge.common.ChestGenHooks;
 
-public class LootRegistry
+import java.util.*;
+
+public class LootRegistry extends SimpleDatabase<LootGroup> implements INBTSaveLoad<NBTTagCompound>
 {
-	public static CopyOnWriteArrayList<LootGroup> lootGroups = new CopyOnWriteArrayList<LootGroup>();
-	public static boolean updateUI = false;
-	
-	public static void registerGroup(LootGroup group)
-	{
-		if(group == null || lootGroups.contains(group))
-		{
-			return;
-		}
-		
-		lootGroups.add(group);
-	}
-	
-	/**
-	 * 
+    // TODO: Use proper encapsulation
+    // TODO: Add localised group names
+    // TODO: Use a better UI updating method
+    // TODO: Add claim limits and store by UUID
+    
+    public static final LootRegistry INSTANCE = new LootRegistry();
+    
+    private final Comparator<DBEntry<LootGroup>> groupSorter = Comparator.comparingInt(o -> o.getValue().weight);
+	public boolean updateUI = false;
+    
+    public int getTotalWeight()
+    {
+        DBEntry<LootGroup>[] groups = this.getEntries();
+        
+        int i = 0;
+        
+        for(DBEntry<LootGroup> lg : groups)
+        {
+            i += lg.getValue().weight;
+        }
+        
+        return i;
+    }
+    
+    /**
+	 *
 	 * @param weight A value between 0 and 1 that represents how common this reward is (i.e. higher values mean rarer loot)
-	 * @param rand
+	 * @param rand The random instance used to pick the group
 	 * @return a loot group with the corresponding rarity of loot
 	 */
-	public static LootGroup getWeightedGroup(float weight, Random rand)
-	{
-		int total = getTotalWeight();
-		
-		if(total <= 0)
-		{
-			BQ_Standard.logger.log(Level.WARN, "Unable to get random loot group! Reason: No registered groups/weights");
-			return null;
-		}
+    public LootGroup getWeightedGroup(float weight, Random rand)
+    {
+        final int total = getTotalWeight();
+        
+        if(total <= 0) return null;
 		
 		float r = rand.nextFloat() * total/4F + weight*total*0.75F;
 		int cnt = 0;
 		
-		ArrayList<LootGroup> sorted = new ArrayList<LootGroup>(lootGroups);
-		Collections.sort(sorted);
+		DBEntry<LootGroup>[] sorted = getEntries();
+        Arrays.sort(sorted, groupSorter);
 		
-		for(LootGroup entry : sorted)
+		for(DBEntry<LootGroup> entry : sorted)
 		{
-			cnt += entry.weight;
+			cnt += entry.getValue().weight;
 			if(cnt >= r)
 			{
-				return entry;
+				return entry.getValue();
 			}
 		}
 		
-		BQ_Standard.logger.log(Level.WARN, "Unable to get random loot group! Reason: Unknown");
 		return null;
-	}
-	
-	public static int getTotalWeight()
-	{
-		int i = 0;
-		
-		for(LootGroup group : lootGroups)
+    }
+    
+    @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound tag)
+    {
+		NBTTagList jRew = new NBTTagList();
+		for(DBEntry<LootGroup> entry : getEntries())
 		{
-			i += group.weight;
+			NBTTagCompound jGrp = entry.getValue().writeToNBT(new NBTTagCompound());
+			jGrp.setInteger("ID", entry.getID());
+			jRew.appendTag(jGrp);
+		}
+		tag.setTag("groups", jRew);
+		
+        return tag;
+    }
+    
+    @Override
+    public void readFromNBT(NBTTagCompound tag)
+    {
+		this.reset();
+		
+		List<LootGroup> legacyGroups = new ArrayList<>();
+		
+		NBTTagList list = tag.getTagList("groups", 10);
+		for(int i = 0; i < list.tagCount(); i++)
+		{
+			NBTTagCompound entry = list.getCompoundTagAt(i);
+			int id = entry.hasKey("ID", 99) ? entry.getInteger("ID") : -1;
+			
+			LootGroup group = new LootGroup();
+			group.readFromNBT(entry);
+			
+			if(id >= 0)
+            {
+                this.add(id, group);
+            } else
+            {
+                legacyGroups.add(group);
+            }
 		}
 		
-		return i;
-	}
+		for(LootGroup group : legacyGroups)
+        {
+            this.add(this.nextID(), group);
+        }
+		
+		updateUI = true;
+    }
 	
-	public static ArrayList<BigItemStack> getStandardLoot(Random rand)
-	{
-		ArrayList<BigItemStack> stacks = new ArrayList<BigItemStack>();
-		
-		int i = 1 + rand.nextInt(7);
-		
-		while(i > 0)
-		{
-			stacks.add(new BigItemStack(ChestGenHooks.getOneItem(ChestGenHooks.DUNGEON_CHEST, rand)));
-			i--;
-		}
-		
-		return stacks;
-	}
-	
-	public static void updateClients()
+	public void updateClients()
 	{
 		NBTTagCompound tags = new NBTTagCompound();
-		JsonObject json = new JsonObject();
-		LootRegistry.writeToJson(json);
-		tags.setTag("Database", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
+		NBTTagCompound json = new NBTTagCompound();
+		LootRegistry.INSTANCE.writeToNBT(json);
+		tags.setTag("Database", json);
 		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToAll(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags));
 	}
 	
-	public static void sendDatabase(EntityPlayerMP player)
+	public void sendDatabase(EntityPlayerMP player)
 	{
 		NBTTagCompound tags = new NBTTagCompound();
-		JsonObject json = new JsonObject();
-		LootRegistry.writeToJson(json);
-		tags.setTag("Database", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
+		NBTTagCompound json = new NBTTagCompound();
+		LootRegistry.INSTANCE.writeToNBT(json);
+		tags.setTag("Database", json);
 		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToPlayer(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags), player);
 	}
 	
-	public static void writeToJson(JsonObject json)
+	public static List<BigItemStack> getStandardLoot(EntityPlayer player)
 	{
-		JsonArray jRew = new JsonArray();
-		for(LootGroup entry : lootGroups)
-		{
-			JsonObject jGrp = new JsonObject();
-			entry.writeToJson(jGrp);
-			jRew.add(jGrp);
-		}
-		json.add("groups", jRew);
-	}
-	
-	public static void readFromJson(JsonObject json)
-	{
-		lootGroups.clear();
-		for(JsonElement entry : JsonHelper.GetArray(json, "groups"))
-		{
-			if(entry == null || !entry.isJsonObject())
-			{
-				continue;
-			}
-			
-			LootGroup group = new LootGroup();
-			group.readFromJson(entry.getAsJsonObject());
-			
-			lootGroups.add(group);
-		}
+		List<BigItemStack> stacks = new ArrayList<>();
 		
-		updateUI = true;
-	}
-	
-	static File worldDir = null;
-	
-	@SubscribeEvent
-	public void onWorldLoad(WorldEvent.Load event)
-	{
-		if(event.world.isRemote || worldDir != null)
-		{
-			return;
-		}
+		int i = 1 + player.getRNG().nextInt(7);
+		while(i > 0)
+        {
+            stacks.add(new BigItemStack(ChestGenHooks.getOneItem(ChestGenHooks.DUNGEON_CHEST, player.getRNG())));
+            i--;
+        }
 		
-		MinecraftServer server = MinecraftServer.getServer();
-		
-		if(BQ_Standard.proxy.isClient())
-		{
-			worldDir = server.getFile("saves/" + server.getFolderName());
-		} else
-		{
-			worldDir = server.getFile(server.getFolderName());
-		}
-    	
-    	File f1 = new File(worldDir, "QuestLoot.json");
-		JsonObject j1 = new JsonObject();
-		
-		if(f1.exists())
-		{
-			j1 = JsonHelper.ReadFromFile(f1);
-		} else
-		{
-			f1 = server.getFile("config/betterquesting/DefaultLoot.json");
-			
-			if(f1.exists())
-			{
-				j1 = JsonHelper.ReadFromFile(f1);
-			}
-		}
-		
-		readFromJson(j1);
-	}
-	
-	@SubscribeEvent
-	public void onWorldSave(WorldEvent.Save event)
-	{
-		if(!event.world.isRemote && worldDir != null && event.world.provider.dimensionId == 0)
-		{
-			JsonObject jsonQ = new JsonObject();
-			writeToJson(jsonQ);
-			JsonHelper.WriteToFile(new File(worldDir, "QuestLoot.json"), jsonQ);
-		}
-	}
-	
-	@SubscribeEvent
-	public void onWorldUnload(WorldEvent.Unload event)
-	{
-		if(!event.world.isRemote && !MinecraftServer.getServer().isServerRunning())
-		{
-			worldDir = null;
-		}
-	}
-	
-	@SubscribeEvent
-	public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event)
-	{
-		if(!event.player.worldObj.isRemote && event.player instanceof EntityPlayerMP)
-		{
-			sendDatabase((EntityPlayerMP)event.player);
-		}
+		return stacks;
 	}
 }

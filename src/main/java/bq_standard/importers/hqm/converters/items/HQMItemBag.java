@@ -1,8 +1,8 @@
 package bq_standard.importers.hqm.converters.items;
 
-import net.minecraft.nbt.NBTTagCompound;
 import betterquesting.api.utils.BigItemStack;
 import bq_standard.core.BQ_Standard;
+import net.minecraft.nbt.NBTTagCompound;
 
 public class HQMItemBag implements HQMItem
 {

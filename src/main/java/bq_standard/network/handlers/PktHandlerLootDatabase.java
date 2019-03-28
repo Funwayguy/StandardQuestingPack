@@ -1,26 +1,25 @@
 package bq_standard.network.handlers;
 
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.network.IPacketHandler;
+import bq_standard.core.BQ_Standard;
+import bq_standard.network.StandardPacketType;
+import bq_standard.rewards.loot.LootRegistry;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.network.IPacketHandler;
-import betterquesting.api.utils.NBTConverter;
-import bq_standard.core.BQ_Standard;
-import bq_standard.network.StandardPacketType;
-import bq_standard.rewards.loot.LootRegistry;
-import com.google.gson.JsonObject;
 
 public class PktHandlerLootDatabase implements IPacketHandler
 {
 	@Override
 	public void handleServer(NBTTagCompound data, EntityPlayerMP sender)
 	{
-		if(!MinecraftServer.getServer().getConfigurationManager().func_152596_g(sender.getGameProfile()))
+	    if(sender == null || sender.mcServer == null) return;
+	    
+		if(!sender.mcServer.getConfigurationManager().func_152596_g(sender.getGameProfile()))
 		{
 			BQ_Standard.logger.log(Level.WARN, "Player " + sender.getCommandSenderName() + " (UUID:" + QuestingAPI.getQuestingUUID(sender) + ") tried to edit loot chests without OP permissions!");
 			sender.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.RED + "You need to be OP to edit loot!"));
@@ -29,14 +28,14 @@ public class PktHandlerLootDatabase implements IPacketHandler
 		
 		BQ_Standard.logger.log(Level.INFO, "Player " + sender.getCommandSenderName() + " edited loot chests");
 		
-		LootRegistry.readFromJson(NBTConverter.NBTtoJSON_Compound(data.getCompoundTag("Database"), new JsonObject()));
-		LootRegistry.updateClients();
+		LootRegistry.INSTANCE.readFromNBT(data.getCompoundTag("Database"));
+		LootRegistry.INSTANCE.updateClients();
 	}
 	
 	@Override
 	public void handleClient(NBTTagCompound data)
 	{
-		LootRegistry.readFromJson(NBTConverter.NBTtoJSON_Compound(data.getCompoundTag("Database"), new JsonObject()));
+		LootRegistry.INSTANCE.readFromNBT(data.getCompoundTag("Database"));
 	}
 
 	@Override

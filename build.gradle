@@ -17,15 +17,15 @@ buildscript {
 
 apply plugin: 'forge'
 
-version = "CI_MOD_VERSION"
-group= "bq_standard" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "StandardExpansion"
+version = modVersion
+group= modGroup
+archivesBaseName = modBaseName
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 minecraft {
-    version = "1.7.10-10.13.4.1558-1.7.10"
+    version = project.forgeVersion
 }
 
 dependencies {

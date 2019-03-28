@@ -1,35 +1,32 @@
 package bq_standard.importers.hqm.converters.rewards;
 
-import java.util.ArrayList;
-import java.util.List;
 import betterquesting.api.questing.rewards.IReward;
 import bq_standard.rewards.RewardCommand;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 
-public class HQMRewardCommand implements HQMReward
+import java.util.ArrayList;
+import java.util.List;
+
+public class HQMRewardCommand
 {
-	@Override
-	public List<IReward> Convert(JsonElement json)
+	public IReward[] convertReward(JsonElement json)
 	{
-		List<IReward> rList = new ArrayList<IReward>();
+		if(!(json instanceof JsonArray)) return null;
 		
-		if(json == null || !json.isJsonArray())
-		{
-			return rList;
-		}
+		List<IReward> rList = new ArrayList<>();
 		
 		for(JsonElement je : json.getAsJsonArray())
 		{
-			if(je == null || !je.isJsonPrimitive())
-			{
-				continue;
-			}
-			
+			if(!(je instanceof JsonPrimitive)) continue;
 			RewardCommand reward = new RewardCommand();
 			reward.command = je.getAsString();
+			reward.viaPlayer = true;
+			reward.hideCmd = true;
 			rList.add(reward);
 		}
 		
-		return rList;
+		return rList.toArray(new IReward[0]);
 	}
 }

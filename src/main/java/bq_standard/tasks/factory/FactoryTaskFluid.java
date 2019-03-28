@@ -1,19 +1,15 @@
 package bq_standard.tasks.factory;
 
-import net.minecraft.util.ResourceLocation;
-import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.misc.IFactory;
+import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api2.registry.IFactoryData;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskFluid;
-import com.google.gson.JsonObject;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
-public final class FactoryTaskFluid implements IFactory<TaskFluid>
+public class FactoryTaskFluid implements IFactoryData<ITask, NBTTagCompound>
 {
 	public static final FactoryTaskFluid INSTANCE = new FactoryTaskFluid();
-	
-	private FactoryTaskFluid()
-	{
-	}
 	
 	@Override
 	public ResourceLocation getRegistryName()
@@ -28,10 +24,10 @@ public final class FactoryTaskFluid implements IFactory<TaskFluid>
 	}
 
 	@Override
-	public TaskFluid loadFromJson(JsonObject json)
+	public TaskFluid loadFromData(NBTTagCompound json)
 	{
 		TaskFluid task = new TaskFluid();
-		task.readFromJson(json, EnumSaveType.CONFIG);
+		task.readFromNBT(json);
 		return task;
 	}
 	

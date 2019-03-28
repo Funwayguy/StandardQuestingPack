@@ -1,41 +1,50 @@
 package bq_standard.importers.hqm.converters.rewards;
 
-import java.util.ArrayList;
-import java.util.List;
 import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api.utils.JsonHelper;
 import bq_standard.importers.hqm.HQMQuestImporter;
+import bq_standard.importers.hqm.converters.HQMRep;
 import bq_standard.rewards.RewardScoreboard;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
-public class HQMRewardReputation implements HQMReward
+import java.util.ArrayList;
+import java.util.List;
+
+public class HQMRewardReputation
 {
-	@Override
-	public List<IReward> Convert(JsonElement json)
+	public IReward[] convertReward(JsonElement json)
 	{
-		List<IReward> rList = new ArrayList<IReward>();
-		
-		if(json == null || !json.isJsonArray())
-		{
-			return rList;
-		}
+		if(!(json instanceof JsonArray)) return null;
+		List<IReward> rList = new ArrayList<>();
 		
 		for(JsonElement je : json.getAsJsonArray())
 		{
-			if(je == null || !je.isJsonObject())
-			{
-				continue;
-			}
+			if(!(je instanceof JsonObject)) continue;
+			JsonObject jRep = je.getAsJsonObject();
 			
-			int index = JsonHelper.GetNumber(je.getAsJsonObject(), "reputation", 0).intValue();
-			int value = JsonHelper.GetNumber(je.getAsJsonObject(), "value", 1).intValue();
-			String name = HQMQuestImporter.instance.reputations.containsKey(index)? HQMQuestImporter.instance.reputations.get(index) : "Reputation (" + index + ")";
+			JsonElement jid = jRep.get("reputation");
+			if(jid == null || !jid.isJsonPrimitive()) continue;
+			
+			String repId;
+			if(jid.getAsJsonPrimitive().isString())
+            {
+                repId = JsonHelper.GetString(jRep, "reputation", "");
+            } else
+            {
+                repId = JsonHelper.GetNumber(jRep, "reputation", 0).toString();
+            }
+            
+			HQMRep repObj = HQMQuestImporter.INSTANCE.reputations.get(repId);
+			if(repObj == null) continue;
+			
 			RewardScoreboard reward = new RewardScoreboard();
-			reward.score = name;
-			reward.value = value;
+			reward.score = repObj.rName;
+			reward.value = JsonHelper.GetNumber(jRep, "value", 1).intValue();
 			rList.add(reward);
 		}
 		
-		return rList;
+		return rList.toArray(new IReward[0]);
 	}
 }

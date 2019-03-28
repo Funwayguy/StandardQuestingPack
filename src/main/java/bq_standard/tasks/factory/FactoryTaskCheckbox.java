@@ -1,19 +1,15 @@
 package bq_standard.tasks.factory;
 
-import net.minecraft.util.ResourceLocation;
-import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.misc.IFactory;
+import betterquesting.api.questing.tasks.ITask;
+import betterquesting.api2.registry.IFactoryData;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskCheckbox;
-import com.google.gson.JsonObject;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
-public final class FactoryTaskCheckbox implements IFactory<TaskCheckbox>
+public class FactoryTaskCheckbox implements IFactoryData<ITask, NBTTagCompound>
 {
 	public static final FactoryTaskCheckbox INSTANCE = new FactoryTaskCheckbox();
-	
-	private FactoryTaskCheckbox()
-	{
-	}
 	
 	@Override
 	public ResourceLocation getRegistryName()
@@ -28,10 +24,10 @@ public final class FactoryTaskCheckbox implements IFactory<TaskCheckbox>
 	}
 
 	@Override
-	public TaskCheckbox loadFromJson(JsonObject json)
+	public TaskCheckbox loadFromData(NBTTagCompound json)
 	{
 		TaskCheckbox task = new TaskCheckbox();
-		task.readFromJson(json, EnumSaveType.CONFIG);
+		task.readFromNBT(json);
 		return task;
 	}
 	

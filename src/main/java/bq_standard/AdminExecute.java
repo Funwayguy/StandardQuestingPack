@@ -11,7 +11,7 @@ import net.minecraft.world.World;
  */
 public class AdminExecute implements ICommandSender
 {
-	EntityPlayer player;
+	private final EntityPlayer player;
 	
 	public AdminExecute(EntityPlayer player)
 	{

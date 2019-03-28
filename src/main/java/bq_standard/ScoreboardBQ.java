@@ -1,24 +1,21 @@
 package bq_standard;
 
-import java.util.Map.Entry;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.network.QuestingPacket;
-import betterquesting.api.utils.JsonHelper;
-import betterquesting.api.utils.NBTConverter;
 import bq_standard.network.StandardPacketType;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+
+import java.util.Map.Entry;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ScoreboardBQ
 {
-	static ConcurrentHashMap<String, ScoreBQ> objectives = new ConcurrentHashMap<String, ScoreBQ>();
+	static ConcurrentHashMap<String, ScoreBQ> objectives = new ConcurrentHashMap<>();
 	
 	public static int getScore(UUID uuid, String scoreName)
 	{
@@ -54,46 +51,40 @@ public class ScoreboardBQ
 	public static void SendToClient(EntityPlayerMP player)
 	{
 		NBTTagCompound tags = new NBTTagCompound();
-		JsonObject json = new JsonObject();
-		writeJson(json);
-		tags.setTag("data", NBTConverter.JSONtoNBT_Object(json, new NBTTagCompound()));
+		tags.setTag("data", writeJson(new NBTTagList()));
 		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToPlayer(new QuestingPacket(StandardPacketType.SCORE_SYNC.GetLocation(), tags), player);
 	}
 	
-	public static void readJson(JsonObject json)
+	public static void readJson(NBTTagList json)
 	{
 		objectives.clear();
-		for(JsonElement element : JsonHelper.GetArray(json, "objectives"))
+		
+		for(int i = 0; i < json.tagCount(); i++)
 		{
-			if(element == null || !element.isJsonObject())
-			{
-				continue;
-			}
-			
-			JsonObject jObj = element.getAsJsonObject();
-			String name = JsonHelper.GetString(jObj, "name", "");
-			ScoreBQ score = new ScoreBQ();
+			NBTTagCompound jObj = json.getCompoundTagAt(i);
+			String name = jObj.getString("name");
 			
 			if(name.length() <= 0)
 			{
 				continue;
 			}
 			
-			score.readJson(jObj);
+			ScoreBQ score = new ScoreBQ();
+			score.readJson(jObj.getTagList("scores", 10));
 			objectives.put(name, score);
 		}
 	}
 	
-	public static void writeJson(JsonObject json)
+	public static NBTTagList writeJson(NBTTagList json)
 	{
-		JsonArray jAry = new JsonArray();
 		for(Entry<String,ScoreBQ> entry : objectives.entrySet())
 		{
-			JsonObject jObj = new JsonObject();
-			jObj.addProperty("name", entry.getKey());
-			entry.getValue().writeJson(jObj);
-			jAry.add(jObj);
+			NBTTagCompound jObj = new NBTTagCompound();
+			jObj.setString("name", entry.getKey());
+			jObj.setTag("scores", entry.getValue().writeJson(new NBTTagList()));
+			json.appendTag(jObj);
 		}
-		json.add("objectives", jAry);
+		
+		return json;
 	}
 }

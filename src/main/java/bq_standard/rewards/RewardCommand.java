@@ -1,25 +1,23 @@
 package bq_standard.rewards;
 
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.rewards.IReward;
+import betterquesting.api2.client.gui.misc.IGuiRect;
+import betterquesting.api2.client.gui.panels.IGuiPanel;
+import bq_standard.AdminExecute;
+import bq_standard.client.gui.rewards.PanelRewardCommand;
+import bq_standard.handlers.EventHandler;
+import bq_standard.rewards.factory.FactoryRewardCommand;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.command.server.CommandBlockLogic;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.client.gui.misc.IGuiEmbedded;
-import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.jdoc.IJsonDoc;
-import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.rewards.IReward;
-import betterquesting.api.utils.JsonHelper;
-import bq_standard.AdminExecute;
-import bq_standard.client.gui.rewards.GuiRewardCommand;
-import bq_standard.handlers.EventHandler;
-import bq_standard.rewards.factory.FactoryRewardCommand;
-import com.google.gson.JsonObject;
 
 public class RewardCommand implements IReward
 {
@@ -59,50 +57,36 @@ public class RewardCommand implements IReward
 		
 		if(viaPlayer)
 		{
-			EventHandler.runnable.add(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					server.getCommandManager().executeCommand(new AdminExecute(player), finCom);
-				}
-			});
+			EventHandler.scheduleServerTask(() -> server.getCommandManager().executeCommand(new AdminExecute(player), finCom));
 		} else
 		{
 			final RewardCommandSender cmdSender = new RewardCommandSender(player.worldObj, (int)player.posX, (int)player.posY, (int)player.posZ);
 			
-			EventHandler.runnable.add(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					server.getCommandManager().executeCommand(cmdSender, finCom);
-				}
-			});
+			EventHandler.scheduleServerTask(() -> server.getCommandManager().executeCommand(cmdSender, finCom));
 		}
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json)
 	{
-		command = JsonHelper.GetString(json, "command", "/say VAR_NAME Claimed a reward");
-		hideCmd = JsonHelper.GetBoolean(json, "hideCommand", false);
-		viaPlayer = JsonHelper.GetBoolean(json, "viaPlayer", false);
+		command = json.getString("command");
+		hideCmd = json.getBoolean("hideCommand");
+		viaPlayer = json.getBoolean("viaPlayer");
 	}
 	
 	@Override
-	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
-		json.addProperty("command", command);
-		json.addProperty("hideCommand", hideCmd);
-		json.addProperty("viaPlayer", viaPlayer);
+		json.setString("command", command);
+		json.setBoolean("hideCommand", hideCmd);
+		json.setBoolean("viaPlayer", viaPlayer);
 		return json;
 	}
 	
 	@Override
-	public IGuiEmbedded getRewardGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	public IGuiPanel getRewardGui(IGuiRect rect, IQuest quest)
 	{
-		return new GuiRewardCommand(this, posX, posY, sizeX, sizeY);
+	    return new PanelRewardCommand(rect, quest, this);
 	}
 	
 	@Override
@@ -113,49 +97,48 @@ public class RewardCommand implements IReward
 	
 	public static class RewardCommandSender extends CommandBlockLogic
 	{
-		World world;
-		ChunkCoordinates blockLoc;
+		private final World world;
+		private final ChunkCoordinates blockLoc;
 		
 		public RewardCommandSender(World world, int x, int y, int z)
 	    {
 	    	blockLoc = new ChunkCoordinates(x, y, z);
 	    	this.world = world;
 	    }
-		
+     
 		@Override
 		public ChunkCoordinates getPlayerCoordinates()
 		{
 			return blockLoc;
 		}
-		
+  
 		@Override
 		public World getEntityWorld()
 		{
 			return world;
 		}
-		
+  
 		@Override
-		public void func_145756_e(){}
-		
+		public void func_145756_e()
+        {
+        
+        }
+        
 		@Override
 		public int func_145751_f()
 		{
 			return 0;
 		}
-		
+  
 		@Override
-		public void func_145757_a(ByteBuf p_145757_1_){}
-	    
-	    @Override
+		public void func_145757_a(ByteBuf p_145757_1_)
+		{
+		}
+  
+		@Override
 	    public String getCommandSenderName()
 	    {
 	        return "BetterQuesting";
 	    }
-	}
-
-	@Override
-	public IJsonDoc getDocumentation()
-	{
-		return null;
 	}
 }

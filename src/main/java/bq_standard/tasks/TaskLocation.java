@@ -1,35 +1,35 @@
 package bq_standard.tasks;
 
-import java.util.ArrayList;
-import java.util.UUID;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api2.client.gui.misc.IGuiRect;
+import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
+import bq_standard.client.gui.tasks.PanelTaskLocation;
+import bq_standard.core.BQ_Standard;
+import bq_standard.tasks.factory.FactoryTaskLocation;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
+import net.minecraft.world.WorldProvider;
+import net.minecraftforge.common.DimensionManager;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.client.gui.misc.IGuiEmbedded;
-import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.jdoc.IJsonDoc;
-import betterquesting.api.properties.NativeProps;
-import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.tasks.ITask;
-import betterquesting.api.questing.tasks.ITickableTask;
-import betterquesting.api.utils.JsonHelper;
-import bq_standard.client.gui.tasks.GuiTaskLocation;
-import bq_standard.core.BQ_Standard;
-import bq_standard.tasks.factory.FactoryTaskLocation;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 
-public class TaskLocation implements ITask, ITickableTask
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
+
+public class TaskLocation implements ITaskTickable
 {
-	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
+	private ArrayList<UUID> completeUsers = new ArrayList<>();
 	public String name = "New Location";
 	public int x = 0;
 	public int y = 0;
@@ -38,6 +38,8 @@ public class TaskLocation implements ITask, ITickableTask
 	public int range = -1;
 	public boolean visible = false;
 	public boolean hideInfo = false;
+	public boolean invertDistance = false;
+	public boolean taxiCab = false;
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -79,15 +81,11 @@ public class TaskLocation implements ITask, ITickableTask
 	}
 	
 	@Override
-	@Deprecated
-	public void update(EntityPlayer player, IQuest quest){}
-	
-	@Override
-	public void updateTask(EntityPlayer player, IQuest quest)
+	public void tickTask(@Nonnull DBEntry<IQuest> quest, @Nonnull EntityPlayer player)
 	{
-		if(player.ticksExisted%100 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE)) // Only auto-detect every 5 seconds
+		if(player.ticksExisted%100 == 0) // Only auto-detect every 5 seconds
 		{
-			detect(player, quest);
+			detect(player, quest.getValue());
 		}
 	}
 	
@@ -96,26 +94,19 @@ public class TaskLocation implements ITask, ITickableTask
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
-		if(!player.isEntityAlive() || isComplete(playerID))
-		{
-			return; // Keeps ray casting calls to a minimum
-		}
+		if(!player.isEntityAlive() || isComplete(playerID)) return;
 		
-		if(player.dimension == dim && (range <= 0 || player.getDistance(x, y, z) <= range))
+		if(player.dimension == dim && (range <= 0 || (getDistance(player) <= range) != invertDistance))
 		{
 			if(visible && range > 0) // Do not do ray casting with infinite range!
 			{
 				Vec3 pPos = Vec3.createVectorHelper(player.posX, player.posY + player.getEyeHeight(), player.posZ);
 				Vec3 tPos = Vec3.createVectorHelper(x, y, z);
-				boolean liquids = false;
-				MovingObjectPosition mop = player.worldObj.func_147447_a(pPos, tPos, liquids, !liquids, false);
+				MovingObjectPosition mop = player.worldObj.func_147447_a(pPos, tPos, false, true, false);
 				
 				if(mop == null || mop.typeOfHit != MovingObjectType.BLOCK)
 				{
 					setComplete(playerID);
-				} else
-				{
-					return;
 				}
 			} else
 			{
@@ -124,76 +115,72 @@ public class TaskLocation implements ITask, ITickableTask
 		}
 	}
 	
+	private double getDistance(EntityPlayer player)
+    {
+        if(!taxiCab)
+        {
+            return player.getDistance(x, y, z);
+        } else
+        {
+            return Math.abs(player.posX - x) + Math.abs(player.posY - y) + Math.abs(player.posZ - z);
+        }
+    }
+	
 	@Override
-	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			return this.writeProgressToJson(json);
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return json;
-		}
-		
-		json.addProperty("name", name);
-		json.addProperty("posX", x);
-		json.addProperty("posY", y);
-		json.addProperty("posZ", z);
-		json.addProperty("dimension", dim);
-		json.addProperty("range", range);
-		json.addProperty("visible", visible);
-		json.addProperty("hideInfo", hideInfo);
+		json.setString("name", name);
+		json.setInteger("posX", x);
+		json.setInteger("posY", y);
+		json.setInteger("posZ", z);
+		json.setInteger("dimension", dim);
+		json.setInteger("range", range);
+		json.setBoolean("visible", visible);
+		json.setBoolean("hideInfo", hideInfo);
+		json.setBoolean("invertDistance", invertDistance);
+		json.setBoolean("taxiCabDist", taxiCab);
 		
 		return json;
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			this.readProgressFromJson(json);
-			return;
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return;
-		}
-		
-		name = JsonHelper.GetString(json, "name", "New Location");
-		x = JsonHelper.GetNumber(json, "posX", 0).intValue();
-		y = JsonHelper.GetNumber(json, "posY", 0).intValue();
-		z = JsonHelper.GetNumber(json, "posZ", 0).intValue();
-		dim = JsonHelper.GetNumber(json, "dimension", 0).intValue();
-		range = JsonHelper.GetNumber(json, "range", -1).intValue();
-		visible = JsonHelper.GetBoolean(json, "visible", false);
-		hideInfo = JsonHelper.GetBoolean(json, "hideInfo", false);
+		name = json.getString("name");
+		x = json.getInteger("posX");
+		y = json.getInteger("posY");
+		z = json.getInteger("posZ");
+		dim = json.getInteger("dimension");
+		range = json.getInteger("range");
+		visible = json.getBoolean("visible");
+		hideInfo = json.getBoolean("hideInfo");
+		invertDistance = json.getBoolean("invertDistance");
+		taxiCab = json.getBoolean("taxiCabDist");
 	}
-
-	private JsonObject writeProgressToJson(JsonObject json)
+	
+	@Override
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
 	{
-		JsonArray jArray = new JsonArray();
+		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
 		{
-			jArray.add(new JsonPrimitive(uuid.toString()));
+			jArray.appendTag(new NBTTagString(uuid.toString()));
 		}
-		json.add("completeUsers", jArray);
+		json.setTag("completeUsers", jArray);
 		
 		return json;
 	}
-
-	private void readProgressFromJson(JsonObject json)
+ 
+	@Override
+	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers = new ArrayList<UUID>();
-		for(JsonElement entry : JsonHelper.GetArray(json, "completeUsers"))
+		completeUsers = new ArrayList<>();
+		NBTTagList cList = json.getTagList("completeUsers", 8);
+		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			if(entry == null || !entry.isJsonPrimitive())
-			{
-				continue;
-			}
-			
 			try
 			{
-				completeUsers.add(UUID.fromString(entry.getAsString()));
+				completeUsers.add(UUID.fromString(cList.getStringTagAt(i)));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
@@ -202,9 +189,9 @@ public class TaskLocation implements ITask, ITickableTask
 	}
 
 	@Override
-	public IGuiEmbedded getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-		return new GuiTaskLocation(this, posX, posY, sizeX, sizeY);
+	    return new PanelTaskLocation(rect, quest, this);
 	}
 
 	@Override
@@ -212,10 +199,32 @@ public class TaskLocation implements ITask, ITickableTask
 	{
 		return null;
 	}
-
-	@Override
-	public IJsonDoc getDocumentation()
+    
+    private static final HashMap<Integer,String> dimNameCache = new HashMap<>();
+	
+    public static String getDimName(int dim)
 	{
-		return null;
+	    if(dimNameCache.containsKey(dim))
+        {
+            return dimNameCache.get(dim);
+        }
+        
+	    try
+        {
+            WorldProvider prov = DimensionManager.createProviderFor(dim);
+            if(prov != null)
+            {
+                dimNameCache.put(dim, prov.getDimensionName());
+                return prov.getDimensionName();
+            } else
+            {
+                dimNameCache.put(dim, "" + dim);
+                return "" + dim;
+            }
+        } catch(Exception e)
+        {
+            dimNameCache.put(dim, "" + dim);
+            return "" + dim;
+        }
 	}
 }

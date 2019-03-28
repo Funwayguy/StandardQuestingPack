@@ -1,7 +1,5 @@
 package bq_standard.importers.hqm.converters.tasks;
 
-import java.util.ArrayList;
-import java.util.List;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.JsonHelper;
 import bq_standard.importers.hqm.HQMUtilities;
@@ -10,19 +8,21 @@ import bq_standard.tasks.TaskRetrieval;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class HQMTaskDetect implements HQMTask
+import java.util.ArrayList;
+import java.util.List;
+
+public class HQMTaskDetect
 {
-	boolean consume = false;
+	private final boolean consume;
 	
 	public HQMTaskDetect(boolean consume)
 	{
 		this.consume = consume;
 	}
 	
-	@Override
-	public List<ITask> Convert(JsonObject json)
+	public ITask[] convertTask(JsonObject json)
 	{
-		List<ITask> tList = new ArrayList<ITask>();
+		List<ITask> tList = new ArrayList<>();
 		TaskRetrieval retTask = new TaskRetrieval();
 		TaskFluid fluTask = new TaskFluid();
 		
@@ -30,11 +30,7 @@ public class HQMTaskDetect implements HQMTask
 		
 		for(JsonElement je : JsonHelper.GetArray(json, "items"))
 		{
-			if(je == null || !je.isJsonObject())
-			{
-				continue;
-			}
-			
+			if(!(je instanceof JsonObject)) continue;
 			JsonObject ji = je.getAsJsonObject();
 			
 			if(ji.has("fluid"))
@@ -46,16 +42,10 @@ public class HQMTaskDetect implements HQMTask
 			}
 		}
 		
-		if(retTask.requiredItems.size() > 0)
-		{
-			tList.add(retTask);
-		}
+		if(retTask.requiredItems.size() > 0) tList.add(retTask);
 		
-		if(fluTask.requiredFluids.size() > 0)
-		{
-			tList.add(fluTask);
-		}
+		if(fluTask.requiredFluids.size() > 0) tList.add(fluTask);
 		
-		return tList;
+		return tList.toArray(new ITask[0]);
 	}
 }

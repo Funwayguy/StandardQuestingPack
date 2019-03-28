@@ -1,20 +1,18 @@
 package bq_standard.rewards;
 
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.ResourceLocation;
-import betterquesting.api.client.gui.misc.IGuiEmbedded;
-import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.jdoc.IJsonDoc;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
-import betterquesting.api.utils.JsonHelper;
+import betterquesting.api2.client.gui.misc.IGuiRect;
+import betterquesting.api2.client.gui.panels.IGuiPanel;
 import bq_standard.XPHelper;
-import bq_standard.client.gui.rewards.GuiRewardXP;
+import bq_standard.client.gui.rewards.PanelRewardXP;
 import bq_standard.rewards.factory.FactoryRewardXP;
-import com.google.gson.JsonObject;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
 public class RewardXP implements IReward
 {
@@ -42,40 +40,34 @@ public class RewardXP implements IReward
 	@Override
 	public void claimReward(EntityPlayer player, IQuest quest)
 	{
-		XPHelper.AddXP(player, !levels? amount : XPHelper.getLevelXP(amount));
+		XPHelper.addXP(player, !levels? amount : XPHelper.getLevelXP(amount));
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json)
 	{
-		amount = JsonHelper.GetNumber(json, "amount", 1).intValue();
-		levels = JsonHelper.GetBoolean(json, "isLevels", true);
+		amount = json.getInteger("amount");
+		levels = json.getBoolean("isLevels");
 	}
 	
 	@Override
-	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
-		json.addProperty("amount", amount);
-		json.addProperty("isLevels", levels);
+		json.setInteger("amount", amount);
+		json.setBoolean("isLevels", levels);
 		return json;
 	}
 	
 	@Override
 	@SideOnly(Side.CLIENT)
-	public IGuiEmbedded getRewardGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	public IGuiPanel getRewardGui(IGuiRect rect, IQuest quest)
 	{
-		return new GuiRewardXP(this, posX, posY, sizeX, sizeY);
+	    return new PanelRewardXP(rect, quest, this);
 	}
 	
 	@Override
 	@SideOnly(Side.CLIENT)
 	public GuiScreen getRewardEditor(GuiScreen screen, IQuest quest)
-	{
-		return null;
-	}
-
-	@Override
-	public IJsonDoc getDocumentation()
 	{
 		return null;
 	}

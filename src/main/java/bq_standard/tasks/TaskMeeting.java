@@ -1,41 +1,37 @@
 package bq_standard.tasks;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.utils.ItemComparison;
+import betterquesting.api2.cache.QuestCache;
+import betterquesting.api2.client.gui.misc.IGuiRect;
+import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
+import bq_standard.client.gui.editors.tasks.GuiEditTaskMeeting;
+import bq_standard.client.gui.tasks.PanelTaskMeeting;
+import bq_standard.core.BQ_Standard;
+import bq_standard.tasks.factory.FactoryTaskMeeting;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.client.gui.misc.IGuiEmbedded;
-import betterquesting.api.enums.EnumSaveType;
-import betterquesting.api.jdoc.IJsonDoc;
-import betterquesting.api.properties.NativeProps;
-import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.tasks.ITask;
-import betterquesting.api.questing.tasks.ITickableTask;
-import betterquesting.api.utils.ItemComparison;
-import betterquesting.api.utils.JsonHelper;
-import betterquesting.api.utils.NBTConverter;
-import bq_standard.client.gui.editors.GuiMeetingEditor;
-import bq_standard.client.gui.tasks.GuiTaskMeeting;
-import bq_standard.core.BQ_Standard;
-import bq_standard.tasks.factory.FactoryTaskMeeting;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
-public class TaskMeeting implements ITask, ITickableTask
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+public class TaskMeeting implements ITaskTickable
 {
-	private ArrayList<UUID> completeUsers = new ArrayList<UUID>();
+	private final List<UUID> completeUsers = new ArrayList<>();
 	
 	public String idName = "Villager";
 	public int range = 4;
@@ -46,7 +42,7 @@ public class TaskMeeting implements ITask, ITickableTask
 	/**
 	 * NBT representation of the intended target. Used only for NBT comparison checks
 	 */
-	public NBTTagCompound targetTags;
+	public NBTTagCompound targetTags = new NBTTagCompound();
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -88,46 +84,35 @@ public class TaskMeeting implements ITask, ITickableTask
 	}
 	
 	@Override
-	@Deprecated
-	public void update(EntityPlayer player, IQuest quest){}
-	
-	@Override
-	public void updateTask(EntityPlayer player, IQuest quest)
+	public void tickTask(@Nonnull DBEntry<IQuest> quest, @Nonnull EntityPlayer player)
 	{
-		if(player.ticksExisted%60 == 0 && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
+		if(player.ticksExisted%60 == 0)
 		{
-			detect(player, quest);
+			detect(player, quest.getValue());
 		}
 	}
 	
 	@Override
+    @SuppressWarnings("unchecked")
 	public void detect(EntityPlayer player, IQuest quest)
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
-		if(!player.isEntityAlive() || isComplete(playerID))
-		{
-			return;
-		}
+		if(!player.isEntityAlive() || isComplete(playerID)) return;
 		
-		@SuppressWarnings("unchecked")
 		List<Entity> list = player.worldObj.getEntitiesWithinAABBExcludingEntity(player, player.boundingBox.expand(range, range, range));
-		@SuppressWarnings("unchecked")
 		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.stringToClassMapping.get(idName);
 		
-		if(target == null)
-		{
-			return;
-		}
+		if(target == null) return;
 		
 		int n = 0;
 		
 		for(Entity entity : list)
 		{
 			Class<? extends Entity> subject = entity.getClass();
-			String subjectID = subject == null? null : (String)EntityList.classToStringMapping.get(subject);
+			String subjectID = EntityList.getEntityString(entity);
 			
-			if(subject == null || subjectID == null)
+			if(subjectID == null)
 			{
 				continue;
 			} else if(subtypes && !target.isAssignableFrom(subject))
@@ -138,11 +123,11 @@ public class TaskMeeting implements ITask, ITickableTask
 				continue; // This isn't the exact target required
 			}
 			
-			NBTTagCompound subjectTags = new NBTTagCompound();
-			entity.writeToNBTOptional(subjectTags);
-			if(!ignoreNBT && !ItemComparison.CompareNBTTag(targetTags, subjectTags, true))
+			if(!ignoreNBT)
 			{
-				continue;
+			    NBTTagCompound subjectTags = new NBTTagCompound();
+			    entity.writeToNBTOptional(subjectTags);
+				if(!ItemComparison.CompareNBTTag(targetTags, subjectTags, true)) continue;
 			}
 			
 			n++;
@@ -150,77 +135,60 @@ public class TaskMeeting implements ITask, ITickableTask
 			if(n >= amount)
 			{
 				setComplete(playerID);
+                QuestCache qc = (QuestCache)player.getExtendedProperties(QuestCache.LOC_QUEST_CACHE.toString());
+                if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
 				return;
 			}
 		}
 	}
 	
 	@Override
-	public JsonObject writeToJson(JsonObject json, EnumSaveType saveType)
+	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			return this.writeProgressToJson(json);
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return json;
-		}
-		
-		json.addProperty("target", idName);
-		json.addProperty("range", range);
-		json.addProperty("amount", amount);
-		json.addProperty("subtypes", subtypes);
-		json.addProperty("ignoreNBT", ignoreNBT);
-		json.add("targetNBT", NBTConverter.NBTtoJSON_Compound(targetTags, new JsonObject(), true));
+		json.setString("target", idName);
+		json.setInteger("range", range);
+		json.setInteger("amount", amount);
+		json.setBoolean("subtypes", subtypes);
+		json.setBoolean("ignoreNBT", ignoreNBT);
+		json.setTag("targetNBT", targetTags);
 		
 		return json;
 	}
 	
 	@Override
-	public void readFromJson(JsonObject json, EnumSaveType saveType)
+	public void readFromNBT(NBTTagCompound json)
 	{
-		if(saveType == EnumSaveType.PROGRESS)
-		{
-			this.readProgressFromJson(json);
-			return;
-		} else if(saveType != EnumSaveType.CONFIG)
-		{
-			return;
-		}
-		
-		idName = JsonHelper.GetString(json, "target", "Villager");
-		range = JsonHelper.GetNumber(json, "range", 4).intValue();
-		amount = JsonHelper.GetNumber(json, "amount", 1).intValue();
-		subtypes = JsonHelper.GetBoolean(json, "subtypes", true);
-		ignoreNBT = JsonHelper.GetBoolean(json, "ignoreNBT", true);
-		targetTags = NBTConverter.JSONtoNBT_Object(JsonHelper.GetObject(json, "targetNBT"), new NBTTagCompound(), true);
+		idName = json.hasKey("target", 8) ? json.getString("target") : "minecraft:villager";
+		range = json.getInteger("range");
+		amount = json.getInteger("amount");
+		subtypes = json.getBoolean("subtypes");
+		ignoreNBT = json.getBoolean("ignoreNBT");
+		targetTags = json.getCompoundTag("targetNBT");
 	}
 
-	private JsonObject writeProgressToJson(JsonObject json)
+	@Override
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
 	{
-		JsonArray jArray = new JsonArray();
+		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
 		{
-			jArray.add(new JsonPrimitive(uuid.toString()));
+			jArray.appendTag(new NBTTagString(uuid.toString()));
 		}
-		json.add("completeUsers", jArray);
+		json.setTag("completeUsers", jArray);
 		
 		return json;
 	}
-
-	private void readProgressFromJson(JsonObject json)
+	
+	@Override
+	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers = new ArrayList<UUID>();
-		for(JsonElement entry : JsonHelper.GetArray(json, "completeUsers"))
+		completeUsers.clear();
+		NBTTagList cList = json.getTagList("completeUsers", 8);
+		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			if(entry == null || !entry.isJsonPrimitive())
-			{
-				continue;
-			}
-			
 			try
 			{
-				completeUsers.add(UUID.fromString(entry.getAsString()));
+				completeUsers.add(UUID.fromString(cList.getStringTagAt(i)));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
@@ -235,18 +203,12 @@ public class TaskMeeting implements ITask, ITickableTask
 	@SideOnly(Side.CLIENT)
 	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
 	{
-		return new GuiMeetingEditor(parent, this);
+	    return new GuiEditTaskMeeting(parent, quest, this);
 	}
 
 	@Override
-	public IGuiEmbedded getTaskGui(int posX, int posY, int sizeX, int sizeY, IQuest quest)
+	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-		return new GuiTaskMeeting(this, posX, posY, sizeX, sizeY);
-	}
-
-	@Override
-	public IJsonDoc getDocumentation()
-	{
-		return null;
+	    return new PanelTaskMeeting(rect, quest, this);
 	}
 }
