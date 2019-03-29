@@ -81,7 +81,9 @@ public class TaskInteractItem implements ITask, IProgression<Integer>
                 tags = new NBTTagCompound();
                 tile.writeToNBT(tags);
             }
-            boolean oreMatch = targetBlock.oreDict.length() > 0 && OreDictionary.getOres(targetBlock.oreDict).contains(new ItemStack(block, 1, targetBlock.m < 0 ? OreDictionary.WILDCARD_VALUE : meta));
+            
+            int tmpMeta = (targetBlock.m < 0 || targetBlock.m == OreDictionary.WILDCARD_VALUE)? OreDictionary.WILDCARD_VALUE : meta;
+            boolean oreMatch = targetBlock.oreDict.length() > 0 && OreDictionary.getOres(targetBlock.oreDict).contains(new ItemStack(block, 1, tmpMeta));
     
             if((!oreMatch && (block != targetBlock.b || (targetBlock.m >= 0 && meta != targetBlock.m))) || !ItemComparison.CompareNBTTag(targetBlock.tags, tags, true))
             {

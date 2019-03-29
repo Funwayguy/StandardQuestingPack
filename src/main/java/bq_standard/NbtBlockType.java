@@ -6,7 +6,6 @@ import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.oredict.OreDictionary;
 
 import javax.annotation.Nullable;
 
@@ -51,7 +50,6 @@ public class NbtBlockType // TODO: Make a version of this for the base mod and g
     {
         b = (Block)Block.blockRegistry.getObject(json.getString("blockID"));
         m = json.getInteger("meta");
-        if(m < 0) m = OreDictionary.WILDCARD_VALUE;
         tags = json.getCompoundTag("nbt");
         n = json.getInteger("amount");
         oreDict = json.getString("oreDict");
