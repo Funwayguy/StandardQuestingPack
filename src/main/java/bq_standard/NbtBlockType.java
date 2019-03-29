@@ -5,9 +5,11 @@ import betterquesting.api.utils.BigItemStack;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.oredict.OreDictionary;
+
+import javax.annotation.Nullable;
 
 public class NbtBlockType // TODO: Make a version of this for the base mod and give it a dedicated editor
 {
@@ -24,17 +26,17 @@ public class NbtBlockType // TODO: Make a version of this for the base mod and g
     public NbtBlockType(Block block)
     {
         this.b = block;
-        this.m = -1;
-        this.n = 1;
         this.oreDict = "";
         this.tags = new NBTTagCompound();
     }
     
     public NbtBlockType(IBlockState state)
     {
-        this.b = state.getBlock();
-        this.m = b.getMetaFromState(state);
-        this.n = 1;
+        if(state != null)
+        {
+            this.b = state.getBlock();
+            this.m = b.getMetaFromState(state);
+        }
         this.oreDict = "";
         this.tags = new NBTTagCompound();
     }
@@ -53,32 +55,23 @@ public class NbtBlockType // TODO: Make a version of this for the base mod and g
     {
         b = Block.REGISTRY.getObject(new ResourceLocation(json.getString("blockID")));
         m = json.getInteger("meta");
-        n = n < 0 ? OreDictionary.WILDCARD_VALUE : n;
         tags = json.getCompoundTag("nbt");
         n = json.getInteger("amount");
         oreDict = json.getString("oreDict");
     }
     
+    @Nullable
     public BigItemStack getItemStack()
     {
         BigItemStack stack;
         
         if(b == null)
         {
-            stack = new BigItemStack(ItemPlaceholder.placeholder, n, 0);
+            stack = new BigItemStack(ItemPlaceholder.placeholder, n, m);
             stack.getBaseStack().setStackDisplayName("NULL");
-            
-            if(b != null)
-            {
-                stack.getBaseStack().setStackDisplayName(b.getLocalizedName());
-                stack.GetTagCompound().setString("orig_id", Block.REGISTRY.getNameForObject(b).toString());
-            } else
-            {
-                stack.getBaseStack().setStackDisplayName("NULL");
-                stack.GetTagCompound().setString("orig_id", "NULL");
-            }
         } else
         {
+            if(Item.getItemFromBlock(b) == null) return null;
             stack = new BigItemStack(b, n, m);
         }
         

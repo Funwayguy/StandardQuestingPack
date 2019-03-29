@@ -46,7 +46,8 @@ public class TaskInteractItem implements ITask, IProgression<Integer>
 	private final List<UUID> completeUsers = new ArrayList<>();
 	private final HashMap<UUID, Integer> userProgress = new HashMap<>();
 	
-    public final BigItemStack targetItem = new BigItemStack(Blocks.AIR);
+	@Nullable
+    public BigItemStack targetItem = null;
     public final NbtBlockType targetBlock = new NbtBlockType(Blocks.AIR);
 	public boolean partialMatch = true;
 	public boolean ignoreNBT = false;
@@ -76,12 +77,14 @@ public class TaskInteractItem implements ITask, IProgression<Integer>
         if((!onHit && isHit) || (!onInteract && !isHit)) return;
         if((!useMainHand && hand == EnumHand.MAIN_HAND) || (!useOffHand && hand == EnumHand.OFF_HAND)) return;
         
-        if(targetBlock.b != Blocks.AIR)
+        if(targetBlock.b != Blocks.AIR && targetBlock.b != null)
         {
             if(state.getBlock() == Blocks.AIR) return;
             TileEntity tile = state.getBlock().hasTileEntity(state) ? player.worldObj.getTileEntity(pos) : null;
             NBTTagCompound tags = tile == null ? null : tile.writeToNBT(new NBTTagCompound());
-            boolean oreMatch = targetBlock.oreDict.length() > 0 && OreDictionary.getOres(targetBlock.oreDict).contains(new ItemStack(state.getBlock(), 1, targetBlock.m < 0 ? OreDictionary.WILDCARD_VALUE : state.getBlock().getMetaFromState(state)));
+            
+            int tmpMeta = (targetBlock.m < 0 || targetBlock.m == OreDictionary.WILDCARD_VALUE)? OreDictionary.WILDCARD_VALUE : state.getBlock().getMetaFromState(state);
+            boolean oreMatch = targetBlock.oreDict.length() > 0 && OreDictionary.getOres(targetBlock.oreDict).contains(new ItemStack(state.getBlock(), 1, tmpMeta));
     
             if((!oreMatch && (state.getBlock() != targetBlock.b || (targetBlock.m >= 0 && state.getBlock().getMetaFromState(state) != targetBlock.m))) || !ItemComparison.CompareNBTTag(targetBlock.tags, tags, true))
             {
@@ -89,7 +92,7 @@ public class TaskInteractItem implements ITask, IProgression<Integer>
             }
         }
         
-        if(targetItem.getBaseStack() != null)
+        if(targetItem != null)
         {
             if(targetItem.hasOreDict() && !ItemComparison.OreDictionaryMatch(targetItem.getOreIngredient(), targetItem.GetTagCompound(), item, !ignoreNBT, partialMatch))
             {
@@ -228,7 +231,7 @@ public class TaskInteractItem implements ITask, IProgression<Integer>
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound nbt)
     {
-        nbt.setTag("item", targetItem.writeToNBT(new NBTTagCompound()));
+        nbt.setTag("item", targetItem != null ? targetItem.writeToNBT(new NBTTagCompound()) : new NBTTagCompound());
         nbt.setTag("block", targetBlock.writeToNBT(new NBTTagCompound()));
         nbt.setBoolean("ignoreNbt", ignoreNBT);
         nbt.setBoolean("partialMatch", partialMatch);
@@ -243,7 +246,7 @@ public class TaskInteractItem implements ITask, IProgression<Integer>
     @Override
     public void readFromNBT(NBTTagCompound nbt)
     {
-        targetItem.readFromNBT(nbt.getCompoundTag("item"));
+        targetItem = BigItemStack.loadItemStackFromNBT(nbt.getCompoundTag("item"));
         targetBlock.readFromNBT(nbt.getCompoundTag("block"));
         ignoreNBT = nbt.getBoolean("ignoreNbt");
         partialMatch = nbt.getBoolean("partialMatch");

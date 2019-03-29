@@ -389,9 +389,9 @@ public class TaskRetrieval implements ITaskInventory, IProgression<int[]>, IItem
 	
 	@Override
 	@SideOnly(Side.CLIENT)
-	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)//, JsonObject data)
+	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
 	{
-		return null;//new GuiRetrievalEditor(parent, this, quest);
+		return null;
 	}
 
 	@Override

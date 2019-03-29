@@ -20,7 +20,6 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -43,7 +42,8 @@ public class TaskInteractEntity implements ITask, IProgression<Integer>
 	private final List<UUID> completeUsers = new ArrayList<>();
 	private final HashMap<UUID, Integer> userProgress = new HashMap<>();
 	
-    public final BigItemStack targetItem = new BigItemStack(Blocks.AIR);
+	@Nullable
+    public BigItemStack targetItem = null;
 	public boolean ignoreItemNBT = false;
 	public boolean partialItemMatch = true;
 	public boolean useMainHand = true;
@@ -83,6 +83,7 @@ public class TaskInteractEntity implements ITask, IProgression<Integer>
         
         Class<? extends Entity> subjectClass = entity.getClass();
         String subjectRes = EntityList.getEntityString(entity);
+        //noinspection ConstantConditions
         if(subjectRes == null) return; // This isn't a registered entity!
         
         if(entitySubtypes ? !targetClass.isAssignableFrom(subjectClass) : !subjectRes.equals(entityID)) return;
@@ -94,7 +95,7 @@ public class TaskInteractEntity implements ITask, IProgression<Integer>
             if(!ItemComparison.CompareNBTTag(entityTags, subjectTags, true)) return;
         }
         
-        if(targetItem.getBaseStack() != null)
+        if(targetItem != null)
         {
             if(targetItem.hasOreDict() && !ItemComparison.OreDictionaryMatch(targetItem.getOreIngredient(), targetItem.GetTagCompound(), item, !ignoreItemNBT, partialItemMatch))
             {
@@ -233,7 +234,7 @@ public class TaskInteractEntity implements ITask, IProgression<Integer>
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound nbt)
     {
-        nbt.setTag("item", targetItem .writeToNBT(new NBTTagCompound()));
+        nbt.setTag("item", targetItem != null ? targetItem.writeToNBT(new NBTTagCompound()) : new NBTTagCompound());
         nbt.setBoolean("ignoreItemNBT", ignoreItemNBT);
         nbt.setBoolean("partialItemMatch", partialItemMatch);
         
@@ -253,7 +254,7 @@ public class TaskInteractEntity implements ITask, IProgression<Integer>
     @Override
     public void readFromNBT(NBTTagCompound nbt)
     {
-        targetItem.readFromNBT(nbt.getCompoundTag("item"));
+        targetItem = BigItemStack.loadItemStackFromNBT(nbt.getCompoundTag("item"));
         ignoreItemNBT = nbt.getBoolean("ignoreItemNBT");
         partialItemMatch = nbt.getBoolean("partialItemMatch");
         
