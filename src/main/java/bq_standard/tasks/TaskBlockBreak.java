@@ -112,12 +112,13 @@ public class TaskBlockBreak implements ITask, IProgression<int[]>
 		
 		for(int i = 0; i < blockTypes.size(); i++)
 		{
-			NbtBlockType block = blockTypes.get(i);
-			if(progress[i] >= block.n) continue;
+			NbtBlockType targetBlock = blockTypes.get(i);
+			if(progress[i] >= targetBlock.n) continue;
 			
-			boolean oreMatch = block.oreDict.length() > 0 && OreDictionary.getOres(block.oreDict).contains(new ItemStack(state.getBlock(), 1, block.m < 0? OreDictionary.WILDCARD_VALUE : state.getBlock().getMetaFromState(state)));
+			int tmpMeta = (targetBlock.m < 0 || targetBlock.m == OreDictionary.WILDCARD_VALUE)? OreDictionary.WILDCARD_VALUE : state.getBlock().getMetaFromState(state);
+			boolean oreMatch = targetBlock.oreDict.length() > 0 && OreDictionary.getOres(targetBlock.oreDict).contains(new ItemStack(state.getBlock(), 1, tmpMeta));
 			
-			if((oreMatch || (state.getBlock() == block.b && (block.m < 0 || state.getBlock().getMetaFromState(state) == block.m))) && ItemComparison.CompareNBTTag(block.tags, tags, true))
+			if((oreMatch || (state.getBlock() == targetBlock.b && (targetBlock.m < 0 || state.getBlock().getMetaFromState(state) == targetBlock.m))) && ItemComparison.CompareNBTTag(targetBlock.tags, tags, true))
 			{
 				progress[i]++;
 				setUserProgress(player.getUniqueID(), progress);

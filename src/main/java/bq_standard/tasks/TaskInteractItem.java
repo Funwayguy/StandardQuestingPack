@@ -82,7 +82,9 @@ public class TaskInteractItem implements ITask, IProgression<Integer>
             if(state.getBlock() == Blocks.AIR) return;
             TileEntity tile = state.getBlock().hasTileEntity(state) ? player.world.getTileEntity(pos) : null;
             NBTTagCompound tags = tile == null ? null : tile.writeToNBT(new NBTTagCompound());
-            boolean oreMatch = targetBlock.oreDict.length() > 0 && OreDictionary.getOres(targetBlock.oreDict).contains(new ItemStack(state.getBlock(), 1, targetBlock.m < 0 ? OreDictionary.WILDCARD_VALUE : state.getBlock().getMetaFromState(state)));
+            
+            int tmpMeta = (targetBlock.m < 0 || targetBlock.m == OreDictionary.WILDCARD_VALUE)? OreDictionary.WILDCARD_VALUE : state.getBlock().getMetaFromState(state);
+            boolean oreMatch = targetBlock.oreDict.length() > 0 && OreDictionary.getOres(targetBlock.oreDict).contains(new ItemStack(state.getBlock(), 1, tmpMeta));
     
             if((!oreMatch && (state.getBlock() != targetBlock.b || (targetBlock.m >= 0 && state.getBlock().getMetaFromState(state) != targetBlock.m))) || !ItemComparison.CompareNBTTag(targetBlock.tags, tags, true))
             {
