@@ -10,7 +10,7 @@ public class FtbqRewardCommand
     {
         RewardCommand reward = new RewardCommand();
         reward.viaPlayer = false; // FTBQ only runs as server
-        reward.hideCmd = tag.getString("title").length() > 0; // We can't support showing the title (yet) but we can at least hide it
+        reward.desc = tag.getString("title");
         reward.command = tag.getString("command");
         return new IReward[]{reward};
     }

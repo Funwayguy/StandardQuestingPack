@@ -1,7 +1,10 @@
 package bq_standard.tasks;
 
+import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
+import betterquesting.api2.cache.CapabilityProviderQuestCache;
+import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.storage.DBEntry;
@@ -10,10 +13,12 @@ import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskLocation;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.StringUtils;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -26,8 +31,10 @@ import java.util.UUID;
 
 public class TaskLocation implements ITaskTickable
 {
-	private ArrayList<UUID> completeUsers = new ArrayList<>();
+	private final List<UUID> completeUsers = new ArrayList<>();
 	public String name = "New Location";
+	public String structure = "";
+	public String biome = "";
 	public int x = 0;
 	public int y = 0;
 	public int z = 0;
@@ -64,13 +71,13 @@ public class TaskLocation implements ITaskTickable
 			completeUsers.add(uuid);
 		}
 	}
-
+ 
 	@Override
 	public void resetUser(UUID uuid)
 	{
 		completeUsers.remove(uuid);
 	}
-
+ 
 	@Override
 	public void resetAll()
 	{
@@ -91,10 +98,21 @@ public class TaskLocation implements ITaskTickable
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
-		if(!player.isEntityAlive() || isComplete(playerID)) return;
+		if(!player.isEntityAlive() || isComplete(playerID) || !(player instanceof EntityPlayerMP)) return;
+		
+		EntityPlayerMP playerMP = (EntityPlayerMP)player;
+		QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
 		
 		if(player.dimension == dim && (range <= 0 || (getDistance(player) <= range) != invertDistance))
 		{
+		    if(!StringUtils.isNullOrEmpty(biome) && !new ResourceLocation(biome).equals(playerMP.getServerWorld().getBiome(playerMP.getPosition()).getRegistryName()))
+            {
+                return;
+            } else if(!StringUtils.isNullOrEmpty(structure) && !playerMP.getServerWorld().getChunkProvider().isInsideStructure(playerMP.world, structure, playerMP.getPosition()))
+            {
+                return;
+            }
+		    
 			if(visible && range > 0) // Do not do ray casting with infinite range!
 			{
 				Vec3d pPos = new Vec3d(player.posX, player.posY + player.getEyeHeight(), player.posZ);
@@ -104,10 +122,12 @@ public class TaskLocation implements ITaskTickable
 				if(mop == null || mop.typeOfHit != RayTraceResult.Type.BLOCK)
 				{
 					setComplete(playerID);
+					if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
 				}
 			} else
 			{
 				setComplete(playerID);
+                if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
 			}
 		}
 	}
@@ -132,6 +152,8 @@ public class TaskLocation implements ITaskTickable
 		json.setInteger("posY", y);
 		json.setInteger("posZ", z);
 		json.setInteger("dimension", dim);
+		json.setString("biome", biome);
+		json.setString("structure", structure);
 		json.setInteger("range", range);
 		json.setBoolean("visible", visible);
 		json.setBoolean("hideInfo", hideInfo);
@@ -149,6 +171,8 @@ public class TaskLocation implements ITaskTickable
 		y = json.getInteger("posY");
 		z = json.getInteger("posZ");
 		dim = json.getInteger("dimension");
+		biome = json.getString("biome");
+		structure = json.getString("structure");
 		range = json.getInteger("range");
 		visible = json.getBoolean("visible");
 		hideInfo = json.getBoolean("hideInfo");
@@ -172,7 +196,7 @@ public class TaskLocation implements ITaskTickable
 	@Override
 	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers = new ArrayList<>();
+		completeUsers.clear();
 		NBTTagList cList = json.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
@@ -185,13 +209,13 @@ public class TaskLocation implements ITaskTickable
 			}
 		}
 	}
-
+ 
 	@Override
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
 	    return new PanelTaskLocation(rect, quest, this);
 	}
-
+ 
 	@Override
 	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
 	{

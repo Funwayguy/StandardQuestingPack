@@ -4,6 +4,7 @@ import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import bq_standard.client.theme.BQSTextures;
 import bq_standard.core.BQ_Standard;
+import bq_standard.importers.AdvImporter;
 import bq_standard.importers.NativeFileImporter;
 import bq_standard.importers.ftbq.FTBQQuestImporter;
 import bq_standard.importers.hqm.HQMBagImporter;
@@ -29,8 +30,6 @@ public class ClientProxy extends CommonProxy
 	public void registerHandlers()
 	{
 		super.registerHandlers();
-		
-		//MinecraftForge.EVENT_BUS.register(new UpdateNotification());
 	}
 	
 	@Override
@@ -46,7 +45,8 @@ public class ClientProxy extends CommonProxy
 		QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(HQMBagImporter.INSTANCE);
 		
 		QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(FTBQQuestImporter.INSTANCE);
-        
+        QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(AdvImporter.INSTANCE);
+		
         BQSTextures.registerTextures();
 	}
 	
@@ -55,7 +55,7 @@ public class ClientProxy extends CommonProxy
 	{
 		super.registerRenderers();
 		
-		registerItemModelSubtypes(BQ_Standard.lootChest, 0, 102, BQ_Standard.lootChest.getRegistryName().toString());
+		registerItemModelSubtypes(BQ_Standard.lootChest, 0, 103, BQ_Standard.lootChest.getRegistryName().toString());
 	}
 	
 	@SideOnly(Side.CLIENT)
@@ -76,7 +76,6 @@ public class ClientProxy extends CommonProxy
 		}
 
 		ModelLoader.setCustomModelResourceLocation(item, meta, model);
-	    //Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, meta, model);
 	}
 	
 	@SideOnly(Side.CLIENT)
@@ -106,7 +105,7 @@ public class ClientProxy extends CommonProxy
 	{
 		ModelResourceLocation model = new ModelResourceLocation(name, "inventory");
 		
-		if(!name.equals(item.getRegistryName()))
+		if(!name.equals(item.getRegistryName().toString()))
 		{
 		    ModelBakery.registerItemVariants(item, model);
 		}

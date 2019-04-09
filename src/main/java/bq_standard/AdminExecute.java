@@ -10,24 +10,28 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 
+import javax.annotation.Nonnull;
+
 /**
  * Elevates the player's privileges to OP level for use in command rewards
  */
 public class AdminExecute implements ICommandSender
 {
-	EntityPlayer player;
+	private final EntityPlayer player;
 	
 	public AdminExecute(EntityPlayer player)
 	{
 		this.player = player;
 	}
-
+ 
+	@Nonnull
 	@Override
 	public String getName()
 	{
 		return player.getName();
 	}
-
+ 
+	@Nonnull
 	@Override
 	public ITextComponent getDisplayName()
 	{
@@ -41,29 +45,32 @@ public class AdminExecute implements ICommandSender
 	}
 
 	@Override
-	public boolean canUseCommand(int p_70003_1_, String p_70003_2_)
+	public boolean canUseCommand(int p_70003_1_, @Nonnull String p_70003_2_)
 	{
 		return true;
 	}
-
+ 
+	@Nonnull
 	@Override
 	public BlockPos getPosition()
 	{
 		return player.getPosition();
 	}
-
+ 
+	@Nonnull
 	@Override
 	public World getEntityWorld()
 	{
 		return player.getEntityWorld();
 	}
-
+	
+	@Nonnull
 	@Override
 	public Vec3d getPositionVector()
 	{
 		return player.getPositionVector();
 	}
-
+	
 	@Override
 	public Entity getCommandSenderEntity()
 	{

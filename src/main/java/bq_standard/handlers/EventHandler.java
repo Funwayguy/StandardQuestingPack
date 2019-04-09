@@ -9,6 +9,7 @@ import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.storage.DBEntry;
+import bq_standard.advancment_hacks.AdvListenerManager;
 import bq_standard.core.BQ_Standard;
 import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.loot.LootRegistry;
@@ -30,11 +31,14 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent.*;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemCraftedEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemSmeltedEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
 
 public class EventHandler
 {
@@ -302,6 +306,14 @@ public class EventHandler
         if(!(event.getEntity() instanceof EntityPlayer) || event.getEntity().world.isRemote) return;
         
 		PlayerContainerListener.refreshListener((EntityPlayer)event.getEntity());
+    }
+    
+    @SubscribeEvent
+    public void onServerTick(ServerTickEvent event)
+    {
+        if(event.phase != Phase.START || FMLCommonHandler.instance().getMinecraftServerInstance().getTickCounter() % 60 != 0) return;
+        
+        AdvListenerManager.INSTANCE.updateAll();
     }
 	
 	@SubscribeEvent

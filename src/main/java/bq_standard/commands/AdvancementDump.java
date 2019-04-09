@@ -84,9 +84,10 @@ public class AdvancementDump
             IQuestLine ql = lineDB.createNew(lineDB.nextID());
             
             ql.setProperty(NativeProps.NAME, adv.getDisplay().getTitle().getFormattedText());
+            ql.setProperty(NativeProps.DESC, adv.getDisplay().getDescription().getFormattedText());
             IQuestLineEntry qleRoot = ql.createNew(idMap.get(adv).getID());
             qleRoot.setPosition((int)(adv.getDisplay().getX() * 32F), (int)(adv.getDisplay().getY() * 32F));
-            qleRoot.setSize(24);
+            qleRoot.setSize(24, 24);
             
             Queue<Iterator<Advancement>> iterStack = new ArrayDeque<>();
             iterStack.add(adv.getChildren().iterator());
@@ -100,7 +101,7 @@ public class AdvancementDump
                     Advancement child = iter.next();
                     IQuestLineEntry qle = ql.createNew(idMap.get(child).getID());
                     qle.setPosition((int)(child.getDisplay().getX() * 32F), (int)(child.getDisplay().getY() * 32F));
-                    qle.setSize(24);
+                    qle.setSize(24, 24);
                     iterStack.add(child.getChildren().iterator());
                 }
             }

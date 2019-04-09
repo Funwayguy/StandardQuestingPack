@@ -10,6 +10,8 @@ import bq_standard.client.gui.rewards.PanelRewardCommand;
 import bq_standard.rewards.factory.FactoryRewardCommand;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.command.FunctionObject;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -20,11 +22,16 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
+import javax.annotation.Nonnull;
+import java.util.Arrays;
+
 public class RewardCommand implements IReward
 {
-	public String command = "/say VAR_NAME Claimed a reward";
-	public boolean hideCmd = false;
+	public String command = "#Script Comment\nsayRunning reward script...\nsay @s Claimed a reward";
+	public String title = "bq_standard.reward.command";
+	public String desc = "Run a command script";
 	public boolean viaPlayer = false;
+	public boolean hideIcon = true;
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -35,7 +42,7 @@ public class RewardCommand implements IReward
 	@Override
 	public String getUnlocalisedName()
 	{
-		return "bq_standard.reward.command";
+		return title;
 	}
 	
 	@Override
@@ -44,7 +51,8 @@ public class RewardCommand implements IReward
 		return true;
 	}
 	
-	@Override
+    @Override
+	@SuppressWarnings("ConstantConditions")
 	public void claimReward(final EntityPlayer player, IQuest quest)
 	{
 		if(player.world.isRemote)
@@ -52,35 +60,37 @@ public class RewardCommand implements IReward
 			return;
 		}
 		
+		// NOTE: These replacements are only kept for legacy reasons. Entity selectors are much more suitable and more powerful
 		String tmp = command.replaceAll("VAR_NAME", player.getName());
-		final String finCom = tmp.replaceAll("VAR_UUID", QuestingAPI.getQuestingUUID(player).toString());
-		final MinecraftServer server = player.world.getMinecraftServer();
+		String finCom = tmp.replaceAll("VAR_UUID", QuestingAPI.getQuestingUUID(player).toString());
+		String[] comAry = finCom.split("\n");
 		
-		if(viaPlayer)
-		{
-			server.addScheduledTask(() -> server.getCommandManager().executeCommand(new AdminExecute(player), finCom));
-		} else
-		{
-			final RewardCommandSender cmdSender = new RewardCommandSender(player.world, (int)player.posX, (int)player.posY, (int)player.posZ);
-			
-			server.addScheduledTask(() -> server.getCommandManager().executeCommand(cmdSender, finCom));
-		}
+		// New functions don't support preceeding forward slash so we remove them on legacy commands
+		for(int i = 0; i < comAry.length; i++) if(comAry[i].startsWith("/")) comAry[i] = comAry[i].replaceFirst("/", "");
+		
+		MinecraftServer server = player.world.getMinecraftServer();
+        FunctionObject func = FunctionObject.create(server.getFunctionManager(), Arrays.asList(comAry));
+        ICommandSender sender = viaPlayer ? new AdminExecute(player) : new RewardCommandSender(player);
+        
+        server.getFunctionManager().execute(func, sender);
 	}
 	
 	@Override
 	public void readFromNBT(NBTTagCompound json)
 	{
 		command = json.getString("command");
-		hideCmd = json.getBoolean("hideCommand");
+		desc = json.getString("description");
 		viaPlayer = json.getBoolean("viaPlayer");
+		hideIcon = json.getBoolean("hideBlockIcon");
 	}
 	
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
 		json.setString("command", command);
-		json.setBoolean("hideCommand", hideCmd);
+		json.setString("description", desc);
 		json.setBoolean("viaPlayer", viaPlayer);
+		json.setBoolean("hideBlockIcon", hideIcon);
 		return json;
 	}
 	
@@ -98,64 +108,67 @@ public class RewardCommand implements IReward
 	
 	public static class RewardCommandSender extends CommandBlockBaseLogic
 	{
-		World world;
-		BlockPos blockLoc;
+		private final Entity entity;
 		
-		public RewardCommandSender(World world, int x, int y, int z)
+		private RewardCommandSender(@Nonnull Entity entity)
 	    {
-	    	blockLoc = new BlockPos(x, y, z);
-	    	this.world = world;
+	    	this.entity = entity;
 	    }
-
+     
+	    @Nonnull
 		@Override
 		public BlockPos getPosition()
 		{
-			return blockLoc;
+			return entity.getPosition();
 		}
-
+  
+		@Nonnull
 		@Override
 		public Vec3d getPositionVector()
 		{
-			return new Vec3d(blockLoc.getX() + 0.5D, blockLoc.getY() + 0.5D, blockLoc.getZ() + 0.5D);
+			return entity.getPositionVector();
 		}
-
+		
+		@Nonnull
 		@Override
 		public World getEntityWorld()
 		{
-			return world;
+			return entity.getEntityWorld();
 		}
-
+  
 		@Override
 		public Entity getCommandSenderEntity()
 		{
-			return null;
+			return entity;
 		}
-
+  
 		@Override
 		public void updateCommand()
 		{
 		}
-
+  
 		@Override
 		public int getCommandBlockType()
 		{
 			return 0;
 		}
-
+  
 		@Override
-		public void fillInInfo(ByteBuf p_145757_1_)
+		public void fillInInfo(@Nonnull ByteBuf p_145757_1_)
 		{
 		}
-
+		
+		@Nonnull
+		@Override
 	    public String getName()
 	    {
 	        return "BetterQuesting";
 	    }
-
+     
 		@Override
 		public MinecraftServer getServer()
 		{
-			return world.getMinecraftServer();
+			return entity.getServer();
 		}
 	}
 }

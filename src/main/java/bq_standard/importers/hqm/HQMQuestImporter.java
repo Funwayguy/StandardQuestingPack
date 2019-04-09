@@ -353,7 +353,8 @@ public class HQMQuestImporter implements IImporter
 			    final boolean bigIcon = JsonHelper.GetBoolean(jQuest, "bigicon", false);
 			    
 			    IQuestLineEntry qle = questLine.createNew(questDB.getID(quest));
-			    qle.setSize(bigIcon ? 32 : 24);
+			    int size = bigIcon ? 32 : 24;
+			    qle.setSize(size, size);
 			    qle.setPosition(qleX, qleY);
 			}
 		}

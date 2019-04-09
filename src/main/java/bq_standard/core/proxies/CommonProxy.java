@@ -50,6 +50,7 @@ public class CommonProxy
 		taskReg.register(FactoryTaskTame.INSTANCE);
 		taskReg.register(FactoryTaskInteractItem.INSTANCE);
 		taskReg.register(FactoryTaskInteractEntity.INSTANCE);
+		taskReg.register(FactoryTaskTrigger.INSTANCE);
 
 		IRegistry<IFactoryData<IReward, NBTTagCompound>, IReward> rewardReg = QuestingAPI.getAPI(ApiReference.REWARD_REG);
 		rewardReg.register(FactoryRewardChoice.INSTANCE);
@@ -57,6 +58,7 @@ public class CommonProxy
 		rewardReg.register(FactoryRewardItem.INSTANCE);
 		rewardReg.register(FactoryRewardScoreboard.INSTANCE);
 		rewardReg.register(FactoryRewardXP.INSTANCE);
+		rewardReg.register(FactoryRewardRecipe.INSTANCE);
 		
 		IPacketRegistry packetReg = QuestingAPI.getAPI(ApiReference.PACKET_REG);
 		packetReg.registerHandler(new PktHandlerLootDatabase());

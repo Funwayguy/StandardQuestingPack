@@ -23,7 +23,6 @@ public class HQMRewardCommand
 			RewardCommand reward = new RewardCommand();
 			reward.command = je.getAsString();
 			reward.viaPlayer = true;
-			reward.hideCmd = true;
 			rList.add(reward);
 		}
 		

@@ -1,0 +1,74 @@
+package bq_standard.rewards;
+
+import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.rewards.IReward;
+import betterquesting.api2.client.gui.misc.IGuiRect;
+import betterquesting.api2.client.gui.panels.IGuiPanel;
+import bq_standard.client.gui.rewards.PanelRewardRecipe;
+import bq_standard.rewards.factory.FactoryRewardRecipe;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
+
+import javax.annotation.Nullable;
+
+public class RewardRecipe implements IReward
+{
+    public String recipeNames = "minecraft:crafting_table\nminecraft:chest";
+    
+    @Override
+    public String getUnlocalisedName()
+    {
+        return "bq_standard.reward.recipe";
+    }
+    
+    @Override
+    public ResourceLocation getFactoryID()
+    {
+        return FactoryRewardRecipe.INSTANCE.getRegistryName();
+    }
+    
+    @Override
+    public boolean canClaim(EntityPlayer player, IQuest quest)
+    {
+        return true;
+    }
+    
+    @Override
+    public void claimReward(EntityPlayer player, IQuest quest)
+    {
+        String[] recSplit = recipeNames.split("\n");
+        ResourceLocation[] loc = new ResourceLocation[recSplit.length];
+        
+        for(int i = 0; i < recSplit.length; i++) loc[i] = new ResourceLocation(recSplit[i]);
+        
+        player.unlockRecipes(loc);
+    }
+    
+    @Override
+    public IGuiPanel getRewardGui(IGuiRect rect, IQuest quest)
+    {
+        return new PanelRewardRecipe(rect, quest, this);
+    }
+    
+    @Nullable
+    @Override
+    public GuiScreen getRewardEditor(GuiScreen parent, IQuest quest)
+    {
+        return null;
+    }
+    
+    @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound nbt)
+    {
+        nbt.setString("recipes", recipeNames);
+        return nbt;
+    }
+    
+    @Override
+    public void readFromNBT(NBTTagCompound nbt)
+    {
+        recipeNames = nbt.getString("recipes");
+    }
+}

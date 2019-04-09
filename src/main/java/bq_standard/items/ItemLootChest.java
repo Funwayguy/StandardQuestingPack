@@ -5,11 +5,11 @@ import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.utils.BigItemStack;
+import betterquesting.api2.utils.QuestTranslation;
 import bq_standard.core.BQ_Standard;
 import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootRegistry;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,17 +18,17 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.NonNullList;
+import net.minecraft.util.*;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.minecraft.world.storage.loot.LootContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ItemLootChest extends Item
@@ -43,17 +43,47 @@ public class ItemLootChest extends Item
     /**
      * Called whenever this item is equipped and the right mouse button is pressed. Args: itemStack, world, entityPlayer
      */
+    @Nonnull
 	@Override
-    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand)
+    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, @Nonnull EnumHand hand)
     {
 		ItemStack stack = player.getHeldItem(hand);
 		
-		if(hand != EnumHand.MAIN_HAND)
-		{
-			return new ActionResult<>(EnumActionResult.PASS, stack);
-		}
+		if(hand != EnumHand.MAIN_HAND) return new ActionResult<>(EnumActionResult.PASS, stack);
 		
-    	if(stack.getItemDamage() >= 102)
+		if(stack.getItemDamage() == 103)
+        {
+            if(world.isRemote || !(player instanceof EntityPlayerMP))
+            {
+                if(!player.capabilities.isCreativeMode) stack.shrink(1);
+    	        return new ActionResult<>(EnumActionResult.PASS, stack);
+            }
+            
+            LootContext lootcontext = (new LootContext.Builder(((EntityPlayerMP)player).getServerWorld())).withLootedEntity(player).withPlayer(player).withLuck(player.getLuck()).build();
+            String loottable = (stack.getTagCompound() != null && stack.getTagCompound().hasKey("loottable", 8)) ? stack.getTagCompound().getString("loottable") : "minecraft:chests/simple_dungeon";
+            
+	    	List<BigItemStack> loot = new ArrayList<>();
+            for (ItemStack itemstack : player.world.getLootTableManager().getLootTableFromLocation(new ResourceLocation(loottable)).generateLootForPools(player.getRNG(), lootcontext))
+            {
+                loot.add(new BigItemStack(itemstack));
+            }
+	    	
+	    	for(BigItemStack s1 : loot)
+	    	{
+	    		for(ItemStack s2 : s1.getCombinedStacks())
+	    		{
+		    		if(!player.inventory.addItemStackToInventory(s2))
+		    		{
+		    			player.dropItem(s2, true, false);
+		    		}
+	    		}
+	    		
+	    		player.inventory.markDirty();
+	    		player.inventoryContainer.detectAndSendChanges();
+	    	}
+	    	
+            sendGui((EntityPlayerMP)player, loot, "Loot");
+        } else if(stack.getItemDamage() >= 102)
     	{
     		if(QuestingAPI.getAPI(ApiReference.SETTINGS).canUserEdit(player))
     		{
@@ -109,10 +139,7 @@ public class ItemLootChest extends Item
 	    	}
     	}
     	
-    	if(!player.capabilities.isCreativeMode)
-    	{
-    		stack.shrink(1);
-    	}
+    	if(!player.capabilities.isCreativeMode) stack.shrink(1);
     	
     	return new ActionResult<>(EnumActionResult.PASS, stack);
     }
@@ -144,8 +171,8 @@ public class ItemLootChest extends Item
      */
 	@Override
 	@SideOnly(Side.CLIENT)
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> list)
+    @SuppressWarnings("rawtypes")
+    public void getSubItems(@Nonnull CreativeTabs tab, @Nonnull NonNullList<ItemStack> list)
     {
     	if(tab == CreativeTabs.SEARCH || tab == this.getCreativeTab())
 		{
@@ -156,6 +183,11 @@ public class ItemLootChest extends Item
 			list.add(new ItemStack(this, 1, 100));
 			list.add(new ItemStack(this, 1, 101));
 			list.add(new ItemStack(this, 1, 102));
+			NBTTagCompound tag = new NBTTagCompound();
+			tag.setString("loottable", "minecraft:chests/simple_dungeon");
+			ItemStack lootStack = new ItemStack(this, 1, 103);
+			lootStack.setTagCompound(tag);
+			list.add(lootStack);
 		}
     }
 	
@@ -163,7 +195,7 @@ public class ItemLootChest extends Item
     @SideOnly(Side.CLIENT)
     public boolean hasEffect(ItemStack stack)
     {
-        return stack.getItemDamage() > 101;
+        return stack.getItemDamage() == 102 || stack.getItemDamage() > 103;
     }
 
     /**
@@ -173,17 +205,20 @@ public class ItemLootChest extends Item
 	@SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn)
     {
-		if(stack.getItemDamage() > 101)
+        if(stack.getItemDamage() == 103)
+        {
+            tooltip.add(QuestTranslation.translate("bq_standard.tooltip.loot_table"));
+        } else if(stack.getItemDamage() > 101)
 		{
-			tooltip.add(I18n.format("betterquesting.btn.edit"));
+			tooltip.add(QuestTranslation.translate("betterquesting.btn.edit"));
 		} else if(QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE))
 		{
 			if(stack.getItemDamage() == 101)
 			{
-				tooltip.add(I18n.format("bq_standard.tooltip.loot_chest", "???"));
+				tooltip.add(QuestTranslation.translate("bq_standard.tooltip.loot_chest", "???"));
 			} else
 			{
-				tooltip.add(I18n.format("bq_standard.tooltip.loot_chest", MathHelper.clamp(stack.getItemDamage(), 0, 100) + "%"));
+				tooltip.add(QuestTranslation.translate("bq_standard.tooltip.loot_chest", MathHelper.clamp(stack.getItemDamage(), 0, 100) + "%"));
 			}
 		}
     }

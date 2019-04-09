@@ -32,8 +32,8 @@ public class PanelRewardCommand extends CanvasEmpty
     {
         super.initPanel();
         
-        this.addPanel(new PanelGeneric(new GuiTransform(new Vector4f(0F, 0.5F, 0F, 0.5F), 0, -16, 32, 32, 0), new ItemTexture(new BigItemStack(Blocks.COMMAND_BLOCK))));
-        String txt = QuestTranslation.translate("advMode.command") + "\n\n" + (reward.hideCmd ? "[HIDDEN]" : reward.command);
-        this.addPanel(new PanelTextBox(new GuiTransform(new Vector4f(0F, 0.5F, 1F, 0.5F), new GuiPadding(36, -16, 0, -16), 0), txt).setColor(PresetColor.TEXT_MAIN.getColor()));
+        if(!reward.hideIcon) this.addPanel(new PanelGeneric(new GuiTransform(new Vector4f(0F, 0.5F, 0F, 0.5F), 0, -16, 32, 32, 0), new ItemTexture(new BigItemStack(Blocks.COMMAND_BLOCK))));
+        String txt = QuestTranslation.translate(reward.desc);
+        this.addPanel(new PanelTextBox(new GuiTransform(new Vector4f(0F, 0F, 1F, 1F), new GuiPadding(reward.hideIcon ? 0 : 36, 0, 0, 0), 0), txt).setColor(PresetColor.TEXT_MAIN.getColor()));
     }
 }
