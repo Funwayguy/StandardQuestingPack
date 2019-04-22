@@ -412,6 +412,8 @@ public class AdvImporter implements IImporter
         IQuestLine line = lineDB.createNew(lineDB.nextID());
         line.setProperty(NativeProps.NAME, root.getValue().getProperty(NativeProps.NAME));
         line.setProperty(NativeProps.DESC, root.getValue().getProperty(NativeProps.DESC));
+        line.setProperty(NativeProps.VISIBILITY, EnumQuestVisibility.UNLOCKED);
+        line.setProperty(NativeProps.ICON, root.getValue().getProperty(NativeProps.ICON));
         
         for(List<AdvTreeNode> depthList : NODES_BY_DEPTH)
         {
