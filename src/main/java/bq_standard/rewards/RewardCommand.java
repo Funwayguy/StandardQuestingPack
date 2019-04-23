@@ -79,9 +79,9 @@ public class RewardCommand implements IReward
 	public void readFromNBT(NBTTagCompound json)
 	{
 		command = json.getString("command");
-		desc = json.getString("description");
+		desc = json.hasKey("description", 8) ? json.getString("description") : "Run a command script";
 		viaPlayer = json.getBoolean("viaPlayer");
-		hideIcon = json.getBoolean("hideBlockIcon");
+		hideIcon = !json.hasKey("hideBlockIcon", 1) || json.getBoolean("hideBlockIcon");
 	}
 	
 	@Override

@@ -10,6 +10,8 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 
@@ -46,7 +48,9 @@ public class RewardRecipe implements IReward
         player.unlockRecipes(loc);
     }
     
+    @Nullable
     @Override
+    @SideOnly(Side.CLIENT)
     public IGuiPanel getRewardGui(IGuiRect rect, IQuest quest)
     {
         return new PanelRewardRecipe(rect, quest, this);
@@ -54,6 +58,7 @@ public class RewardRecipe implements IReward
     
     @Nullable
     @Override
+    @SideOnly(Side.CLIENT)
     public GuiScreen getRewardEditor(GuiScreen parent, IQuest quest)
     {
         return null;

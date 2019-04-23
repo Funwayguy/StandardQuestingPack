@@ -96,6 +96,7 @@ public class TaskAdvancement implements ITask
         completeUsers.clear();
     }
     
+    @Nullable
     @Override
 	@SideOnly(Side.CLIENT)
     public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)

@@ -26,6 +26,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nullable;
@@ -139,8 +141,10 @@ public class TaskTame implements ITask, IProgression<Integer>
 		completeUsers.clear();
 		userProgress.clear();
 	}
-    
+ 
+	@Nullable
     @Override
+    @SideOnly(Side.CLIENT)
     public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
     {
         return new PanelTaskTame(rect, quest, this);
@@ -148,6 +152,7 @@ public class TaskTame implements ITask, IProgression<Integer>
     
     @Nullable
     @Override
+    @SideOnly(Side.CLIENT)
     public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
     {
         return new GuiEditTaskTame(parent, quest, this);
