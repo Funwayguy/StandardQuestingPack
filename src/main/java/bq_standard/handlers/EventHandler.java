@@ -10,7 +10,6 @@ import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.storage.DBEntry;
 import bq_standard.advancment_hacks.AdvListenerManager;
-import bq_standard.core.BQ_Standard;
 import bq_standard.network.StandardPacketType;
 import bq_standard.rewards.loot.LootRegistry;
 import bq_standard.tasks.*;
@@ -30,7 +29,6 @@ import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.*;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -153,7 +151,7 @@ public class EventHandler
 		{
 		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
             {
-                if(task.getValue() instanceof TaskInteractEntity) ((TaskInteractEntity)task.getValue()).onInteract(entry, player, event.getHand(), event.getItemStack(), event.getTarget(), true);
+                if(task.getValue() instanceof TaskInteractEntity) ((TaskInteractEntity)task.getValue()).onInteract(entry, player, event.getHand(), event.getItemStack(), event.getTarget(), false);
             }
 		}
     }
@@ -315,16 +313,6 @@ public class EventHandler
         
         AdvListenerManager.INSTANCE.updateAll();
     }
-	
-	@SubscribeEvent
-	public void onConfigChanged(ConfigChangedEvent event)
-	{
-		if(event.getModID().equalsIgnoreCase(BQ_Standard.MODID))
-		{
-			ConfigHandler.config.save();
-			ConfigHandler.initConfigs();
-		}
-	}
 	
 	@SubscribeEvent
     public void onPlayerJoin(PlayerLoggedInEvent event)

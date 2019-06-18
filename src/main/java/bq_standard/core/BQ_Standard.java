@@ -3,7 +3,6 @@ package bq_standard.core;
 import bq_standard.commands.BQS_Commands;
 import bq_standard.commands.BqsComDumpAdvancements;
 import bq_standard.core.proxies.CommonProxy;
-import bq_standard.handlers.ConfigHandler;
 import bq_standard.handlers.GuiHandler;
 import bq_standard.handlers.LootSaveLoad;
 import bq_standard.items.ItemLootChest;
@@ -11,7 +10,6 @@ import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -22,13 +20,15 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = BQ_Standard.MODID, version = "@VERSION@", name = BQ_Standard.NAME, guiFactory = "bq_standard.handlers.ConfigGuiFactory")
+@Mod(modid = BQ_Standard.MODID, version = "@VERSION@", name = BQ_Standard.NAME)
 public class BQ_Standard
 {
     public static final String MODID = "bq_standard";
     public static final String NAME = "Standard Expansion";
     public static final String PROXY = "bq_standard.core.proxies";
     public static final String CHANNEL = "BQ_STANDARD";
+    
+    public static boolean hasJEI = false;
 	
 	@Instance(MODID)
 	public static BQ_Standard instance;
@@ -45,9 +45,6 @@ public class BQ_Standard
     {
     	logger = event.getModLog();
     	network = NetworkRegistry.INSTANCE.newSimpleChannel(CHANNEL);
-    	
-    	ConfigHandler.config = new Configuration(event.getSuggestedConfigurationFile(), true);
-    	ConfigHandler.initConfigs();
     	
     	proxy.registerHandlers();
     	
@@ -66,6 +63,8 @@ public class BQ_Standard
         {
             proxy.registerExpansion();
         }
+        
+        hasJEI = Loader.isModLoaded("jei");
     }
 	
 	@EventHandler

@@ -18,7 +18,11 @@ import betterquesting.api2.client.gui.resources.textures.ItemTexture;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
 import betterquesting.api2.client.gui.themes.presets.PresetIcon;
 import betterquesting.api2.utils.QuestTranslation;
+import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskCrafting;
+import mezz.jei.Internal;
+import mezz.jei.api.recipe.IFocus.Mode;
+import mezz.jei.gui.Focus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
@@ -73,7 +77,7 @@ public class PanelTaskCrafting extends CanvasEmpty
             BigItemStack stack = task.requiredItems.get(i);
     
             PanelItemSlot slot = new PanelItemSlot(new GuiRectangle(0, i * 36, 36, 36, 0), -1, stack, false, true);
-            slot.setCallback(value -> lookupRecipe(value.getBaseStack()));
+            if(BQ_Standard.hasJEI) slot.setCallback(value -> lookupRecipe(value.getBaseStack()));
             cvList.addPanel(slot);
             
             StringBuilder sb = new StringBuilder();
@@ -100,6 +104,7 @@ public class PanelTaskCrafting extends CanvasEmpty
     
     private void lookupRecipe(ItemStack stack)
     {
-    
+        if(stack == null || stack.isEmpty()) return;
+        Internal.getRuntime().getRecipesGui().show(new Focus<>(Mode.OUTPUT, stack));
     }
 }

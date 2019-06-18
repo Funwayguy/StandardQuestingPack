@@ -15,8 +15,13 @@ import betterquesting.api2.client.gui.resources.textures.IGuiTexture;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
 import betterquesting.api2.client.gui.themes.presets.PresetIcon;
 import bq_standard.client.theme.BQSTextures;
+import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskInteractItem;
+import mezz.jei.Internal;
+import mezz.jei.api.recipe.IFocus.Mode;
+import mezz.jei.gui.Focus;
 import net.minecraft.client.Minecraft;
+import net.minecraft.item.ItemStack;
 
 import java.util.UUID;
 
@@ -37,8 +42,17 @@ public class PanelTaskInteractItem extends CanvasEmpty
     {
         super.initPanel();
         
-        this.addPanel(new PanelItemSlot(new GuiTransform(GuiAlign.MID_CENTER, -48, -32, 32, 32, 0), -1, task.targetItem, false, true));
-        this.addPanel(new PanelItemSlot(new GuiTransform(GuiAlign.MID_CENTER, 16, -32, 32, 32, 0), -1, task.targetBlock.getItemStack(), false, true));
+        PanelItemSlot itemSlot = new PanelItemSlot(new GuiTransform(GuiAlign.MID_LEFT, 0, -48, 32, 32, 0), -1, task.targetItem, false, true);
+        this.addPanel(itemSlot);
+        
+        PanelItemSlot targetSlot = new PanelItemSlot(new GuiTransform(GuiAlign.MID_CENTER, 16, -32, 32, 32, 0), -1, task.targetBlock.getItemStack(), false, true);
+        this.addPanel(targetSlot);
+        
+        if(BQ_Standard.hasJEI)
+        {
+            itemSlot.setCallback(value -> lookupRecipe(value.getBaseStack()));
+            targetSlot.setCallback(value -> lookupRecipe(value.getBaseStack()));
+        }
         
         this.addPanel(new PanelGeneric(new GuiTransform(GuiAlign.MID_CENTER, -8, -32, 16, 16, 0), PresetIcon.ICON_RIGHT.getTexture()));
         UUID playerID = QuestingAPI.getQuestingUUID(Minecraft.getMinecraft().player);
@@ -57,5 +71,11 @@ public class PanelTaskInteractItem extends CanvasEmpty
         this.addPanel(new PanelGeneric(new GuiTransform(GuiAlign.MID_CENTER, -8, 24, 8, 8, 0), task.useMainHand ? txTick : txCross));
         this.addPanel(new PanelGeneric(new GuiTransform(GuiAlign.MID_CENTER, 16, 24, 8, 8, 0), task.onHit ? txTick : txCross));
         this.addPanel(new PanelGeneric(new GuiTransform(GuiAlign.MID_CENTER, 40, 24, 8, 8, 0), task.onInteract ? txTick : txCross));
+    }
+    
+    private void lookupRecipe(ItemStack stack)
+    {
+        if(stack == null || stack.isEmpty()) return;
+        Internal.getRuntime().getRecipesGui().show(new Focus<>(Mode.OUTPUT, stack));
     }
 }

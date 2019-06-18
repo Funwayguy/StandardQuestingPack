@@ -18,10 +18,15 @@ import betterquesting.api2.client.gui.resources.textures.IGuiTexture;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
 import betterquesting.api2.client.gui.themes.presets.PresetIcon;
 import bq_standard.client.theme.BQSTextures;
+import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskInteractEntity;
+import mezz.jei.Internal;
+import mezz.jei.api.recipe.IFocus.Mode;
+import mezz.jei.gui.Focus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.UUID;
@@ -43,7 +48,10 @@ public class PanelTaskInteractEntity extends CanvasEmpty
     {
         super.initPanel();
         
-        this.addPanel(new PanelItemSlot(new GuiTransform(GuiAlign.MID_LEFT, 0, -48, 32, 32, 0), -1, task.targetItem, false, true));
+        PanelItemSlot itemSlot = new PanelItemSlot(new GuiTransform(GuiAlign.MID_LEFT, 0, -48, 32, 32, 0), -1, task.targetItem, false, true);
+        if(BQ_Standard.hasJEI) itemSlot.setCallback(value -> lookupRecipe(value.getBaseStack()));
+        this.addPanel(itemSlot);
+        
         this.addPanel(new PanelGeneric(new GuiTransform(GuiAlign.MID_LEFT, 32, -40, 16, 16, 0), PresetIcon.ICON_RIGHT.getTexture()));
         
         UUID playerID = QuestingAPI.getQuestingUUID(Minecraft.getMinecraft().player);
@@ -77,5 +85,11 @@ public class PanelTaskInteractEntity extends CanvasEmpty
         }
         
         if(target != null) this.addPanel(new PanelEntityPreview(new GuiTransform(GuiAlign.FULL_BOX, new GuiPadding(48, 0, 0, 0), 0), target).setRotationDriven(new ValueFuncIO<>(() -> 15F), new ValueFuncIO<>(() -> (float)(Minecraft.getSystemTime()%30000L / 30000D * 360D))));
+    }
+    
+    private void lookupRecipe(ItemStack stack)
+    {
+        if(stack == null || stack.isEmpty()) return;
+        Internal.getRuntime().getRecipesGui().show(new Focus<>(Mode.OUTPUT, stack));
     }
 }

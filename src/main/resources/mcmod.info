@@ -13,6 +13,6 @@
   "screenshots": [],
   "useDependencyInformation": true,
   "requiredMods": ["betterquesting"],
-  "dependencies": ["betterquesting"]
+  "dependencies": ["betterquesting", "jei"]
 }
 ]

@@ -27,7 +27,7 @@ import java.util.Arrays;
 
 public class RewardCommand implements IReward
 {
-	public String command = "#Script Comment\nsayRunning reward script...\nsay @s Claimed a reward";
+	public String command = "#Script Comment\nsay Running reward script...\nsay @s Claimed a reward";
 	public String title = "bq_standard.reward.command";
 	public String desc = "Run a command script";
 	public boolean viaPlayer = false;
@@ -79,6 +79,7 @@ public class RewardCommand implements IReward
 	public void readFromNBT(NBTTagCompound json)
 	{
 		command = json.getString("command");
+		title = json.hasKey("title", 8) ? json.getString("title") : "bq_standard.reward.command";
 		desc = json.hasKey("description", 8) ? json.getString("description") : "Run a command script";
 		viaPlayer = json.getBoolean("viaPlayer");
 		hideIcon = !json.hasKey("hideBlockIcon", 1) || json.getBoolean("hideBlockIcon");
@@ -88,6 +89,7 @@ public class RewardCommand implements IReward
 	public NBTTagCompound writeToNBT(NBTTagCompound json)
 	{
 		json.setString("command", command);
+		json.setString("title", title);
 		json.setString("description", desc);
 		json.setBoolean("viaPlayer", viaPlayer);
 		json.setBoolean("hideBlockIcon", hideIcon);
