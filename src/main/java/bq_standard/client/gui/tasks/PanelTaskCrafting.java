@@ -19,6 +19,8 @@ import betterquesting.api2.client.gui.themes.presets.PresetColor;
 import betterquesting.api2.client.gui.themes.presets.PresetIcon;
 import betterquesting.api2.utils.QuestTranslation;
 import bq_standard.tasks.TaskCrafting;
+import codechicken.nei.recipe.GuiCraftingRecipe;
+import cpw.mods.fml.common.Loader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
@@ -73,7 +75,7 @@ public class PanelTaskCrafting extends CanvasEmpty
             BigItemStack stack = task.requiredItems.get(i);
     
             PanelItemSlot slot = new PanelItemSlot(new GuiRectangle(0, i * 36, 36, 36, 0), -1, stack, false, true);
-            slot.setCallback(value -> lookupRecipe(value.getBaseStack()));
+            if(Loader.isModLoaded("NotEnoughItems")) slot.setCallback(value -> lookupRecipe(value.getBaseStack()));
             cvList.addPanel(slot);
             
             StringBuilder sb = new StringBuilder();
@@ -100,6 +102,6 @@ public class PanelTaskCrafting extends CanvasEmpty
     
     private void lookupRecipe(ItemStack stack)
     {
-    
+        GuiCraftingRecipe.openRecipeGui("item", stack);
     }
 }
