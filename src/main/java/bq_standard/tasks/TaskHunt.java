@@ -1,11 +1,7 @@
 package bq_standard.tasks;
 
-import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.party.IParty;
-import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api2.cache.CapabilityProviderQuestCache;
@@ -31,13 +27,14 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-public class TaskHunt implements ITask, IProgression<Integer>
+public class TaskHunt implements ITask
 {
 	private final List<UUID> completeUsers = new ArrayList<>();
 	private final HashMap<UUID, Integer> userProgress = new HashMap<>();
@@ -86,7 +83,7 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	    
 		if(isComplete(playerID)) return;
 		
-		int progress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
+		int progress = getUsersProgress(playerID);
 		
 		if(progress >= required) setComplete(playerID);
 	}
@@ -225,73 +222,34 @@ public class TaskHunt implements ITask, IProgression<Integer>
 	}
 
 	@Override
-	public void resetUser(UUID uuid)
+	public void resetUser(@Nullable UUID uuid)
 	{
-		completeUsers.remove(uuid);
-		userProgress.remove(uuid);
+	    if(uuid == null)
+        {
+            completeUsers.clear();
+            userProgress.clear();
+        } else
+        {
+            completeUsers.remove(uuid);
+            userProgress.remove(uuid);
+        }
 	}
-
-	@Override
-	public void resetAll()
-	{
-		completeUsers.clear();
-		userProgress.clear();
-	}
-	
-	@Override
-	public float getParticipation(UUID uuid)
-	{
-		if(required <= 0)
-		{
-			return 1F;
-		}
-		
-		return getUsersProgress(uuid) / (float)required;
-	}
-
+ 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-	    return new PanelTaskHunt(rect, quest, this);
+	    return new PanelTaskHunt(rect, this);
 	}
 	
-	@Override
-	public void setUserProgress(UUID uuid, Integer progress)
+	public void setUserProgress(UUID uuid, int progress)
 	{
 		userProgress.put(uuid, progress);
 	}
 	
-	@Override
-	public Integer getUsersProgress(UUID... users)
+	public int getUsersProgress(UUID uuid)
 	{
-		int i = 0;
-		
-		for(UUID uuid : users)
-		{
-			Integer n = userProgress.get(uuid);
-			i += n == null? 0 : n;
-		}
-		
-		return i;
-	}
-	
-	public Integer getPartyProgress(UUID uuid)
-	{
-		IParty party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getUserParty(uuid);
-        return getUsersProgress(party == null ? new UUID[]{uuid} : party.getMembers().toArray(new UUID[0]));
-	}
-	
-	@Override
-	public Integer getGlobalProgress()
-	{
-		int total = 0;
-		
-		for(Integer i : userProgress.values())
-		{
-			total += i == null? 0 : i;
-		}
-		
-		return total;
+        Integer n = userProgress.get(uuid);
+        return n == null? 0 : n;
 	}
 }

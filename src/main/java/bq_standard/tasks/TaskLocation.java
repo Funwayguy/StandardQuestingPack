@@ -25,6 +25,7 @@ import net.minecraft.util.math.Vec3d;
 import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -73,15 +74,15 @@ public class TaskLocation implements ITaskTickable
 	}
  
 	@Override
-	public void resetUser(UUID uuid)
+	public void resetUser(@Nullable UUID uuid)
 	{
-		completeUsers.remove(uuid);
-	}
- 
-	@Override
-	public void resetAll()
-	{
-		completeUsers.clear();
+	    if(uuid == null)
+        {
+		    completeUsers.clear();
+        } else
+        {
+            completeUsers.remove(uuid);
+        }
 	}
 	
 	@Override
@@ -181,7 +182,7 @@ public class TaskLocation implements ITaskTickable
 	}
 	
 	@Override
-	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, @Nullable List<UUID> user)
 	{
 		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
@@ -213,7 +214,7 @@ public class TaskLocation implements ITaskTickable
 	@Override
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-	    return new PanelTaskLocation(rect, quest, this);
+	    return new PanelTaskLocation(rect, this);
 	}
  
 	@Override

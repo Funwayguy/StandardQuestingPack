@@ -1,8 +1,6 @@
 package bq_standard.client.gui.tasks;
 
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.properties.NativeProps;
-import betterquesting.api.questing.IQuest;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api2.client.gui.misc.*;
 import betterquesting.api2.client.gui.panels.CanvasEmpty;
@@ -33,13 +31,11 @@ import java.util.UUID;
 public class PanelTaskCrafting extends CanvasEmpty
 {
     private final TaskCrafting task;
-    private final IQuest quest;
     
-    public PanelTaskCrafting(IGuiRect rect, IQuest quest, TaskCrafting task)
+    public PanelTaskCrafting(IGuiRect rect, TaskCrafting task)
     {
         super(rect);
         this.task = task;
-        this.quest = quest;
     }
     
     @Override
@@ -48,7 +44,7 @@ public class PanelTaskCrafting extends CanvasEmpty
         super.initPanel();
         
         UUID uuid = QuestingAPI.getQuestingUUID(Minecraft.getMinecraft().player);
-        int[] progress = quest == null || !quest.getProperty(NativeProps.GLOBAL) ? task.getPartyProgress(uuid) : task.getGlobalProgress();
+        int[] progress = task.getUsersProgress(uuid);
         boolean isComplete = task.isComplete(uuid);
     
         IGuiTexture txTick = new GuiTextureColored(PresetIcon.ICON_TICK.getTexture(), new GuiColorStatic(0xFF00FF00));

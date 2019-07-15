@@ -9,7 +9,6 @@ import bq_standard.importers.NativeFileImporter;
 import bq_standard.importers.ftbq.FTBQQuestImporter;
 import bq_standard.importers.hqm.HQMBagImporter;
 import bq_standard.importers.hqm.HQMQuestImporter;
-import bq_standard.network.handlers.PktHandlerLootClaim;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -36,8 +35,6 @@ public class ClientProxy extends CommonProxy
 	public void registerExpansion()
 	{
 		super.registerExpansion();
-		
-		QuestingAPI.getAPI(ApiReference.PACKET_REG).registerHandler(new PktHandlerLootClaim());
 		
 		QuestingAPI.getAPI(ApiReference.IMPORT_REG).registerImporter(NativeFileImporter.INSTANCE);
 		

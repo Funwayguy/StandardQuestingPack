@@ -2,7 +2,6 @@ package bq_standard.client.gui.tasks;
 
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.placeholders.ItemPlaceholder;
-import betterquesting.api.questing.IQuest;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api2.client.gui.misc.*;
 import betterquesting.api2.client.gui.panels.CanvasEmpty;
@@ -21,13 +20,11 @@ import net.minecraft.util.text.TextFormatting;
 public class PanelTaskAdvancement extends CanvasEmpty
 {
     private final TaskAdvancement task;
-    private final IQuest quest;
     
-    public PanelTaskAdvancement(IGuiRect rect, IQuest quest, TaskAdvancement task)
+    public PanelTaskAdvancement(IGuiRect rect, TaskAdvancement task)
     {
         super(rect);
         this.task = task;
-        this.quest = quest;
     }
     
     @Override

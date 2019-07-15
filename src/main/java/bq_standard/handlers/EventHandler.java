@@ -2,7 +2,6 @@ package bq_standard.handlers;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
@@ -10,14 +9,13 @@ import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.storage.DBEntry;
 import bq_standard.advancment_hacks.AdvListenerManager;
-import bq_standard.network.StandardPacketType;
-import bq_standard.rewards.loot.LootRegistry;
+import bq_standard.network.handlers.NetLootSync;
+import bq_standard.network.handlers.NetTaskInteract;
 import bq_standard.tasks.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.AnimalTameEvent;
@@ -102,22 +100,14 @@ public class EventHandler
     public void onRightClickEmpty(RightClickEmpty event) // CLIENT SIDE ONLY EVENT
     {
         if(event.getEntityPlayer() == null || !event.getEntityLiving().world.isRemote || event.isCanceled()) return;
-    
-        NBTTagCompound nbt = new NBTTagCompound();
-        nbt.setBoolean("isHit", false);
-        nbt.setBoolean("isMainHand", event.getHand() == EnumHand.MAIN_HAND);
-        QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(StandardPacketType.INTERACT.GetLocation(), nbt));
+        NetTaskInteract.requestInteraction(false, event.getHand() == EnumHand.MAIN_HAND);
     }
     
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onLeftClickAir(LeftClickEmpty event) // CLIENT SIDE ONLY EVENT
     {
         if(event.getEntityPlayer() == null || !event.getEntityLiving().world.isRemote || event.isCanceled()) return;
-    
-        NBTTagCompound nbt = new NBTTagCompound();
-        nbt.setBoolean("isHit", true);
-        nbt.setBoolean("isMainHand", true);
-        QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(StandardPacketType.INTERACT.GetLocation(), nbt));
+        NetTaskInteract.requestInteraction(true, true);
     }
     
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -319,7 +309,7 @@ public class EventHandler
     {
 		if(!event.player.world.isRemote && event.player instanceof EntityPlayerMP)
 		{
-			LootRegistry.INSTANCE.sendDatabase((EntityPlayerMP)event.player);
+            NetLootSync.sendSync((EntityPlayerMP)event.player);
 		}
     }
 	

@@ -1,7 +1,6 @@
 package bq_standard.client.gui.tasks;
 
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.questing.IQuest;
 import betterquesting.api.utils.RenderUtils;
 import betterquesting.api2.client.gui.misc.GuiAlign;
 import betterquesting.api2.client.gui.misc.GuiPadding;
@@ -28,13 +27,11 @@ import java.awt.*;
 
 public class PanelTaskLocation extends CanvasEmpty
 {
-    private final IQuest quest;
     private final TaskLocation task;
     
-    public PanelTaskLocation(IGuiRect rect, IQuest quest, TaskLocation task)
+    public PanelTaskLocation(IGuiRect rect, TaskLocation task)
     {
         super(rect);
-        this.quest = quest;
         this.task = task;
     }
     

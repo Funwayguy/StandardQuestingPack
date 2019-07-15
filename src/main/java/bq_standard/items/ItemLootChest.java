@@ -2,12 +2,11 @@ package bq_standard.items;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api2.utils.QuestTranslation;
 import bq_standard.core.BQ_Standard;
-import bq_standard.network.StandardPacketType;
+import bq_standard.network.handlers.NetLootClaim;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootRegistry;
 import net.minecraft.client.util.ITooltipFlag;
@@ -17,7 +16,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.*;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -82,7 +80,7 @@ public class ItemLootChest extends Item
 	    		player.inventoryContainer.detectAndSendChanges();
 	    	}
 	    	
-            sendGui((EntityPlayerMP)player, loot, "Loot");
+            NetLootClaim.sendReward((EntityPlayerMP)player, "Loot", loot.toArray(new BigItemStack[0]));
         } else if(stack.getItemDamage() >= 102)
     	{
     		if(QuestingAPI.getAPI(ApiReference.SETTINGS).canUserEdit(player))
@@ -135,7 +133,7 @@ public class ItemLootChest extends Item
 	    	
 	    	if(player instanceof EntityPlayerMP)
 	    	{
-	    		sendGui((EntityPlayerMP)player, loot, title);
+                NetLootClaim.sendReward((EntityPlayerMP)player, title, loot.toArray(new BigItemStack[0]));
 	    	}
     	}
     	
@@ -143,28 +141,6 @@ public class ItemLootChest extends Item
     	
     	return new ActionResult<>(EnumActionResult.PASS, stack);
     }
-	
-	private void sendGui(EntityPlayerMP player, List<BigItemStack> loot, String title)
-	{
-		NBTTagCompound tags = new NBTTagCompound();
-		tags.setString("title", title);
-		
-		NBTTagList list = new NBTTagList();
-		
-		for(BigItemStack stack : loot)
-		{
-			if(stack == null)
-			{
-				continue;
-			}
-			
-			list.appendTag(stack.writeToNBT(new NBTTagCompound()));
-		}
-		
-		tags.setTag("rewards", list);
-		
-		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToPlayer(new QuestingPacket(StandardPacketType.LOOT_CLAIM.GetLocation(), tags), player);
-	}
 
     /**
      * returns a list of items with the same ID, but different meta (eg: dye returns 16 items)

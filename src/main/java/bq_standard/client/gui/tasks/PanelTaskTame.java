@@ -1,8 +1,6 @@
 package bq_standard.client.gui.tasks;
 
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.properties.NativeProps;
-import betterquesting.api.questing.IQuest;
 import betterquesting.api2.client.gui.controls.io.ValueFuncIO;
 import betterquesting.api2.client.gui.misc.GuiAlign;
 import betterquesting.api2.client.gui.misc.GuiPadding;
@@ -21,13 +19,11 @@ import net.minecraft.util.ResourceLocation;
 
 public class PanelTaskTame extends CanvasEmpty
 {
-    private final IQuest quest;
     private final TaskTame task;
     
-    public PanelTaskTame(IGuiRect rect, IQuest quest, TaskTame task)
+    public PanelTaskTame(IGuiRect rect, TaskTame task)
     {
         super(rect);
-        this.quest = quest;
         this.task = task;
     }
     
@@ -48,7 +44,7 @@ public class PanelTaskTame extends CanvasEmpty
             target = null;
         }
         
-        int progress = quest == null || !quest.getProperty(NativeProps.GLOBAL) ? task.getPartyProgress(QuestingAPI.getQuestingUUID(Minecraft.getMinecraft().player)) : task.getGlobalProgress();
+        int progress = task.getUsersProgress(QuestingAPI.getQuestingUUID(Minecraft.getMinecraft().player));
 		String tnm = target != null? target.getName() : task.idName;
         
         this.addPanel(new PanelTextBox(new GuiTransform(GuiAlign.TOP_EDGE, new GuiPadding(0, 0, 0, -16), 0), QuestTranslation.translate("bq_standard.gui.tame", tnm) + " " + progress + "/" + task.required).setAlignment(1).setColor(PresetColor.TEXT_MAIN.getColor()));

@@ -1,15 +1,10 @@
 package bq_standard.rewards.loot;
 
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api2.storage.DBEntry;
-import betterquesting.api2.storage.INBTSaveLoad;
+import betterquesting.api2.storage.INBTPartial;
 import betterquesting.api2.storage.SimpleDatabase;
-import bq_standard.network.StandardPacketType;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -18,9 +13,14 @@ import net.minecraft.world.storage.loot.LootContext;
 import net.minecraft.world.storage.loot.LootTable;
 import net.minecraft.world.storage.loot.LootTableList;
 
-import java.util.*;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Random;
 
-public class LootRegistry extends SimpleDatabase<LootGroup> implements INBTSaveLoad<NBTTagCompound>
+public class LootRegistry extends SimpleDatabase<LootGroup> implements INBTPartial<NBTTagCompound, Integer>
 {
     // TODO: Use proper encapsulation
     // TODO: Add localised group names
@@ -31,14 +31,19 @@ public class LootRegistry extends SimpleDatabase<LootGroup> implements INBTSaveL
     
     private final Comparator<DBEntry<LootGroup>> groupSorter = Comparator.comparingInt(o -> o.getValue().weight);
 	public boolean updateUI = false;
+	
+	public synchronized LootGroup createNew(int id)
+    {
+        LootGroup group = new LootGroup();
+        if(id >= 0) this.add(id, group);
+        return group;
+    }
     
     public int getTotalWeight()
     {
-        DBEntry<LootGroup>[] groups = this.getEntries();
-        
         int i = 0;
         
-        for(DBEntry<LootGroup> lg : groups)
+        for(DBEntry<LootGroup> lg : this.getEntries())
         {
             i += lg.getValue().weight;
         }
@@ -61,27 +66,25 @@ public class LootRegistry extends SimpleDatabase<LootGroup> implements INBTSaveL
 		float r = rand.nextFloat() * total/4F + weight*total*0.75F;
 		int cnt = 0;
 		
-		DBEntry<LootGroup>[] sorted = getEntries();
-        Arrays.sort(sorted, groupSorter);
+		List<DBEntry<LootGroup>> sorted = getEntries();
+		sorted.sort(groupSorter);
 		
 		for(DBEntry<LootGroup> entry : sorted)
 		{
 			cnt += entry.getValue().weight;
-			if(cnt >= r)
-			{
-				return entry.getValue();
-			}
+			if(cnt >= r) return entry.getValue();
 		}
 		
 		return null;
     }
     
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound tag)
+    public synchronized NBTTagCompound writeToNBT(NBTTagCompound tag, @Nullable List<Integer> subset)
     {
 		NBTTagList jRew = new NBTTagList();
 		for(DBEntry<LootGroup> entry : getEntries())
 		{
+		    if(subset != null && !subset.contains(entry.getID())) continue;
 			NBTTagCompound jGrp = entry.getValue().writeToNBT(new NBTTagCompound());
 			jGrp.setInteger("ID", entry.getID());
 			jRew.appendTag(jGrp);
@@ -92,9 +95,9 @@ public class LootRegistry extends SimpleDatabase<LootGroup> implements INBTSaveL
     }
     
     @Override
-    public void readFromNBT(NBTTagCompound tag)
+    public synchronized void readFromNBT(NBTTagCompound tag, boolean merge)
     {
-		this.reset();
+		if(!merge) this.reset();
 		
 		List<LootGroup> legacyGroups = new ArrayList<>();
 		
@@ -104,45 +107,19 @@ public class LootRegistry extends SimpleDatabase<LootGroup> implements INBTSaveL
 			NBTTagCompound entry = list.getCompoundTagAt(i);
 			int id = entry.hasKey("ID", 99) ? entry.getInteger("ID") : -1;
 			
-			LootGroup group = new LootGroup();
+			LootGroup group = getValue(id);
+			if(group == null) group = createNew(id);
 			group.readFromNBT(entry);
-			
-			if(id >= 0)
-            {
-                this.add(id, group);
-            } else
-            {
-                legacyGroups.add(group);
-            }
+			if(id < 0) legacyGroups.add(group);
 		}
 		
 		for(LootGroup group : legacyGroups)
         {
             this.add(this.nextID(), group);
         }
-		
-		updateUI = true;
     }
 	
-	public void updateClients()
-	{
-		NBTTagCompound tags = new NBTTagCompound();
-		NBTTagCompound json = new NBTTagCompound();
-		LootRegistry.INSTANCE.writeToNBT(json);
-		tags.setTag("Database", json);
-		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToAll(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags));
-	}
-	
-	public void sendDatabase(EntityPlayerMP player)
-	{
-		NBTTagCompound tags = new NBTTagCompound();
-		NBTTagCompound json = new NBTTagCompound();
-		LootRegistry.INSTANCE.writeToNBT(json);
-		tags.setTag("Database", json);
-		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToPlayer(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags), player);
-	}
-	
-	public static List<BigItemStack> getStandardLoot(EntityPlayer player)
+	public static List<BigItemStack> getStandardLoot(@Nonnull EntityPlayer player)
 	{
 		List<BigItemStack> stacks = new ArrayList<>();
 		

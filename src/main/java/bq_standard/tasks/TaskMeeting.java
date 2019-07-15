@@ -26,6 +26,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -73,15 +74,15 @@ public class TaskMeeting implements ITaskTickable
 	}
 
 	@Override
-	public void resetUser(UUID uuid)
+	public void resetUser(@Nullable UUID uuid)
 	{
-		completeUsers.remove(uuid);
-	}
-
-	@Override
-	public void resetAll()
-	{
-		completeUsers.clear();
+	    if(uuid == null)
+        {
+		    completeUsers.clear();
+        } else
+        {
+            completeUsers.remove(uuid);
+        }
 	}
 	
 	@Override
@@ -210,6 +211,6 @@ public class TaskMeeting implements ITaskTickable
 	@Override
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-	    return new PanelTaskMeeting(rect, quest, this);
+	    return new PanelTaskMeeting(rect, this);
 	}
 }

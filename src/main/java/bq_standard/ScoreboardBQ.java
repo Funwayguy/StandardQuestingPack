@@ -1,95 +1,56 @@
 package bq_standard;
 
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.network.QuestingPacket;
-import bq_standard.network.StandardPacketType;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTBase;
+import betterquesting.api2.storage.INBTPartial;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
-public class ScoreboardBQ
+public class ScoreboardBQ implements INBTPartial<NBTTagList, UUID>
 {
-	static ConcurrentHashMap<String, ScoreBQ> objectives = new ConcurrentHashMap<>();
+    public static final ScoreboardBQ INSTANCE = new ScoreboardBQ();
+    
+	private final HashMap<String, ScoreBQ> objectives = new HashMap<>();
 	
-	public static int getScore(UUID uuid, String scoreName)
+	public synchronized int getScore(@Nonnull UUID uuid, @Nonnull String scoreName)
 	{
 		ScoreBQ score = objectives.get(scoreName);
-		
-		if(score == null)
-		{
-			return 0;
-		} else
-		{
-			return score.getScore(uuid);
-		}
+		return score == null ? 0 : score.getScore(uuid);
 	}
 	
-	public static void setScore(EntityPlayer player, String scoreName, int value)
+	public synchronized void setScore(@Nonnull UUID uuid, @Nonnull String scoreName, int value)
 	{
-		ScoreBQ score = objectives.get(scoreName);
-		
-		if(score == null)
-		{
-			score = new ScoreBQ();
-			objectives.put(scoreName, score);
-		}
-		
-		score.setScore(QuestingAPI.getQuestingUUID(player), value);
-		
-		if(player instanceof EntityPlayerMP)
-		{
-			SendToClient((EntityPlayerMP)player);
-		}
+		ScoreBQ score = objectives.computeIfAbsent(scoreName, (key) -> new ScoreBQ());
+		score.setScore(uuid, value);
 	}
 	
-	public static void SendToClient(EntityPlayerMP player)
+	@Override
+	public synchronized void readFromNBT(NBTTagList json, boolean merge)
 	{
-		NBTTagCompound tags = new NBTTagCompound();
-		tags.setTag("data", writeJson(new NBTTagList()));
-		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToPlayer(new QuestingPacket(StandardPacketType.SCORE_SYNC.GetLocation(), tags), player);
-	}
-	
-	public static void readJson(NBTTagList json)
-	{
-		objectives.clear();
+        if(!merge) objectives.clear();
 		
 		for(int i = 0; i < json.tagCount(); i++)
 		{
-			NBTBase element = json.get(i);
-			
-			if(element.getId() != 10)
-			{
-				continue;
-			}
-			
 			NBTTagCompound jObj = json.getCompoundTagAt(i);
-			String name = jObj.getString("name");
-			
-			if(name.length() <= 0)
-			{
-				continue;
-			}
-			
 			ScoreBQ score = new ScoreBQ();
-			score.readJson(jObj.getTagList("scores", 10));
-			objectives.put(name, score);
+			score.readFromNBT(jObj.getTagList("scores", 10), merge);
+			objectives.put(jObj.getString("name"), score);
 		}
 	}
 	
-	public static NBTTagList writeJson(NBTTagList json)
+	@Override
+	public synchronized NBTTagList writeToNBT(NBTTagList json, @Nullable List<UUID> subset)
 	{
 		for(Entry<String,ScoreBQ> entry : objectives.entrySet())
 		{
 			NBTTagCompound jObj = new NBTTagCompound();
 			jObj.setString("name", entry.getKey());
-			jObj.setTag("scores", entry.getValue().writeJson(new NBTTagList()));
+			jObj.setTag("scores", entry.getValue().writeToNBT(new NBTTagList(), subset));
 			json.appendTag(jObj);
 		}
 		

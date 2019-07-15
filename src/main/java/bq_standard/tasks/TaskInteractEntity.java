@@ -3,8 +3,6 @@ package bq_standard.tasks;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.party.IParty;
-import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
@@ -38,12 +36,12 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-public class TaskInteractEntity implements ITask, IProgression<Integer>
+public class TaskInteractEntity implements ITask
 {
 	private final List<UUID> completeUsers = new ArrayList<>();
 	private final HashMap<UUID, Integer> userProgress = new HashMap<>();
 	
-    public final BigItemStack targetItem = new BigItemStack(Items.AIR);
+    public BigItemStack targetItem = new BigItemStack(Items.AIR);
 	public boolean ignoreItemNBT = false;
 	public boolean partialItemMatch = true;
 	public boolean useMainHand = true;
@@ -144,24 +142,24 @@ public class TaskInteractEntity implements ITask, IProgression<Integer>
 	}
 
 	@Override
-	public void resetUser(UUID uuid)
+	public void resetUser(@Nullable UUID uuid)
 	{
-		completeUsers.remove(uuid);
-		userProgress.remove(uuid);
-	}
-
-	@Override
-	public void resetAll()
-	{
-		completeUsers.clear();
-		userProgress.clear();
+	    if(uuid == null)
+        {
+            completeUsers.clear();
+            userProgress.clear();
+        } else
+        {
+            completeUsers.remove(uuid);
+            userProgress.remove(uuid);
+        }
 	}
     
     @Override
 	@SideOnly(Side.CLIENT)
     public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
     {
-        return new PanelTaskInteractEntity(rect, quest, this);
+        return new PanelTaskInteractEntity(rect, this);
     }
     
     @Override
@@ -254,7 +252,7 @@ public class TaskInteractEntity implements ITask, IProgression<Integer>
     @Override
     public void readFromNBT(NBTTagCompound nbt)
     {
-        targetItem.readFromNBT(nbt.getCompoundTag("item"));
+        targetItem = new BigItemStack(nbt.getCompoundTag("item"));
         ignoreItemNBT = nbt.getBoolean("ignoreItemNBT");
         partialItemMatch = nbt.getBoolean("partialItemMatch");
         
@@ -270,53 +268,14 @@ public class TaskInteractEntity implements ITask, IProgression<Integer>
         onHit = nbt.getBoolean("onHit");
     }
 	
-	@Override
-	public void setUserProgress(UUID uuid, Integer progress)
+	public void setUserProgress(UUID uuid, int progress)
 	{
 		userProgress.put(uuid, progress);
 	}
 	
-	@Override
-	public Integer getUsersProgress(UUID... users)
+	public int getUsersProgress(UUID uuid)
 	{
-		int i = 0;
-		
-		for(UUID uuid : users)
-		{
-			Integer n = userProgress.get(uuid);
-			i += n == null? 0 : n;
-		}
-		
-		return i;
+        Integer n = userProgress.get(uuid);
+        return n == null? 0 : n;
 	}
-	
-	public Integer getPartyProgress(UUID uuid)
-	{
-		IParty party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getUserParty(uuid);
-        return getUsersProgress(party == null ? new UUID[]{uuid} : party.getMembers().toArray(new UUID[0]));
-	}
-	
-	@Override
-	public Integer getGlobalProgress()
-	{
-		int total = 0;
-		
-		for(Integer i : userProgress.values())
-		{
-			total += i == null? 0 : i;
-		}
-		
-		return total;
-	}
-    
-    @Override
-    public float getParticipation(UUID uuid)
-    {
-		if(required <= 0)
-		{
-			return 1F;
-		}
-		
-		return getUsersProgress(uuid) / (float)required;
-    }
 }

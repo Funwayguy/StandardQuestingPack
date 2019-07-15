@@ -160,15 +160,15 @@ public class TaskTrigger implements ITaskTickable
 	}
 
 	@Override
-	public void resetUser(UUID uuid)
+	public void resetUser(@Nullable UUID uuid)
 	{
-		completeUsers.remove(uuid);
-	}
-
-	@Override
-	public void resetAll()
-	{
-		completeUsers.clear();
+	    if(uuid == null)
+        {
+            completeUsers.clear();
+        } else
+        {
+            completeUsers.remove(uuid);
+        }
 	}
     
     @Override

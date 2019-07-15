@@ -12,9 +12,11 @@ import bq_standard.ScoreboardBQ;
 import bq_standard.client.gui.editors.tasks.GuiEditTaskScoreboard;
 import bq_standard.client.gui.tasks.PanelTaskScoreboard;
 import bq_standard.core.BQ_Standard;
+import bq_standard.network.handlers.NetScoreSync;
 import bq_standard.tasks.factory.FactoryTaskScoreboard;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
@@ -25,6 +27,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -68,15 +71,15 @@ public class TaskScoreboard implements ITaskTickable
 	}
 
 	@Override
-	public void resetUser(UUID uuid)
+	public void resetUser(@Nullable UUID uuid)
 	{
-		completeUsers.remove(uuid);
-	}
-
-	@Override
-	public void resetAll()
-	{
-		completeUsers.clear();
+	    if(uuid == null)
+        {
+		    completeUsers.clear();
+        } else
+        {
+            completeUsers.remove(uuid);
+        }
 	}
 	
 	@Override
@@ -116,7 +119,12 @@ public class TaskScoreboard implements ITaskTickable
 
 		Score score = board.getOrCreateScore(player.getName(), scoreObj);
 		int points = score.getScorePoints();
-		ScoreboardBQ.setScore(player, scoreName, points);
+		ScoreboardBQ.INSTANCE.setScore(playerID, scoreName, points);
+		
+		if(player instanceof EntityPlayerMP)
+        {
+            NetScoreSync.sendScore((EntityPlayerMP)player);
+        }
 		
 		if(operation.checkValues(points, target))
 		{
@@ -159,7 +167,7 @@ public class TaskScoreboard implements ITaskTickable
 	}
 	
 	@Override
-	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, @Nullable List<UUID> user)
 	{
 		NBTTagList jArray = new NBTTagList();
 		for(UUID uuid : completeUsers)
@@ -174,13 +182,15 @@ public class TaskScoreboard implements ITaskTickable
 	@Override
 	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
 	{
-		completeUsers.clear();
+		if(!merge) completeUsers.clear();
+		
 		NBTTagList cList = json.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
 			try
 			{
-				completeUsers.add(UUID.fromString(cList.getStringTagAt(i)));
+			    UUID uuid = UUID.fromString(cList.getStringTagAt(i));
+				if(!merge || !completeUsers.contains(uuid)) completeUsers.add(uuid);
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load UUID for task", e);
@@ -235,7 +245,7 @@ public class TaskScoreboard implements ITaskTickable
 	@SideOnly(Side.CLIENT)
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-	    return new PanelTaskScoreboard(rect, quest, this);
+	    return new PanelTaskScoreboard(rect, this);
 	}
 	
 	@Override

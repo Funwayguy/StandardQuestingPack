@@ -2,11 +2,7 @@ package bq_standard.tasks;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.party.IParty;
-import betterquesting.api.questing.tasks.IProgression;
-import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
@@ -25,13 +21,14 @@ import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-public class TaskXP implements ITask, IProgression<Long>, ITaskTickable
+public class TaskXP implements ITaskTickable
 {
 	private final List<UUID> completeUsers = new ArrayList<>();
 	private final HashMap<UUID, Long> userProgress = new HashMap<>();
@@ -78,7 +75,7 @@ public class TaskXP implements ITask, IProgression<Long>, ITaskTickable
         }
         
         long rawXP = levels? XPHelper.getLevelXP(amount) : amount;
-        long totalXP = !quest.getValue().getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
+        long totalXP = getUsersProgress(playerID);
         
         if(totalXP >= rawXP) setComplete(playerID);
 	}
@@ -110,7 +107,7 @@ public class TaskXP implements ITask, IProgression<Long>, ITaskTickable
             changed = true;
         }
 		
-		long totalXP = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
+		long totalXP = getUsersProgress(playerID);
 		
 		if(totalXP >= rawXP)
         {
@@ -208,36 +205,23 @@ public class TaskXP implements ITask, IProgression<Long>, ITaskTickable
 	}
 	
 	@Override
-	public void resetUser(UUID uuid)
+	public void resetUser(@Nullable UUID uuid)
 	{
-		completeUsers.remove(uuid);
-		userProgress.remove(uuid);
-	}
-	
-	@Override
-	public void resetAll()
-	{
-		completeUsers.clear();
-		userProgress.clear();
-	}
-	
-	@Override
-	public float getParticipation(UUID uuid)
-	{
-		long rawXP = !levels? amount : XPHelper.getLevelXP(amount);
-		
-		if(rawXP <= 0)
-		{
-			return 1F;
-		}
-		
-		return getUsersProgress(uuid) / (float)rawXP;
+	    if(uuid == null)
+        {
+            completeUsers.clear();
+            userProgress.clear();
+        } else
+        {
+            completeUsers.remove(uuid);
+            userProgress.remove(uuid);
+        }
 	}
 	
 	@Override
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-	    return new PanelTaskXP(rect, quest, this);
+	    return new PanelTaskXP(rect, this);
 	}
 	
 	@Override
@@ -246,43 +230,14 @@ public class TaskXP implements ITask, IProgression<Long>, ITaskTickable
 		return null;
 	}
 	
-	@Override
-	public void setUserProgress(UUID uuid, Long progress)
+	public void setUserProgress(UUID uuid, long progress)
 	{
 		userProgress.put(uuid, progress);
 	}
 	
-	@Override
-	public Long getUsersProgress(UUID... users)
+	public long getUsersProgress(UUID uuid)
 	{
-		long i = 0;
-		
-		for(UUID uuid : users)
-		{
-			Long n = userProgress.get(uuid);
-			i += n == null? 0 : n;
-		}
-		
-		return i;
+        Long n = userProgress.get(uuid);
+        return n == null? 0 : n;
 	}
-
-	public Long getPartyProgress(UUID uuid)
-	{
-		IParty party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getUserParty(uuid);
-        return getUsersProgress(party == null ? new UUID[]{uuid} : party.getMembers().toArray(new UUID[0]));
-	}
-	
-	@Override
-	public Long getGlobalProgress()
-	{
-		long total = 0;
-		
-		for(Long i : userProgress.values())
-		{
-			total += i == null? 0 : 1;
-		}
-		
-		return total;
-	}
-	
 }

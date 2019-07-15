@@ -2,12 +2,9 @@ package bq_standard.tasks;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.IFluidTask;
 import betterquesting.api.questing.tasks.IItemTask;
-import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
@@ -38,7 +35,7 @@ import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.Map.Entry;
 
-public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask, IProgression<int[]>
+public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask
 {
 	private final List<UUID> completeUsers = new ArrayList<>();
 	public final NonNullList<FluidStack> requiredFluids = NonNullList.create();
@@ -150,7 +147,7 @@ public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask, IProgre
 		if(updated) setUserProgress(playerID, progress);
 		
 		boolean hasAll = true;
-		int[] totalProgress = quest == null || !quest.getProperty(NativeProps.GLOBAL) ? getPartyProgress(playerID) : getGlobalProgress();
+		int[] totalProgress = getUsersProgress(playerID);
 		
 		for(int j = 0; j < requiredFluids.size(); j++)
 		{
@@ -290,42 +287,22 @@ public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask, IProgre
 	@Override
 	public void resetUser(UUID uuid)
 	{
-		completeUsers.remove(uuid);
-		userProgress.remove(uuid);
+	    if(uuid == null)
+        {
+            completeUsers.clear();
+            userProgress.clear();
+        } else
+        {
+            completeUsers.remove(uuid);
+            userProgress.remove(uuid);
+        }
 	}
-
-	@Override
-	public void resetAll()
-	{
-		completeUsers.clear();
-		userProgress.clear();
-	}
-	
-	@Override
-	public float getParticipation(UUID uuid)
-	{
-		if(requiredFluids.size() <= 0)
-		{
-			return 1F;
-		}
-		
-		float total = 0F;
-		
-		int[] progress = getUsersProgress(uuid);
-		for(int i = 0; i < requiredFluids.size(); i++)
-		{
-			FluidStack rStack = requiredFluids.get(i);
-			total += progress[i] / (float)rStack.amount;
-		}
-		
-		return total / (float)requiredFluids.size();
-	}
-
+ 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-	    return new PanelTaskFluid(rect, quest, this);
+	    return new PanelTaskFluid(rect, this);
 	}
 	
 	@Override
@@ -448,66 +425,15 @@ public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask, IProgre
 		
 		return hasDrained ? handler.getContainer() : item;
 	}
-
-	@Override
+ 
 	public void setUserProgress(UUID uuid, int[] progress)
 	{
 		userProgress.put(uuid, progress);
 	}
-
-	@Override
-	public int[] getUsersProgress(UUID... users)
+ 
+	public int[] getUsersProgress(UUID uuid)
 	{
-		int[] progress = new int[requiredFluids.size()];
-		
-		for(UUID uuid : users)
-		{
-			int[] tmp = userProgress.get(uuid);
-			
-			if(tmp == null || tmp.length != requiredFluids.size()) continue;
-			
-			for(int n = 0; n < progress.length; n++)
-			{
-			    if(!consume)
-                {
-                    progress[n] = Math.max(progress[n], tmp[n]);
-                } else
-                {
-				    progress[n] += tmp[n];
-                }
-			}
-		}
-		
-		return progress;
-	}
-	
-	public int[] getPartyProgress(UUID uuid)
-	{
-		IParty party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getUserParty(uuid);
-        return getUsersProgress(party == null ? new UUID[]{uuid} : party.getMembers().toArray(new UUID[0]));
-	}
-
-	@Override
-	public int[] getGlobalProgress()
-	{
-		int[] total = new int[requiredFluids.size()];
-		
-		for(int[] up : userProgress.values())
-		{
-			if(up == null || up.length != requiredFluids.size()) continue;
-			
-			for(int i = 0; i < up.length; i++)
-			{
-				if(!consume)
-				{
-					total[i] = Math.max(total[i], up[i]);
-				} else
-				{
-					total[i] += up[i];
-				}
-			}
-		}
-		
-		return total;
+		int[] progress = userProgress.get(uuid);
+		return progress == null || progress.length != requiredFluids.size()? new int[requiredFluids.size()] : progress;
 	}
 }

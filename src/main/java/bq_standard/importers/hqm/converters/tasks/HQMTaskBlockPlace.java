@@ -25,7 +25,7 @@ public class HQMTaskBlockPlace
 			
 			TaskInteractItem task = new TaskInteractItem();
             BigItemStack stack = HQMUtilities.HQMStackT1(JsonHelper.GetObject(jObj, "item"));
-            task.targetItem.readFromNBT(stack.writeToNBT(new NBTTagCompound()));
+            task.targetItem = new BigItemStack(stack.writeToNBT(new NBTTagCompound()));
             task.required = JsonHelper.GetNumber(jObj, "required", 1).intValue();
 			tList.add(task);
 		}

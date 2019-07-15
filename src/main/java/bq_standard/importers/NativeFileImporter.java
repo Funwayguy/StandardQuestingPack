@@ -109,7 +109,7 @@ public class NativeFileImporter implements IImporter
             }
 			
 			IQuestLine ql = lineDB.createNew(lineDB.nextID());
-			ql.readFromNBT(jql);
+			ql.readFromNBT(jql, false);
 		}
     }
 }

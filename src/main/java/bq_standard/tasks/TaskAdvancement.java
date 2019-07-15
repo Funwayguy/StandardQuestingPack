@@ -85,15 +85,15 @@ public class TaskAdvancement implements ITask
     }
     
     @Override
-    public void resetUser(UUID uuid)
+    public void resetUser(@Nullable UUID uuid)
     {
-        completeUsers.remove(uuid);
-    }
-    
-    @Override
-    public void resetAll()
-    {
-        completeUsers.clear();
+        if(uuid == null)
+        {
+            completeUsers.clear();
+        } else
+        {
+            completeUsers.remove(uuid);
+        }
     }
     
     @Nullable
@@ -101,7 +101,7 @@ public class TaskAdvancement implements ITask
 	@SideOnly(Side.CLIENT)
     public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
     {
-        return new PanelTaskAdvancement(rect, quest, this);
+        return new PanelTaskAdvancement(rect, this);
     }
     
     @Override

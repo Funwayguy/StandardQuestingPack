@@ -2,10 +2,7 @@ package bq_standard.tasks;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.party.IParty;
-import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
@@ -31,13 +28,14 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-public class TaskCrafting implements ITask, IProgression<int[]>
+public class TaskCrafting implements ITask
 {
 	private final List<UUID> completeUsers = new ArrayList<>();
 	public final NonNullList<BigItemStack> requiredItems = NonNullList.create();
@@ -82,7 +80,7 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 		
 		if(isComplete(playerID)) return;
 		
-		int[] progress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
+		int[] progress = getUsersProgress(playerID);
 		
 		boolean flag = true;
 		
@@ -270,43 +268,23 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	}
 
 	@Override
-	public void resetUser(UUID uuid)
+	public void resetUser(@Nullable UUID uuid)
 	{
-		completeUsers.remove(uuid);
-		userProgress.remove(uuid);
+	    if(uuid == null)
+        {
+            completeUsers.clear();
+            userProgress.clear();
+        } else
+        {
+            completeUsers.remove(uuid);
+            userProgress.remove(uuid);
+        }
 	}
-
-	@Override
-	public void resetAll()
-	{
-		completeUsers.clear();
-		userProgress.clear();
-	}
-	
-	@Override
-	public float getParticipation(UUID uuid)
-	{
-		if(requiredItems.size() <= 0)
-		{
-			return 1F;
-		}
-		
-		float total = 0F;
-		
-		int[] progress = getUsersProgress(uuid);
-		for(int i = 0; i < requiredItems.size(); i++)
-		{
-			BigItemStack rStack = requiredItems.get(i);
-			total += progress[i] / (float)rStack.stackSize;
-		}
-		
-		return total / (float)requiredItems.size();
-	}
-
+ 
 	@Override
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
-	    return new PanelTaskCrafting(rect, quest, this);
+	    return new PanelTaskCrafting(rect, this);
 	}
 	
 	@Override
@@ -316,53 +294,14 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 		return null;
 	}
 	
-	@Override
 	public void setUserProgress(UUID uuid, int[] progress)
 	{
 		userProgress.put(uuid, progress);
 	}
 	
-	@Override
-	public int[] getUsersProgress(UUID... users)
+	public int[] getUsersProgress(UUID uuid)
 	{
-		int[] progress = new int[requiredItems.size()];
-		
-		for(UUID uuid : users)
-		{
-			int[] tmp = userProgress.get(uuid);
-			
-			if(tmp == null || tmp.length != requiredItems.size()) continue;
-			
-			for(int n = 0; n < progress.length; n++)
-			{
-				progress[n] += tmp[n];
-			}
-		}
-		
-		return progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
-	}
-	
-	public int[] getPartyProgress(UUID uuid)
-	{
-		IParty party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getUserParty(uuid);
-        return getUsersProgress(party == null ? new UUID[]{uuid} : party.getMembers().toArray(new UUID[0]));
-	}
-	
-	@Override
-	public int[] getGlobalProgress()
-	{
-		int[] total = new int[requiredItems.size()];
-		
-		for(int[] up : userProgress.values())
-		{
-			if(up == null || up.length != requiredItems.size()) continue;
-			
-			for(int i = 0; i < up.length; i++)
-			{
-				total[i] += up[i];
-			}
-		}
-		
-		return total;
+		int[] progress = userProgress.get(uuid);
+		return progress == null || progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
 	}
 }
