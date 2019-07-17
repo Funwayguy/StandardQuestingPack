@@ -17,6 +17,7 @@ import mezz.jei.gui.Focus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fml.common.Optional.Method;
 
 import java.util.UUID;
 
@@ -78,9 +79,10 @@ public class PanelTaskFluid extends CanvasEmpty
         }
     }
     
+    @Method(modid = "jei")
     private void lookupRecipe(FluidStack fluid)
     {
-        if(fluid == null) return;
+        if(fluid == null || Internal.getRuntime() == null) return;
         Internal.getRuntime().getRecipesGui().show(new Focus<>(Mode.OUTPUT, fluid));
     }
 }

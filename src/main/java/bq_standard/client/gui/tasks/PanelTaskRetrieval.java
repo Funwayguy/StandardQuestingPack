@@ -18,6 +18,7 @@ import mezz.jei.gui.Focus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.fml.common.Optional.Method;
 
 import java.util.UUID;
 
@@ -82,9 +83,10 @@ public class PanelTaskRetrieval extends CanvasEmpty
         }
     }
     
+    @Method(modid = "jei")
     private void lookupRecipe(ItemStack stack)
     {
-        if(stack == null || stack.isEmpty()) return;
+        if(stack == null || stack.isEmpty() || Internal.getRuntime() == null) return;
         Internal.getRuntime().getRecipesGui().show(new Focus<>(Mode.OUTPUT, stack));
     }
 }
