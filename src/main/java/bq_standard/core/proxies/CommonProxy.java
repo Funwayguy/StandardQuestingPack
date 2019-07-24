@@ -13,6 +13,7 @@ import bq_standard.network.handlers.*;
 import bq_standard.rewards.factory.*;
 import bq_standard.rewards.loot.LootRegistry;
 import bq_standard.tasks.factory.*;
+import cpw.mods.fml.common.FMLCommonHandler;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -25,8 +26,10 @@ public class CommonProxy
 	
 	public void registerHandlers()
 	{
-		MinecraftForge.EVENT_BUS.register(new LootRegistry());
-		MinecraftForge.EVENT_BUS.register(new EventHandler());
+		MinecraftForge.EVENT_BUS.register(LootRegistry.INSTANCE);
+		EventHandler evHandle = new EventHandler();
+        FMLCommonHandler.instance().bus().register(evHandle);
+		MinecraftForge.EVENT_BUS.register(evHandle);
 	}
 	
 	public void registerRenderers()

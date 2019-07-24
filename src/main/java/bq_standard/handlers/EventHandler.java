@@ -23,6 +23,9 @@ import cpw.mods.fml.common.gameevent.TickEvent.ServerTickEvent;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.inventory.InventoryCrafting;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.CraftingManager;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
@@ -107,35 +110,46 @@ public class EventHandler
         
         QuestCache qc = (QuestCache)event.player.getExtendedProperties(QuestCache.LOC_QUEST_CACHE.toString());
 		if(qc == null) return;
+        
+        ItemStack refStack = event.crafting.copy();
+        
+        if(refStack.stackSize <= 0 && event.craftMatrix instanceof InventoryCrafting) // Hack for broken-ass shift clicking reporting empty stacks
+        {
+            ItemStack result = CraftingManager.getInstance().findMatchingRecipe((InventoryCrafting)event.craftMatrix, event.player.worldObj);
+            if(result != null) refStack.stackSize = result.stackSize;
+        }
 		
 		for(DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(qc.getActiveQuests()))
 		{
 		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
             {
-                if(task.getValue() instanceof TaskCrafting) ((TaskCrafting)task.getValue()).onItemCraft(entry, event.player, event.crafting.copy());
+                if(task.getValue() instanceof TaskCrafting) ((TaskCrafting)task.getValue()).onItemCraft(entry, event.player, refStack);
             }
 		}
 	}
 	
 	@SubscribeEvent(priority = EventPriority.LOWEST)
-	public void onItemSmelted(ItemSmeltedEvent event)
+	public void onItemSmelted(ItemSmeltedEvent event) // This event is even more busted than crafting when shift clicking (only ever reports 2 empty stacks regardless of actual amount)
 	{
 		if(event.player == null || event.player.worldObj.isRemote) return;
-        
+		
         QuestCache qc = (QuestCache)event.player.getExtendedProperties(QuestCache.LOC_QUEST_CACHE.toString());
 		if(qc == null) return;
 		
+		ItemStack refStack = event.smelting.copy();
+		if(refStack.stackSize <= 0) refStack.stackSize = 1; // Doesn't really fix much but it's better than nothing I suppose
+		
 		for(DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(qc.getActiveQuests()))
 		{
 		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
             {
-                if(task.getValue() instanceof TaskCrafting) ((TaskCrafting)task.getValue()).onItemSmelt(entry, event.player, event.smelting.copy());
+                if(task.getValue() instanceof TaskCrafting) ((TaskCrafting)task.getValue()).onItemSmelt(entry, event.player, refStack);
             }
 		}
 	}
 	
 	@SubscribeEvent(priority = EventPriority.LOWEST)
-	public void onItemAnvil(AnvilRepairEvent event)
+	public void onItemAnvil(AnvilRepairEvent event) // Somehow actually works as intended unlike other crafting methods
 	{
 		if(event.entityPlayer == null || event.entityPlayer.worldObj.isRemote) return;
         
@@ -146,7 +160,7 @@ public class EventHandler
 		{
 		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
             {
-                if(task.getValue() instanceof TaskCrafting) ((TaskCrafting)task.getValue()).onItemAnvil(entry, event.entityPlayer, event.right.copy());
+                if(task.getValue() instanceof TaskCrafting) ((TaskCrafting)task.getValue()).onItemAnvil(entry, event.entityPlayer, event.output.copy());
             }
 		}
 	}

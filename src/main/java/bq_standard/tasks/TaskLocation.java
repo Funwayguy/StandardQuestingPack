@@ -38,7 +38,7 @@ public class TaskLocation implements ITaskTickable
 	public int range = -1;
 	public boolean visible = false;
 	public boolean hideInfo = false;
-	public boolean invertDistance = false;
+	public boolean invert = false;
 	public boolean taxiCab = false;
 	
 	@Override
@@ -96,7 +96,9 @@ public class TaskLocation implements ITaskTickable
 		
 		if(!player.isEntityAlive() || isComplete(playerID)) return;
 		
-		if(player.dimension == dim && (range <= 0 || (getDistance(player) <= range) != invertDistance))
+		boolean flag = false;
+		
+		if(player.dimension == dim && (range <= 0 || getDistance(player) <= range))
 		{
 			if(visible && range > 0) // Do not do ray casting with infinite range!
 			{
@@ -106,13 +108,15 @@ public class TaskLocation implements ITaskTickable
 				
 				if(mop == null || mop.typeOfHit != MovingObjectType.BLOCK)
 				{
-					setComplete(playerID);
+					flag = true;
 				}
 			} else
 			{
-				setComplete(playerID);
+				flag = true;
 			}
 		}
+		
+		if(flag != invert) setComplete(playerID);
 	}
 	
 	private double getDistance(EntityPlayer player)
@@ -127,35 +131,35 @@ public class TaskLocation implements ITaskTickable
     }
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json)
+	public NBTTagCompound writeToNBT(NBTTagCompound nbt)
 	{
-		json.setString("name", name);
-		json.setInteger("posX", x);
-		json.setInteger("posY", y);
-		json.setInteger("posZ", z);
-		json.setInteger("dimension", dim);
-		json.setInteger("range", range);
-		json.setBoolean("visible", visible);
-		json.setBoolean("hideInfo", hideInfo);
-		json.setBoolean("invertDistance", invertDistance);
-		json.setBoolean("taxiCabDist", taxiCab);
+		nbt.setString("name", name);
+		nbt.setInteger("posX", x);
+		nbt.setInteger("posY", y);
+		nbt.setInteger("posZ", z);
+		nbt.setInteger("dimension", dim);
+		nbt.setInteger("range", range);
+		nbt.setBoolean("visible", visible);
+		nbt.setBoolean("hideInfo", hideInfo);
+		nbt.setBoolean("invert", invert);
+		nbt.setBoolean("taxiCabDist", taxiCab);
 		
-		return json;
+		return nbt;
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json)
+	public void readFromNBT(NBTTagCompound nbt)
 	{
-		name = json.getString("name");
-		x = json.getInteger("posX");
-		y = json.getInteger("posY");
-		z = json.getInteger("posZ");
-		dim = json.getInteger("dimension");
-		range = json.getInteger("range");
-		visible = json.getBoolean("visible");
-		hideInfo = json.getBoolean("hideInfo");
-		invertDistance = json.getBoolean("invertDistance");
-		taxiCab = json.getBoolean("taxiCabDist");
+		name = nbt.getString("name");
+		x = nbt.getInteger("posX");
+		y = nbt.getInteger("posY");
+		z = nbt.getInteger("posZ");
+		dim = nbt.getInteger("dimension");
+		range = nbt.getInteger("range");
+		visible = nbt.getBoolean("visible");
+		hideInfo = nbt.getBoolean("hideInfo");
+		invert = nbt.getBoolean("invert") || nbt.getBoolean("invertDistance");
+		taxiCab = nbt.getBoolean("taxiCabDist");
 	}
 	
 	@Override

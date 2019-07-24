@@ -12,9 +12,10 @@ import betterquesting.api2.client.gui.panels.content.PanelTextBox;
 import betterquesting.api2.client.gui.panels.lists.CanvasScrolling;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
 import betterquesting.api2.utils.QuestTranslation;
+import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskRetrieval;
 import codechicken.nei.recipe.GuiCraftingRecipe;
-import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.Optional.Method;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
@@ -64,7 +65,7 @@ public class PanelTaskRetrieval extends CanvasEmpty
             }
     
             PanelItemSlot slot = new PanelItemSlot(new GuiRectangle(0, i * 32, 32, 32, 0), -1, stack, false, true);
-            if(Loader.isModLoaded("NotEnoughItems")) slot.setCallback(value -> lookupRecipe(value.getBaseStack()));
+            if(BQ_Standard.hasNEI) slot.setCallback(value -> lookupRecipe(value.getBaseStack()));
             cvList.addPanel(slot);
             
             StringBuilder sb = new StringBuilder();
@@ -89,6 +90,7 @@ public class PanelTaskRetrieval extends CanvasEmpty
         }
     }
     
+    @Method(modid = "NotEnoughItems")
     private void lookupRecipe(ItemStack stack)
     {
         GuiCraftingRecipe.openRecipeGui("item", stack);

@@ -11,9 +11,10 @@ import betterquesting.api2.client.gui.panels.content.PanelTextBox;
 import betterquesting.api2.client.gui.panels.lists.CanvasScrolling;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
 import betterquesting.api2.utils.QuestTranslation;
+import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.TaskFluid;
 import codechicken.nei.recipe.GuiCraftingRecipe;
-import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.Optional.Method;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.fluids.FluidStack;
@@ -63,7 +64,7 @@ public class PanelTaskFluid extends CanvasEmpty
             }
     
             PanelFluidSlot slot = new PanelFluidSlot(new GuiRectangle(0, i * 36, 36, 36, 0), -1, stack);
-            if(Loader.isModLoaded("NotEnoughItems")) slot.setCallback(this::lookupRecipe);
+            if(BQ_Standard.hasNEI) slot.setCallback(this::lookupRecipe);
             cvList.addPanel(slot);
             
             StringBuilder sb = new StringBuilder();
@@ -85,6 +86,7 @@ public class PanelTaskFluid extends CanvasEmpty
         }
     }
     
+    @Method(modid = "NotEnoughItems")
     private void lookupRecipe(FluidStack fluid)
     {
         GuiCraftingRecipe.openRecipeGui("fluid", fluid);

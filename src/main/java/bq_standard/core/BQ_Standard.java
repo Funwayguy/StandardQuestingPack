@@ -29,6 +29,8 @@ public class BQ_Standard
     public static final String NAME = "Standard Expansion";
     public static final String PROXY = "bq_standard.core.proxies";
     public static final String CHANNEL = "BQ_STANDARD";
+    
+    public static boolean hasNEI = false;
 	
 	@Instance(MODID)
 	public static BQ_Standard instance;
@@ -69,6 +71,8 @@ public class BQ_Standard
         {
             proxy.registerExpansion();
         }
+        
+        hasNEI = Loader.isModLoaded("NotEnoughItems");
     }
 	
 	@EventHandler
