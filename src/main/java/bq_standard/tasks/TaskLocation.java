@@ -1,7 +1,9 @@
 package bq_standard.tasks;
 
+import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
+import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.storage.DBEntry;
@@ -10,12 +12,14 @@ import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskLocation;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.StringUtils;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.WorldProvider;
 import net.minecraftforge.common.DimensionManager;
@@ -31,6 +35,8 @@ public class TaskLocation implements ITaskTickable
 {
 	private ArrayList<UUID> completeUsers = new ArrayList<>();
 	public String name = "New Location";
+	public String structure = "";
+	public int biome = -1;
 	public int x = 0;
 	public int y = 0;
 	public int z = 0;
@@ -94,29 +100,39 @@ public class TaskLocation implements ITaskTickable
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
-		if(!player.isEntityAlive() || isComplete(playerID)) return;
+		if(!player.isEntityAlive() || isComplete(playerID) || !(player instanceof EntityPlayerMP)) return;
+		
+		EntityPlayerMP playerMP = (EntityPlayerMP)player;
+		QuestCache qc = (QuestCache)player.getExtendedProperties(QuestCache.LOC_QUEST_CACHE.toString());
 		
 		boolean flag = false;
 		
 		if(player.dimension == dim && (range <= 0 || getDistance(player) <= range))
 		{
-			if(visible && range > 0) // Do not do ray casting with infinite range!
+			if(biome >= 0 && biome != playerMP.getServerForPlayer().getBiomeGenForCoords(playerMP.serverPosX, playerMP.serverPosZ).biomeID)
+            {
+                if(!invert) return;
+            } else if(!StringUtils.isNullOrEmpty(structure) && playerMP.getServerForPlayer().getChunkProvider().func_147416_a(playerMP.getServerForPlayer(), structure, playerMP.serverPosX, playerMP.serverPosY, playerMP.serverPosZ) == null)
+            {
+                if(!invert) return;
+            } else if(visible && range > 0) // Do not do ray casting with infinite range!
 			{
 				Vec3 pPos = Vec3.createVectorHelper(player.posX, player.posY + player.getEyeHeight(), player.posZ);
 				Vec3 tPos = Vec3.createVectorHelper(x, y, z);
 				MovingObjectPosition mop = player.worldObj.func_147447_a(pPos, tPos, false, true, false);
 				
-				if(mop == null || mop.typeOfHit != MovingObjectType.BLOCK)
-				{
-					flag = true;
-				}
+				flag = mop == null || mop.typeOfHit != MovingObjectType.BLOCK;
 			} else
 			{
 				flag = true;
 			}
 		}
 		
-		if(flag != invert) setComplete(playerID);
+		if(flag != invert)
+        {
+            setComplete(playerID);
+            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+        }
 	}
 	
 	private double getDistance(EntityPlayer player)
