@@ -22,7 +22,6 @@ import java.util.Random;
 
 public class LootRegistry extends SimpleDatabase<LootGroup> implements INBTPartial<NBTTagCompound, Integer>
 {
-    // TODO: Use proper encapsulation
     // TODO: Add localised group names
     // TODO: Use a better UI updating method
     // TODO: Add claim limits and store by UUID
@@ -66,7 +65,7 @@ public class LootRegistry extends SimpleDatabase<LootGroup> implements INBTParti
 		float r = rand.nextFloat() * total/4F + weight*total*0.75F;
 		int cnt = 0;
 		
-		List<DBEntry<LootGroup>> sorted = getEntries();
+		List<DBEntry<LootGroup>> sorted = new ArrayList<>(getEntries());
 		sorted.sort(groupSorter);
 		
 		for(DBEntry<LootGroup> entry : sorted)

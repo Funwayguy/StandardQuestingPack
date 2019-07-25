@@ -43,7 +43,7 @@ public class TaskLocation implements ITaskTickable
 	public int range = -1;
 	public boolean visible = false;
 	public boolean hideInfo = false;
-	public boolean invertDistance = false;
+	public boolean invert = false;
 	public boolean taxiCab = false;
 	
 	@Override
@@ -104,17 +104,17 @@ public class TaskLocation implements ITaskTickable
 		EntityPlayerMP playerMP = (EntityPlayerMP)player;
 		QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
 		
-		if(player.dimension == dim && (range <= 0 || (getDistance(player) <= range) != invertDistance))
+		boolean flag = false;
+		
+		if(player.dimension == dim && (range <= 0 || getDistance(player) <= range))
 		{
 		    if(!StringUtils.isNullOrEmpty(biome) && !new ResourceLocation(biome).equals(playerMP.getServerWorld().getBiome(playerMP.getPosition()).getRegistryName()))
             {
-                return;
+                if(!invert) return;
             } else if(!StringUtils.isNullOrEmpty(structure) && !playerMP.getServerWorld().getChunkProvider().isInsideStructure(playerMP.world, structure, playerMP.getPosition()))
             {
-                return;
-            }
-		    
-			if(visible && range > 0) // Do not do ray casting with infinite range!
+                if(!invert) return;
+            } else if(visible && range > 0) // Do not do ray casting with infinite range!
 			{
 				Vec3d pPos = new Vec3d(player.posX, player.posY + player.getEyeHeight(), player.posZ);
 				Vec3d tPos = new Vec3d(x, y, z);
@@ -122,15 +122,19 @@ public class TaskLocation implements ITaskTickable
 				
 				if(mop == null || mop.typeOfHit != RayTraceResult.Type.BLOCK)
 				{
-					setComplete(playerID);
-					if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+					flag = true;
 				}
 			} else
 			{
-				setComplete(playerID);
-                if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+				flag = true;
 			}
 		}
+		
+		if(flag != invert)
+        {
+            setComplete(playerID);
+            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+        }
 	}
 	
 	private double getDistance(EntityPlayer player)
@@ -146,39 +150,39 @@ public class TaskLocation implements ITaskTickable
     }
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json)
+	public NBTTagCompound writeToNBT(NBTTagCompound nbt)
 	{
-		json.setString("name", name);
-		json.setInteger("posX", x);
-		json.setInteger("posY", y);
-		json.setInteger("posZ", z);
-		json.setInteger("dimension", dim);
-		json.setString("biome", biome);
-		json.setString("structure", structure);
-		json.setInteger("range", range);
-		json.setBoolean("visible", visible);
-		json.setBoolean("hideInfo", hideInfo);
-		json.setBoolean("invertDistance", invertDistance);
-		json.setBoolean("taxiCabDist", taxiCab);
+		nbt.setString("name", name);
+		nbt.setInteger("posX", x);
+		nbt.setInteger("posY", y);
+		nbt.setInteger("posZ", z);
+		nbt.setInteger("dimension", dim);
+		nbt.setString("biome", biome);
+		nbt.setString("structure", structure);
+		nbt.setInteger("range", range);
+		nbt.setBoolean("visible", visible);
+		nbt.setBoolean("hideInfo", hideInfo);
+		nbt.setBoolean("invert", invert);
+		nbt.setBoolean("taxiCabDist", taxiCab);
 		
-		return json;
+		return nbt;
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json)
+	public void readFromNBT(NBTTagCompound nbt)
 	{
-		name = json.getString("name");
-		x = json.getInteger("posX");
-		y = json.getInteger("posY");
-		z = json.getInteger("posZ");
-		dim = json.getInteger("dimension");
-		biome = json.getString("biome");
-		structure = json.getString("structure");
-		range = json.getInteger("range");
-		visible = json.getBoolean("visible");
-		hideInfo = json.getBoolean("hideInfo");
-		invertDistance = json.getBoolean("invertDistance");
-		taxiCab = json.getBoolean("taxiCabDist");
+		name = nbt.getString("name");
+		x = nbt.getInteger("posX");
+		y = nbt.getInteger("posY");
+		z = nbt.getInteger("posZ");
+		dim = nbt.getInteger("dimension");
+		biome = nbt.getString("biome");
+		structure = nbt.getString("structure");
+		range = nbt.getInteger("range");
+		visible = nbt.getBoolean("visible");
+		hideInfo = nbt.getBoolean("hideInfo");
+		invert = nbt.getBoolean("invert") || nbt.getBoolean("invertDistance");
+		taxiCab = nbt.getBoolean("taxiCabDist");
 	}
 	
 	@Override
