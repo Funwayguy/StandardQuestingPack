@@ -17,13 +17,17 @@ import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskRetrieval;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Tuple;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
@@ -366,9 +370,9 @@ public class TaskRetrieval implements ITaskInventory, IItemTask
 	
 	@Override
 	@SideOnly(Side.CLIENT)
-	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)//, JsonObject data)
+	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
 	{
-		return null;//new GuiRetrievalEditor(parent, this, quest);
+		return null;
 	}
  
 	public void setUserProgress(UUID uuid, int[] progress)
@@ -381,4 +385,30 @@ public class TaskRetrieval implements ITaskInventory, IItemTask
 		int[] progress = userProgress.get(uuid);
 		return progress == null || progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
 	}
+	
+	private void bulkMarkDirty(@Nonnull List<UUID> uuids, int questID)
+    {
+        if(uuids.size() <= 0) return;
+        final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+        uuids.forEach((value) -> {
+            EntityPlayerMP player = server.getPlayerList().getPlayerByUUID(value);
+            //noinspection ConstantConditions
+            if(player == null) return;
+            QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+            if(qc != null) qc.markQuestDirty(questID);
+        });
+    }
+	
+	private List<Tuple<UUID, int[]>> getBulkProgress(@Nonnull List<UUID> uuids)
+    {
+        if(uuids.size() <= 0) return Collections.emptyList();
+        List<Tuple<UUID, int[]>> list = new ArrayList<>();
+        uuids.forEach((key) -> list.add(new Tuple<>(key, getUsersProgress(key))));
+        return list;
+    }
+    
+    private void setBulkProgress(@Nonnull List<Tuple<UUID, int[]>> list)
+    {
+        list.forEach((entry) -> setUserProgress(entry.getFirst(), entry.getSecond()));
+    }
 }

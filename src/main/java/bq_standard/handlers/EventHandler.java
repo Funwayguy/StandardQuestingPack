@@ -4,6 +4,7 @@ import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
@@ -16,6 +17,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.AnimalTameEvent;
@@ -35,6 +37,9 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemSmeltedEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
+
+import javax.annotation.Nonnull;
+import java.util.*;
 
 public class EventHandler
 {
@@ -320,5 +325,50 @@ public class EventHandler
         {
             LootSaveLoad.INSTANCE.SaveLoot();
         }
+    }
+    
+    public static List<EntityPlayerMP> getActiveParty(@Nonnull EntityPlayerMP player)
+    {
+        UUID playerID = QuestingAPI.getQuestingUUID(player);
+        DBEntry<IParty> party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getParty(playerID);
+        if(party == null) return Collections.singletonList(player);
+    
+        MinecraftServer server = player.getServer();
+        List<EntityPlayerMP> active = new ArrayList<>();
+        for(UUID mem : party.getValue().getMembers())
+        {
+            EntityPlayerMP pMem = server.getPlayerList().getPlayerByUUID(mem);
+            //noinspection ConstantConditions
+            if(pMem != null) active.add(pMem);
+        }
+        
+        return active;
+    }
+    
+    public static int[] getSharedQuests(@Nonnull List<EntityPlayerMP> players)
+    {
+        TreeSet<Integer> active = new TreeSet<>();
+        players.forEach((p) -> {
+            QuestCache qc = p.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+            if(qc != null) for(int value : qc.getActiveQuests()) active.add(value);
+        });
+        
+        int[] merged = new int[active.size()];
+        int i = 0;
+        for(int value : active) merged[i++] = value;
+        return merged;
+    }
+	
+	public static void bulkMarkDirty(@Nonnull List<UUID> uuids, int questID)
+    {
+        if(uuids.size() <= 0) return;
+        final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+        uuids.forEach((value) -> {
+            EntityPlayerMP player = server.getPlayerList().getPlayerByUUID(value);
+            //noinspection ConstantConditions
+            if(player == null) return;
+            QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+            if(qc != null) qc.markQuestDirty(questID);
+        });
     }
 }

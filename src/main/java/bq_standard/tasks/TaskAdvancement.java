@@ -116,10 +116,17 @@ public class TaskAdvancement implements ITask
     public NBTTagCompound writeProgressToNBT(NBTTagCompound nbt, @Nullable List<UUID> users)
     {
 		NBTTagList jArray = new NBTTagList();
-		for(UUID uuid : completeUsers)
-		{
-			jArray.appendTag(new NBTTagString(uuid.toString()));
-		}
+		
+		if(users != null)
+        {
+            users.forEach((uuid) -> {
+                if(completeUsers.contains(uuid)) jArray.appendTag(new NBTTagString(uuid.toString()));
+            });
+        } else
+        {
+            completeUsers.forEach((uuid) -> jArray.appendTag(new NBTTagString(uuid.toString())));
+        }
+		
 		nbt.setTag("completeUsers", jArray);
 		
 		return nbt;
@@ -128,7 +135,7 @@ public class TaskAdvancement implements ITask
     @Override
     public void readProgressFromNBT(NBTTagCompound nbt, boolean merge)
     {
-		completeUsers.clear();
+		if(!merge) completeUsers.clear();
 		NBTTagList cList = nbt.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{

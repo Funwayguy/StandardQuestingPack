@@ -3,6 +3,7 @@ package bq_standard.tasks;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
@@ -14,20 +15,18 @@ import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.storage.DBEntry;
 import bq_standard.client.gui.tasks.PanelTaskCrafting;
 import bq_standard.core.BQ_Standard;
+import bq_standard.handlers.EventHandler;
 import bq_standard.tasks.factory.FactoryTaskCrafting;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Tuple;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
@@ -129,17 +128,15 @@ public class TaskCrafting implements ITask
 	    
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
-        //DBEntry<IParty> party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getParty(playerID); // TODO: Implement when there's a party cache
-        //final List<Tuple<UUID, int[]>> progress = getBulkProgress(party == null ? Collections.singletonList(playerID) : party.getValue().getMembers());
-        if(isComplete(playerID)) return;
-        final List<Tuple<UUID, int[]>> progress = getBulkProgress(Collections.singletonList(playerID));
+        DBEntry<IParty> party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getParty(playerID);
+        final List<Tuple<UUID, int[]>> progress = getBulkProgress(party == null ? Collections.singletonList(playerID) : party.getValue().getMembers());
 		final List<UUID> updated = new ArrayList<>();
 		
 		for(int i = 0; i < requiredItems.size(); i++)
 		{
 			final BigItemStack rStack = requiredItems.get(i);
 			final int index = i;
-   
+			
 			if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.getOreIngredient(), rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
 			{
 			    progress.forEach((entry) -> {
@@ -168,7 +165,7 @@ public class TaskCrafting implements ITask
                 setComplete(uuid);
             });
             
-            bulkMarkDirty(updated, quest.getID());
+            EventHandler.bulkMarkDirty(updated, quest.getID());
         }
 	}
 	
@@ -321,19 +318,6 @@ public class TaskCrafting implements ITask
 		int[] progress = userProgress.get(uuid);
 		return progress == null || progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
 	}
-	
-	private void bulkMarkDirty(@Nonnull List<UUID> uuids, int questID)
-    {
-        if(uuids.size() <= 0) return;
-        final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
-        uuids.forEach((value) -> {
-            EntityPlayerMP player = server.getPlayerList().getPlayerByUUID(value);
-            //noinspection ConstantConditions
-            if(player == null) return;
-            QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-            if(qc != null) qc.markQuestDirty(questID);
-        });
-    }
 	
 	private List<Tuple<UUID, int[]>> getBulkProgress(@Nonnull List<UUID> uuids)
     {

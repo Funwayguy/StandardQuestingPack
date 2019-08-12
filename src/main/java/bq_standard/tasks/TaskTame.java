@@ -37,7 +37,7 @@ public class TaskTame implements ITask
 {
 	private final List<UUID> completeUsers = new ArrayList<>();
 	public final HashMap<UUID, Integer> userProgress = new HashMap<>();
-	public String idName = "minecraft:zombie";
+	public String idName = "minecraft:wolf";
 	public int required = 1;
 	public boolean ignoreNBT = true;
 	public boolean subtypes = true;

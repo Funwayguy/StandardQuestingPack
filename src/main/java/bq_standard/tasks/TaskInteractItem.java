@@ -211,16 +211,19 @@ public class TaskInteractItem implements ITask
 		
 		if(user != null)
         {
-            if(completeUsers.contains(user)) jArray.appendTag(new NBTTagString(user.toString()));
-            
-            Integer entry = userProgress.get(user);
-            if(entry != null)
-            {
-                NBTTagCompound pJson = new NBTTagCompound();
-                pJson.setString("uuid", user.toString());
-                pJson.setInteger("value", entry);
-                progArray.appendTag(pJson);
-            }
+            user.forEach((uuid) -> {
+                
+                if(completeUsers.contains(uuid)) jArray.appendTag(new NBTTagString(uuid.toString()));
+                
+                Integer entry = userProgress.get(uuid);
+                if(entry != null)
+                {
+                    NBTTagCompound pJson = new NBTTagCompound();
+                    pJson.setString("uuid", user.toString());
+                    pJson.setInteger("value", entry);
+                    progArray.appendTag(pJson);
+                }
+            });
         } else
         {
             completeUsers.forEach((value) -> jArray.appendTag(new NBTTagString(value.toString())));

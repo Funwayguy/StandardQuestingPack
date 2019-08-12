@@ -175,7 +175,12 @@ public class TaskBlockBreak implements ITask
 	@Override
 	public void readProgressFromNBT(NBTTagCompound nbt, boolean merge)
 	{
-		completeUsers.clear();
+		if(!merge)
+        {
+            completeUsers.clear();
+            userProgress.clear();
+        }
+		
 		NBTTagList cList = nbt.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
@@ -188,7 +193,6 @@ public class TaskBlockBreak implements ITask
 			}
 		}
 		
-		userProgress.clear();
 		NBTTagList pList = nbt.getTagList("userProgress", 10);
 		for(int n = 0; n < pList.tagCount(); n++)
 		{
