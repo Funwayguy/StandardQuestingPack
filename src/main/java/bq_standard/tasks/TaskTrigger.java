@@ -32,15 +32,13 @@ import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class TaskTrigger implements ITaskTickable
 {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     
-	private final List<UUID> completeUsers = new ArrayList<>();
+	private final Set<UUID> completeUsers = new TreeSet<>();
     
     private String triggerID = "minecraft:impossible";
     private String critJson = "{}";
@@ -153,10 +151,7 @@ public class TaskTrigger implements ITaskTickable
 	@Override
 	public void setComplete(UUID uuid)
 	{
-		if(!completeUsers.contains(uuid))
-		{
-			completeUsers.add(uuid);
-		}
+		completeUsers.add(uuid);
 	}
 
 	@Override
@@ -191,10 +186,17 @@ public class TaskTrigger implements ITaskTickable
     public NBTTagCompound writeProgressToNBT(NBTTagCompound nbt, @Nullable List<UUID> users)
     {
 		NBTTagList jArray = new NBTTagList();
-		for(UUID uuid : completeUsers)
-		{
-			jArray.appendTag(new NBTTagString(uuid.toString()));
-		}
+		
+		if(users != null)
+        {
+            users.forEach((uuid) -> {
+                if(completeUsers.contains(uuid)) jArray.appendTag(new NBTTagString(uuid.toString()));
+            });
+        } else
+        {
+            completeUsers.forEach((uuid) -> jArray.appendTag(new NBTTagString(uuid.toString())));
+        }
+		
 		nbt.setTag("completeUsers", jArray);
 		
 		return nbt;
@@ -203,7 +205,7 @@ public class TaskTrigger implements ITaskTickable
     @Override
     public void readProgressFromNBT(NBTTagCompound nbt, boolean merge)
     {
-		completeUsers.clear();
+		if(!merge) completeUsers.clear();
 		NBTTagList cList = nbt.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{

@@ -34,15 +34,11 @@ import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.UUID;
+import java.util.*;
 
 public class TaskInteractItem implements ITask
 {
-	private final List<UUID> completeUsers = new ArrayList<>();
+	private final Set<UUID> completeUsers = new TreeSet<>();
 	private final HashMap<UUID, Integer> userProgress = new HashMap<>();
 	
     public BigItemStack targetItem = new BigItemStack(Items.AIR);
@@ -132,10 +128,7 @@ public class TaskInteractItem implements ITask
 	@Override
 	public void setComplete(UUID uuid)
 	{
-		if(!completeUsers.contains(uuid))
-		{
-			completeUsers.add(uuid);
-		}
+		completeUsers.add(uuid);
 	}
 
 	@Override
@@ -168,13 +161,17 @@ public class TaskInteractItem implements ITask
     }
 	
 	@Override
-	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
+	public void readProgressFromNBT(NBTTagCompound nbt, boolean merge)
 	{
-		completeUsers.clear();
-		NBTTagList cList = json.getTagList("completeUsers", 8);
+		if(!merge)
+        {
+            completeUsers.clear();
+            userProgress.clear();
+        }
+		
+		NBTTagList cList = nbt.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			
 			try
 			{
 				completeUsers.add(UUID.fromString(cList.getStringTagAt(i)));
@@ -184,63 +181,57 @@ public class TaskInteractItem implements ITask
 			}
 		}
 		
-		userProgress.clear();
-		NBTTagList pList = json.getTagList("userProgress", 10);
-		for(int i = 0; i < pList.tagCount(); i++)
+		NBTTagList pList = nbt.getTagList("userProgress", 10);
+		for(int n = 0; n < pList.tagCount(); n++)
 		{
-			NBTTagCompound pTag = pList.getCompoundTagAt(i);
-			UUID uuid;
 			try
 			{
-				uuid = UUID.fromString(pTag.getString("uuid"));
+                NBTTagCompound pTag = pList.getCompoundTagAt(n);
+                UUID uuid = UUID.fromString(pTag.getString("uuid"));
+                userProgress.put(uuid, pTag.getInteger("value"));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load user progress for task", e);
-				continue;
 			}
-			
-			userProgress.put(uuid, pTag.getInteger("value"));
 		}
 	}
 	
 	@Override
-	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, @Nullable List<UUID> user)
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound nbt, @Nullable List<UUID> users)
 	{
 		NBTTagList jArray = new NBTTagList();
 		NBTTagList progArray = new NBTTagList();
 		
-		if(user != null)
+		if(users != null)
         {
-            user.forEach((uuid) -> {
-                
+            users.forEach((uuid) -> {
                 if(completeUsers.contains(uuid)) jArray.appendTag(new NBTTagString(uuid.toString()));
                 
-                Integer entry = userProgress.get(uuid);
-                if(entry != null)
+                Integer data = userProgress.get(uuid);
+                if(data != null)
                 {
                     NBTTagCompound pJson = new NBTTagCompound();
-                    pJson.setString("uuid", user.toString());
-                    pJson.setInteger("value", entry);
+                    pJson.setString("uuid", uuid.toString());
+                    pJson.setInteger("value", data);
                     progArray.appendTag(pJson);
                 }
             });
         } else
         {
-            completeUsers.forEach((value) -> jArray.appendTag(new NBTTagString(value.toString())));
+            completeUsers.forEach((uuid) -> jArray.appendTag(new NBTTagString(uuid.toString())));
             
-            for(Entry<UUID, Integer> entry : userProgress.entrySet())
-            {
+            userProgress.forEach((uuid, data) -> {
                 NBTTagCompound pJson = new NBTTagCompound();
-                pJson.setString("uuid", entry.getKey().toString());
-                pJson.setInteger("value", entry.getValue());
+			    pJson.setString("uuid", uuid.toString());
+                pJson.setInteger("value", data);
                 progArray.appendTag(pJson);
-            }
+            });
         }
 		
-		json.setTag("completeUsers", jArray);
-		json.setTag("userProgress", progArray);
+		nbt.setTag("completeUsers", jArray);
+		nbt.setTag("userProgress", progArray);
 		
-		return json;
+		return nbt;
 	}
     
     @Override

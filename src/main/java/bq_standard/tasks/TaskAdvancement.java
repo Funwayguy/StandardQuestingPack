@@ -27,13 +27,11 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class TaskAdvancement implements ITask
 {
-	private final List<UUID> completeUsers = new ArrayList<>();
+	private final Set<UUID> completeUsers = new TreeSet<>();
 	public ResourceLocation advID;
     
     @Override
@@ -81,7 +79,7 @@ public class TaskAdvancement implements ITask
     @Override
     public void setComplete(UUID uuid)
     {
-        if(!completeUsers.contains(uuid)) completeUsers.add(uuid);
+        completeUsers.add(uuid);
     }
     
     @Override

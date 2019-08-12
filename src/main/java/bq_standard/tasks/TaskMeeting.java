@@ -27,13 +27,11 @@ import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class TaskMeeting implements ITaskTickable
 {
-	private final List<UUID> completeUsers = new ArrayList<>();
+	private final Set<UUID> completeUsers = new TreeSet<>();
 	
 	public String idName = "minecraft:villager";
 	public int range = 4;
@@ -67,10 +65,7 @@ public class TaskMeeting implements ITaskTickable
 	@Override
 	public void setComplete(UUID uuid)
 	{
-		if(!completeUsers.contains(uuid))
-		{
-			completeUsers.add(uuid);
-		}
+		completeUsers.add(uuid);
 	}
 
 	@Override
@@ -169,23 +164,30 @@ public class TaskMeeting implements ITaskTickable
 	}
 
 	@Override
-	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound nbt, @Nullable List<UUID> users)
 	{
 		NBTTagList jArray = new NBTTagList();
-		for(UUID uuid : completeUsers)
-		{
-			jArray.appendTag(new NBTTagString(uuid.toString()));
-		}
-		json.setTag("completeUsers", jArray);
 		
-		return json;
+		if(users != null)
+        {
+            users.forEach((uuid) -> {
+                if(completeUsers.contains(uuid)) jArray.appendTag(new NBTTagString(uuid.toString()));
+            });
+        } else
+        {
+            completeUsers.forEach((uuid) -> jArray.appendTag(new NBTTagString(uuid.toString())));
+        }
+		
+		nbt.setTag("completeUsers", jArray);
+		
+		return nbt;
 	}
 	
 	@Override
-	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
+	public void readProgressFromNBT(NBTTagCompound nbt, boolean merge)
 	{
-		completeUsers.clear();
-		NBTTagList cList = json.getTagList("completeUsers", 8);
+		if(!merge) completeUsers.clear();
+		NBTTagList cList = nbt.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
 			try

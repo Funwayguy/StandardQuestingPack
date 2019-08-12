@@ -28,15 +28,11 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.UUID;
+import java.util.*;
 
 public class TaskHunt implements ITask
 {
-	private final List<UUID> completeUsers = new ArrayList<>();
+	private final Set<UUID> completeUsers = new TreeSet<>();
 	private final HashMap<UUID, Integer> userProgress = new HashMap<>();
 	public String idName = "minecraft:zombie";
 	public String damageType = "";
@@ -64,10 +60,7 @@ public class TaskHunt implements ITask
 	@Override
 	public void setComplete(UUID uuid)
 	{
-		if(!completeUsers.contains(uuid))
-		{
-			completeUsers.add(uuid);
-		}
+		completeUsers.add(uuid);
 	}
 	
 	@Override
@@ -153,13 +146,17 @@ public class TaskHunt implements ITask
 	}
 	
 	@Override
-	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
+	public void readProgressFromNBT(NBTTagCompound nbt, boolean merge)
 	{
-		completeUsers.clear();
-		NBTTagList cList = json.getTagList("completeUsers", 8);
+		if(!merge)
+        {
+            completeUsers.clear();
+            userProgress.clear();
+        }
+		
+		NBTTagList cList = nbt.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			
 			try
 			{
 				completeUsers.add(UUID.fromString(cList.getStringTagAt(i)));
@@ -169,46 +166,57 @@ public class TaskHunt implements ITask
 			}
 		}
 		
-		userProgress.clear();
-		NBTTagList pList = json.getTagList("userProgress", 10);
-		for(int i = 0; i < pList.tagCount(); i++)
+		NBTTagList pList = nbt.getTagList("userProgress", 10);
+		for(int n = 0; n < pList.tagCount(); n++)
 		{
-			NBTTagCompound pTag = pList.getCompoundTagAt(i);
-			UUID uuid;
 			try
 			{
-				uuid = UUID.fromString(pTag.getString("uuid"));
+                NBTTagCompound pTag = pList.getCompoundTagAt(n);
+                UUID uuid = UUID.fromString(pTag.getString("uuid"));
+                userProgress.put(uuid, pTag.getInteger("value"));
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load user progress for task", e);
-				continue;
 			}
-			
-			userProgress.put(uuid, pTag.getInteger("value"));
 		}
 	}
 	
 	@Override
-	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound nbt, @Nullable List<UUID> users)
 	{
 		NBTTagList jArray = new NBTTagList();
-		for(UUID uuid : completeUsers)
-		{
-			jArray.appendTag(new NBTTagString(uuid.toString()));
-		}
-		json.setTag("completeUsers", jArray);
-		
 		NBTTagList progArray = new NBTTagList();
-		for(Entry<UUID,Integer> entry : userProgress.entrySet())
-		{
-			NBTTagCompound pJson = new NBTTagCompound();
-			pJson.setString("uuid", entry.getKey().toString());
-			pJson.setInteger("value", entry.getValue());
-			progArray.appendTag(pJson);
-		}
-		json.setTag("userProgress", progArray);
 		
-		return json;
+		if(users != null)
+        {
+            users.forEach((uuid) -> {
+                if(completeUsers.contains(uuid)) jArray.appendTag(new NBTTagString(uuid.toString()));
+                
+                Integer data = userProgress.get(uuid);
+                if(data != null)
+                {
+                    NBTTagCompound pJson = new NBTTagCompound();
+                    pJson.setString("uuid", uuid.toString());
+                    pJson.setInteger("value", data);
+                    progArray.appendTag(pJson);
+                }
+            });
+        } else
+        {
+            completeUsers.forEach((uuid) -> jArray.appendTag(new NBTTagString(uuid.toString())));
+            
+            userProgress.forEach((uuid, data) -> {
+                NBTTagCompound pJson = new NBTTagCompound();
+			    pJson.setString("uuid", uuid.toString());
+                pJson.setInteger("value", data);
+                progArray.appendTag(pJson);
+            });
+        }
+		
+		nbt.setTag("completeUsers", jArray);
+		nbt.setTag("userProgress", progArray);
+		
+		return nbt;
 	}
 	
 	/**
@@ -242,7 +250,7 @@ public class TaskHunt implements ITask
 	    return new PanelTaskHunt(rect, this);
 	}
 	
-	public void setUserProgress(UUID uuid, int progress)
+	private void setUserProgress(UUID uuid, int progress)
 	{
 		userProgress.put(uuid, progress);
 	}

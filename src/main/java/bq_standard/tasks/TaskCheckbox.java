@@ -18,13 +18,11 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class TaskCheckbox implements ITask
 {
-	private final List<UUID> completeUsers = new ArrayList<>();
+	private final Set<UUID> completeUsers = new TreeSet<>();
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -47,10 +45,7 @@ public class TaskCheckbox implements ITask
 	@Override
 	public void setComplete(UUID uuid)
 	{
-		if(!completeUsers.contains(uuid))
-		{
-			completeUsers.add(uuid);
-		}
+		completeUsers.add(uuid);
 	}
 
 	@Override
@@ -66,34 +61,41 @@ public class TaskCheckbox implements ITask
 	}
 
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json)
+	public NBTTagCompound writeToNBT(NBTTagCompound nbt)
 	{
-		return json;
+		return nbt;
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound json)
+	public void readFromNBT(NBTTagCompound nbt)
 	{
 	}
 	
 	@Override
-	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound nbt, @Nullable List<UUID> users)
 	{
 		NBTTagList jArray = new NBTTagList();
-		for(UUID uuid : completeUsers)
-		{
-			jArray.appendTag(new NBTTagString(uuid.toString()));
-		}
-		json.setTag("completeUsers", jArray);
 		
-		return json;
+		if(users != null)
+        {
+            users.forEach((uuid) -> {
+                if(completeUsers.contains(uuid)) jArray.appendTag(new NBTTagString(uuid.toString()));
+            });
+        } else
+        {
+            completeUsers.forEach((uuid) -> jArray.appendTag(new NBTTagString(uuid.toString())));
+        }
+		
+		nbt.setTag("completeUsers", jArray);
+		
+		return nbt;
 	}
 	
 	@Override
-	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
+	public void readProgressFromNBT(NBTTagCompound nbt, boolean merge)
 	{
-		completeUsers.clear();
-		NBTTagList cList = json.getTagList("completeUsers", 8);
+		if(!merge) completeUsers.clear();
+		NBTTagList cList = nbt.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
 			try
@@ -105,19 +107,19 @@ public class TaskCheckbox implements ITask
 			}
 		}
 	}
-
+ 
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
 	}
-
+ 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
 	{
 	    return new PanelTaskCheckbox(rect, quest, this);
 	}
-
+ 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)

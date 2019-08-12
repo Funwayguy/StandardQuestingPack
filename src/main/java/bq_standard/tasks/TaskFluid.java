@@ -32,12 +32,12 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
-import java.util.Map.Entry;
 
 public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask
 {
-	private final List<UUID> completeUsers = new ArrayList<>();
+	private final Set<UUID> completeUsers = new TreeSet<>();
 	public final NonNullList<FluidStack> requiredFluids = NonNullList.create();
 	public final Map<UUID, int[]> userProgress = new HashMap<>();
 	//public boolean partialMatch = true; // Not many ideal ways of implementing this with fluid handlers
@@ -67,10 +67,7 @@ public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask
 	@Override
 	public void setComplete(UUID uuid)
 	{
-		if(!completeUsers.contains(uuid))
-		{
-			completeUsers.add(uuid);
-		}
+		completeUsers.add(uuid);
 	}
 	
 	@Override
@@ -209,10 +206,15 @@ public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask
 	}
 	
 	@Override
-	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
+	public void readProgressFromNBT(NBTTagCompound nbt, boolean merge)
 	{
-		completeUsers.clear();
-		NBTTagList cList = json.getTagList("completeUsers", 8);
+		if(!merge)
+        {
+            completeUsers.clear();
+            userProgress.clear();
+        }
+		
+		NBTTagList cList = nbt.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
 			try
@@ -224,64 +226,69 @@ public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask
 			}
 		}
 		
-		userProgress.clear();
-		NBTTagList pList = json.getTagList("userProgress", 10);
+		NBTTagList pList = nbt.getTagList("userProgress", 10);
 		for(int n = 0; n < pList.tagCount(); n++)
-        {
-			NBTTagCompound pTag = pList.getCompoundTagAt(n);
-			UUID uuid;
+		{
 			try
 			{
-				uuid = UUID.fromString(pTag.getString("uuid"));
+                NBTTagCompound pTag = pList.getCompoundTagAt(n);
+                UUID uuid = UUID.fromString(pTag.getString("uuid"));
+                
+                int[] data = new int[requiredFluids.size()];
+                NBTTagList dNbt = pTag.getTagList("data", 3);
+                for(int i = 0; i < data.length && i < dNbt.tagCount(); i++) // TODO: Change this to an int array. This is dumb...
+                {
+                    data[i] = dNbt.getIntAt(i);
+                }
+                
+			    userProgress.put(uuid, data);
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load user progress for task", e);
-				continue;
 			}
-			
-			int[] data = new int[requiredFluids.size()];
-			NBTTagList dJson = pTag.getTagList("data", 3);
-			for(int i = 0; i < data.length && i < dJson.tagCount(); i++)
-			{
-				try
-				{
-					data[i] = dJson.getIntAt(i);
-				} catch(Exception e)
-				{
-					BQ_Standard.logger.log(Level.ERROR, "Incorrect task progress format", e);
-				}
-			}
-			
-			userProgress.put(uuid, data);
 		}
 	}
 	
 	@Override
-	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound nbt, @Nullable List<UUID> users)
 	{
 		NBTTagList jArray = new NBTTagList();
-		for(UUID uuid : completeUsers)
-		{
-			jArray.appendTag(new NBTTagString(uuid.toString()));
-		}
-		json.setTag("completeUsers", jArray);
-		
 		NBTTagList progArray = new NBTTagList();
-		for(Entry<UUID,int[]> entry : userProgress.entrySet())
-		{
-			NBTTagCompound pJson = new NBTTagCompound();
-			pJson.setString("uuid", entry.getKey().toString());
-			NBTTagList pArray = new NBTTagList();
-			for(int i : entry.getValue())
-			{
-				pArray.appendTag(new NBTTagInt(i));
-			}
-			pJson.setTag("data", pArray);
-			progArray.appendTag(pJson);
-		}
-		json.setTag("userProgress", progArray);
 		
-		return json;
+		if(users != null)
+        {
+            users.forEach((uuid) -> {
+                if(completeUsers.contains(uuid)) jArray.appendTag(new NBTTagString(uuid.toString()));
+                
+                int[] data = userProgress.get(uuid);
+                if(data != null)
+                {
+                    NBTTagCompound pJson = new NBTTagCompound();
+                    pJson.setString("uuid", uuid.toString());
+                    NBTTagList pArray = new NBTTagList(); // TODO: Why the heck isn't this just an int array?!
+                    for(int i : data) pArray.appendTag(new NBTTagInt(i));
+                    pJson.setTag("data", pArray);
+                    progArray.appendTag(pJson);
+                }
+            });
+        } else
+        {
+            completeUsers.forEach((uuid) -> jArray.appendTag(new NBTTagString(uuid.toString())));
+            
+            userProgress.forEach((uuid, data) -> {
+                NBTTagCompound pJson = new NBTTagCompound();
+			    pJson.setString("uuid", uuid.toString());
+                NBTTagList pArray = new NBTTagList(); // TODO: Why the heck isn't this just an int array?!
+                for(int i : data) pArray.appendTag(new NBTTagInt(i));
+                pJson.setTag("data", pArray);
+                progArray.appendTag(pJson);
+            });
+        }
+		
+		nbt.setTag("completeUsers", jArray);
+		nbt.setTag("userProgress", progArray);
+		
+		return nbt;
 	}
 
 	@Override
@@ -426,7 +433,7 @@ public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask
 		return hasDrained ? handler.getContainer() : item;
 	}
  
-	public void setUserProgress(UUID uuid, int[] progress)
+	private void setUserProgress(UUID uuid, int[] progress)
 	{
 		userProgress.put(uuid, progress);
 	}
