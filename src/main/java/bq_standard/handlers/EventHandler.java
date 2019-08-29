@@ -49,16 +49,21 @@ public class EventHandler
         if(event.getEntityPlayer() == null || event.getEntityLiving().world.isRemote || event.isCanceled()) return;
         
 		EntityPlayer player = event.getEntityPlayer();
-        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-		if(qc == null) return;
 		
-		for(DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(qc.getActiveQuests()))
+		List<EntityPlayer> actParty = getActiveParty(player);
+		List<DBEntry<IQuest>> actQuest = QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(getSharedQuests(actParty));
+		List<Integer> dirty = new ArrayList<>();
+		
+		for(DBEntry<IQuest> entry : actQuest)
 		{
+		    Runnable callback = () -> dirty.add(entry.getID());
 		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
             {
-                if(task.getValue() instanceof TaskInteractItem) ((TaskInteractItem)task.getValue()).onInteract(entry, player, event.getHand(), event.getItemStack(), Blocks.AIR.getDefaultState(), event.getPos(), false);
+                if(task.getValue() instanceof TaskInteractItem) ((TaskInteractItem)task.getValue()).onInteract(player, event.getHand(), event.getItemStack(), Blocks.AIR.getDefaultState(), event.getPos(), false, callback);
             }
 		}
+		
+		if(dirty.size() > 0) bulkMarkDirtyPlayer(actParty, dirty);
     }
     
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -67,18 +72,23 @@ public class EventHandler
         if(event.getEntityPlayer() == null || event.getEntityLiving().world.isRemote || event.isCanceled()) return;
         
 		EntityPlayer player = event.getEntityPlayer();
-        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-		if(qc == null) return;
+		
+		List<EntityPlayer> actParty = getActiveParty(player);
+		List<DBEntry<IQuest>> actQuest = QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(getSharedQuests(actParty));
+		List<Integer> dirty = new ArrayList<>();
 		
 		IBlockState state = player.world.getBlockState(event.getPos());
 		
-		for(DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(qc.getActiveQuests()))
+		for(DBEntry<IQuest> entry : actQuest)
 		{
+		    Runnable callback = () -> dirty.add(entry.getID());
 		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
             {
-                if(task.getValue() instanceof TaskInteractItem) ((TaskInteractItem)task.getValue()).onInteract(entry, player, event.getHand(), event.getItemStack(), state, event.getPos(), false);
+                if(task.getValue() instanceof TaskInteractItem) ((TaskInteractItem)task.getValue()).onInteract(player, event.getHand(), event.getItemStack(), state, event.getPos(), false, callback);
             }
 		}
+		
+		if(dirty.size() > 0) bulkMarkDirtyPlayer(actParty, dirty);
     }
     
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -87,18 +97,23 @@ public class EventHandler
         if(event.getEntityPlayer() == null || event.getEntityLiving().world.isRemote || event.isCanceled()) return;
         
 		EntityPlayer player = event.getEntityPlayer();
-        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-		if(qc == null) return;
+		
+		List<EntityPlayer> actParty = getActiveParty(player);
+		List<DBEntry<IQuest>> actQuest = QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(getSharedQuests(actParty));
+		List<Integer> dirty = new ArrayList<>();
 		
 		IBlockState state = player.world.getBlockState(event.getPos());
 		
-		for(DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(qc.getActiveQuests()))
+		for(DBEntry<IQuest> entry : actQuest)
 		{
+		    Runnable callback = () -> dirty.add(entry.getID());
 		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
             {
-                if(task.getValue() instanceof TaskInteractItem) ((TaskInteractItem)task.getValue()).onInteract(entry, player, event.getHand(), event.getItemStack(), state, event.getPos(), true);
+                if(task.getValue() instanceof TaskInteractItem) ((TaskInteractItem)task.getValue()).onInteract(player, event.getHand(), event.getItemStack(), state, event.getPos(), true, callback);
             }
 		}
+		
+		if(dirty.size() > 0) bulkMarkDirtyPlayer(actParty, dirty);
     }
     
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -121,16 +136,21 @@ public class EventHandler
         if(event.getEntityPlayer() == null || event.getTarget() == null || event.getEntityPlayer().world.isRemote || event.isCanceled()) return;
         
 		EntityPlayer player = event.getEntityPlayer();
-        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-		if(qc == null) return;
 		
-		for(DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(qc.getActiveQuests()))
+		List<EntityPlayer> actParty = getActiveParty(player);
+		List<DBEntry<IQuest>> actQuest = QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(getSharedQuests(actParty));
+		List<Integer> dirty = new ArrayList<>();
+		
+		for(DBEntry<IQuest> entry : actQuest)
 		{
+		    Runnable callback = () -> dirty.add(entry.getID());
 		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
             {
-                if(task.getValue() instanceof TaskInteractEntity) ((TaskInteractEntity)task.getValue()).onInteract(entry, player, EnumHand.MAIN_HAND, player.getHeldItemMainhand(), event.getTarget(), true);
+                if(task.getValue() instanceof TaskInteractEntity) ((TaskInteractEntity)task.getValue()).onInteract(player, EnumHand.MAIN_HAND, player.getHeldItemMainhand(), event.getTarget(), true, callback);
             }
 		}
+		
+		if(dirty.size() > 0) bulkMarkDirtyPlayer(actParty, dirty);
     }
     
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -139,67 +159,84 @@ public class EventHandler
         if(event.getEntityPlayer() == null || event.getTarget() == null || event.getEntityPlayer().world.isRemote || event.isCanceled()) return;
         
 		EntityPlayer player = event.getEntityPlayer();
-        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-		if(qc == null) return;
 		
-		for(DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(qc.getActiveQuests()))
+		List<EntityPlayer> actParty = getActiveParty(player);
+		List<DBEntry<IQuest>> actQuest = QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(getSharedQuests(actParty));
+		List<Integer> dirty = new ArrayList<>();
+		
+		for(DBEntry<IQuest> entry : actQuest)
 		{
+		    Runnable callback = () -> dirty.add(entry.getID());
 		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
             {
-                if(task.getValue() instanceof TaskInteractEntity) ((TaskInteractEntity)task.getValue()).onInteract(entry, player, event.getHand(), event.getItemStack(), event.getTarget(), false);
+                if(task.getValue() instanceof TaskInteractEntity) ((TaskInteractEntity)task.getValue()).onInteract(player, event.getHand(), event.getItemStack(), event.getTarget(), false, callback);
             }
 		}
+		
+		if(dirty.size() > 0) bulkMarkDirtyPlayer(actParty, dirty);
     }
     
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void onItemCrafted(ItemCraftedEvent event)
 	{
 		if(event.player == null || event.player.world.isRemote) return;
-        
-        QuestCache qc = event.player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-		if(qc == null) return;
 		
-		for(DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(qc.getActiveQuests()))
+		List<EntityPlayer> actParty = getActiveParty(event.player);
+		List<DBEntry<IQuest>> actQuest = QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(getSharedQuests(actParty));
+		List<Integer> dirty = new ArrayList<>();
+		
+		for(DBEntry<IQuest> entry : actQuest)
 		{
+		    Runnable callback = () -> dirty.add(entry.getID());
 		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
             {
-                if(task.getValue() instanceof TaskCrafting) ((TaskCrafting)task.getValue()).onItemCraft(entry, event.player, event.crafting.copy());
+                if(task.getValue() instanceof TaskCrafting) ((TaskCrafting)task.getValue()).onItemCraft(event.player, event.crafting.copy(), callback);
             }
 		}
+		
+		if(dirty.size() > 0) bulkMarkDirtyPlayer(actParty, dirty);
 	}
 	
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void onItemSmelted(ItemSmeltedEvent event)
 	{
 		if(event.player == null || event.player.world.isRemote) return;
-        
-        QuestCache qc = event.player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-		if(qc == null) return;
 		
-		for(DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(qc.getActiveQuests()))
+		List<EntityPlayer> actParty = getActiveParty(event.player);
+		List<DBEntry<IQuest>> actQuest = QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(getSharedQuests(actParty));
+		List<Integer> dirty = new ArrayList<>();
+		
+		for(DBEntry<IQuest> entry : actQuest)
 		{
+		    Runnable callback = () -> dirty.add(entry.getID());
 		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
             {
-                if(task.getValue() instanceof TaskCrafting) ((TaskCrafting)task.getValue()).onItemSmelt(entry, event.player, event.smelting.copy());
+                if(task.getValue() instanceof TaskCrafting) ((TaskCrafting)task.getValue()).onItemSmelt(event.player, event.smelting.copy(), callback);
             }
 		}
+		
+		if(dirty.size() > 0) bulkMarkDirtyPlayer(actParty, dirty);
 	}
 	
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void onItemAnvil(AnvilRepairEvent event)
 	{
 		if(event.getEntityPlayer() == null || event.getEntityPlayer().world.isRemote) return;
-        
-        QuestCache qc = event.getEntityPlayer().getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-		if(qc == null) return;
 		
-		for(DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(qc.getActiveQuests()))
+		List<EntityPlayer> actParty = getActiveParty(event.getEntityPlayer());
+		List<DBEntry<IQuest>> actQuest = QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(getSharedQuests(actParty));
+		List<Integer> dirty = new ArrayList<>();
+		
+		for(DBEntry<IQuest> entry : actQuest)
 		{
+		    Runnable callback = () -> dirty.add(entry.getID());
 		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
             {
-                if(task.getValue() instanceof TaskCrafting) ((TaskCrafting)task.getValue()).onItemAnvil(entry, event.getEntityPlayer(), event.getItemResult().copy());
+                if(task.getValue() instanceof TaskCrafting) ((TaskCrafting)task.getValue()).onItemAnvil(event.getEntityPlayer(), event.getItemResult().copy(), callback);
             }
 		}
+		
+		if(dirty.size() > 0) bulkMarkDirtyPlayer(actParty, dirty);
 	}
 	
 	@SubscribeEvent(priority = EventPriority.LOWEST)
@@ -261,19 +298,27 @@ public class EventHandler
         if(!(event.getEntityLiving() instanceof EntityPlayer) || event.getEntityLiving().world.isRemote || event.getEntityLiving().ticksExisted%20 != 0 || QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE)) return;
         
         EntityPlayer player = (EntityPlayer)event.getEntityLiving();
-        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-		if(qc == null) return;
 		
-		for(DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(qc.getActiveQuests()))
+		List<EntityPlayer> actParty = getActiveParty(player);
+		List<DBEntry<IQuest>> actQuest = QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(getSharedQuests(actParty));
+		List<Integer> dirty = new ArrayList<>();
+		
+		for(DBEntry<IQuest> entry : actQuest)
 		{
+		    Runnable callback = () -> dirty.add(entry.getID());
 		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
             {
                 if(task.getValue() instanceof ITaskTickable)
                 {
-                    ((ITaskTickable)task.getValue()).tickTask(entry, player);
+                    ((ITaskTickable)task.getValue()).tickTask(player, callback);
+                } else if(task.getValue() instanceof TaskTrigger)
+                {
+                    ((TaskTrigger)task.getValue()).checkSetup(player, entry);
                 }
             }
 		}
+		
+		if(dirty.size() > 0) bulkMarkDirtyPlayer(actParty, dirty);
     }
     
     @SubscribeEvent
@@ -327,17 +372,27 @@ public class EventHandler
         }
     }
     
-    public static List<EntityPlayerMP> getActiveParty(@Nonnull EntityPlayerMP player)
+    // === LAZY FUNCTIONS ===
+    
+    public static List<UUID> getBulkUUIDs(@Nonnull List<EntityPlayer> players)
+    {
+        List<UUID> list = new ArrayList<>();
+        players.forEach((value) -> list.add(QuestingAPI.getQuestingUUID(value)));
+        return list;
+    }
+    
+    @Nonnull
+    public static List<EntityPlayer> getActiveParty(@Nonnull EntityPlayer player)
     {
         UUID playerID = QuestingAPI.getQuestingUUID(player);
         DBEntry<IParty> party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getParty(playerID);
-        if(party == null) return Collections.singletonList(player);
-    
+        if(party == null || player.getServer() == null) return Collections.singletonList(player);
+        
         MinecraftServer server = player.getServer();
-        List<EntityPlayerMP> active = new ArrayList<>();
+        List<EntityPlayer> active = new ArrayList<>();
         for(UUID mem : party.getValue().getMembers())
         {
-            EntityPlayerMP pMem = server.getPlayerList().getPlayerByUUID(mem);
+            EntityPlayer pMem = server.getPlayerList().getPlayerByUUID(mem);
             //noinspection ConstantConditions
             if(pMem != null) active.add(pMem);
         }
@@ -345,7 +400,8 @@ public class EventHandler
         return active;
     }
     
-    public static int[] getSharedQuests(@Nonnull List<EntityPlayerMP> players)
+    @Nonnull
+    public static int[] getSharedQuests(@Nonnull List<EntityPlayer> players)
     {
         TreeSet<Integer> active = new TreeSet<>();
         players.forEach((p) -> {
@@ -359,16 +415,27 @@ public class EventHandler
         return merged;
     }
 	
-	public static void bulkMarkDirty(@Nonnull List<UUID> uuids, int questID)
+	public static void bulkMarkDirtyPlayer(@Nonnull List<EntityPlayer> players, @Nonnull List<Integer> questID)
+    {
+        if(players.size() <= 0) return;
+        players.forEach((value) -> {
+            QuestCache qc = value.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+            if(qc != null) questID.forEach(qc::markQuestDirty);
+        });
+    }
+	
+	public static void bulkMarkDirtyUUID(@Nonnull List<UUID> uuids, @Nonnull List<Integer> questID)
     {
         if(uuids.size() <= 0) return;
         final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+        if(server == null) return;
+        
         uuids.forEach((value) -> {
             EntityPlayerMP player = server.getPlayerList().getPlayerByUUID(value);
             //noinspection ConstantConditions
             if(player == null) return;
             QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-            if(qc != null) qc.markQuestDirty(questID);
+            if(qc != null) questID.forEach(qc::markQuestDirty);
         });
     }
 }

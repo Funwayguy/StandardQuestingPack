@@ -3,6 +3,7 @@ package bq_standard.tasks;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.party.IParty;
 import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
@@ -78,22 +79,25 @@ public class TaskScoreboard implements ITaskTickable
 	}
 	
 	@Override
-	public void tickTask(@Nonnull DBEntry<IQuest> quest, @Nonnull EntityPlayer player)
+	public void tickTask(@Nonnull EntityPlayer player, Runnable callback)
 	{
-		if(player.ticksExisted%20 == 0) // Auto-detect once per second
-		{
-			detect(player, quest.getValue());
-		}
+		if(player.ticksExisted%20 == 0 && internalDetect(player) && callback != null) callback.run(); // Auto-detect once per second
 	}
 	
 	@Override
-	public void detect(EntityPlayer player, IQuest quest)
+	public void detect(@Nonnull EntityPlayer player, IQuest quest)
 	{
+		if(internalDetect(player))
+		{
+		    QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+			if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+		}
+	}
+	
+	private boolean internalDetect(@Nonnull EntityPlayer player)
+    {
 	    UUID playerID = QuestingAPI.getQuestingUUID(player);
-		if(isComplete(playerID)) return;
-		
-        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-        
+     
 		Scoreboard board = player.getWorldScoreboard();
 		ScoreObjective scoreObj = board.getObjective(scoreName);
 		
@@ -108,7 +112,7 @@ public class TaskScoreboard implements ITaskTickable
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to create score '" + scoreName + "' for task!", e);
-				return;
+				return false;
 			}
 		}
 
@@ -123,10 +127,17 @@ public class TaskScoreboard implements ITaskTickable
 		
 		if(operation.checkValues(points, target))
 		{
-			setComplete(playerID);
-			if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+            DBEntry<IParty> party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getParty(playerID);
+            final List<UUID> progress = party == null ? Collections.singletonList(playerID) : party.getValue().getMembers();
+            progress.forEach((value) -> {
+                if(isComplete(value)) return;
+                setComplete(value);
+            });
+			return true;
 		}
-	}
+		
+		return false;
+    }
 	
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound json)

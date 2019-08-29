@@ -15,7 +15,6 @@ import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.storage.DBEntry;
 import bq_standard.client.gui.tasks.PanelTaskCrafting;
 import bq_standard.core.BQ_Standard;
-import bq_standard.handlers.EventHandler;
 import bq_standard.tasks.factory.FactoryTaskCrafting;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -100,25 +99,25 @@ public class TaskCrafting implements ITask
 		}
 	}
 	
-	public void onItemCraft(DBEntry<IQuest> quest, EntityPlayer player, ItemStack stack)
+	public void onItemCraft(EntityPlayer player, ItemStack stack, Runnable callback)
     {
         if(!allowCraft) return;
-        onItemInternal(quest, player, stack);
+        onItemInternal(player, stack, callback);
     }
 	
-	public void onItemSmelt(DBEntry<IQuest> quest, EntityPlayer player, ItemStack stack)
+	public void onItemSmelt(EntityPlayer player, ItemStack stack, Runnable callback)
     {
         if(!allowSmelt) return;
-        onItemInternal(quest, player, stack);
+        onItemInternal(player, stack, callback);
     }
 	
-	public void onItemAnvil(DBEntry<IQuest> quest, EntityPlayer player, ItemStack stack)
+	public void onItemAnvil(EntityPlayer player, ItemStack stack, Runnable callback)
     {
         if(!allowAnvil) return;
-        onItemInternal(quest, player, stack);
+        onItemInternal(player, stack, callback);
     }
 	
-	private void onItemInternal(DBEntry<IQuest> quest, EntityPlayer player, ItemStack stack)
+	private void onItemInternal(EntityPlayer player, ItemStack stack, Runnable callback)
 	{
 	    if(stack.isEmpty()) return;
 	    
@@ -161,7 +160,7 @@ public class TaskCrafting implements ITask
                 setComplete(uuid);
             });
             
-            EventHandler.bulkMarkDirty(updated, quest.getID());
+            if(callback != null) callback.run();
         }
 	}
 	

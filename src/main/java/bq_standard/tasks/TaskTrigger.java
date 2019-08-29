@@ -2,6 +2,7 @@ package bq_standard.tasks;
 
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
@@ -34,7 +35,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public class TaskTrigger implements ITaskTickable
+public class TaskTrigger implements ITask
 {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     
@@ -92,11 +93,8 @@ public class TaskTrigger implements ITaskTickable
         try
         {
             ICriterionInstance in = trig.deserializeInstance(GSON.fromJson(critJson, JsonObject.class), null);
-            listener = new BqsAdvListener(trig, in, quest, new DBEntry<>(tskID, this));
-        } catch(Exception e)
-        {
-        
-        }
+            listener = new BqsAdvListener(trig, in, quest.getID(), tskID);
+        } catch(Exception ignored){}
     }
     
     public BqsAdvListener<?> getListener()
@@ -109,17 +107,16 @@ public class TaskTrigger implements ITaskTickable
         return !this.needsSetup;
     }
     
-    public void onCriteriaComplete(DBEntry<IQuest> quest, EntityPlayerMP player, BqsAdvListener advList)
+    public void onCriteriaComplete(EntityPlayerMP player, BqsAdvListener advList, int questID)
     {
         if(advList != this.listener) return;
         UUID playerID = QuestingAPI.getQuestingUUID(player);
         setComplete(playerID);
         QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-        if(qc != null) qc.markQuestDirty(quest.getID());
+        if(qc != null) qc.markQuestDirty(questID);
     }
     
-    @Override
-    public void tickTask(@Nonnull DBEntry<IQuest> quest, @Nonnull EntityPlayer player) // Used purely to get the task listening
+    public void checkSetup(@Nonnull EntityPlayer player, @Nonnull DBEntry<IQuest> quest)
     {
         if(!needsSetup) return;
         setupListener(quest);

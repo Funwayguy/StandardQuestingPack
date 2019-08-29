@@ -7,7 +7,6 @@ import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import betterquesting.api2.storage.DBEntry;
 import bq_standard.XPHelper;
 import bq_standard.client.gui.tasks.PanelTaskXP;
 import bq_standard.core.BQ_Standard;
@@ -51,12 +50,11 @@ public class TaskXP implements ITaskTickable
 	}
 	
 	@Override
-	public void tickTask(@Nonnull DBEntry<IQuest> quest, @Nonnull EntityPlayer player)
+	public void tickTask(@Nonnull EntityPlayer player, Runnable callback)
 	{
 	    if(consume || player.ticksExisted%60 != 0) return; // Every 3 seconds
 	    
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
-        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
         
         long curProg = getUsersProgress(playerID);
         long nxtProg = XPHelper.getPlayerXP(player);
@@ -64,7 +62,7 @@ public class TaskXP implements ITaskTickable
         if(curProg != nxtProg)
         {
             setUserProgress(playerID, XPHelper.getPlayerXP(player));
-            if(qc != null) qc.markQuestDirty(quest.getID());
+            if(callback != null) callback.run();
         }
         
         long rawXP = levels? XPHelper.getLevelXP(amount) : amount;

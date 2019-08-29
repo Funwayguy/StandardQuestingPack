@@ -3,6 +3,7 @@ package bq_standard.tasks;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.party.IParty;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
@@ -81,26 +82,32 @@ public class TaskMeeting implements ITaskTickable
 	}
 	
 	@Override
-	public void tickTask(@Nonnull DBEntry<IQuest> quest, @Nonnull EntityPlayer player)
+	public void tickTask(@Nonnull EntityPlayer player, Runnable callback)
 	{
-		if(player.ticksExisted%60 == 0)
-		{
-			detect(player, quest.getValue());
-		}
+		if(player.ticksExisted%60 == 0 && internalDetect(player) && callback != null) callback.run();
 	}
 	
 	@Override
 	public void detect(EntityPlayer player, IQuest quest)
 	{
+		if(internalDetect(player))
+        {
+            QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+        }
+	}
+	
+	private boolean internalDetect(@Nonnull EntityPlayer player)
+    {
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
-		if(!player.isEntityAlive() || isComplete(playerID)) return;
+		if(!player.isEntityAlive()) return false;
 		
 		List<Entity> list = player.world.getEntitiesWithinAABBExcludingEntity(player, player.getEntityBoundingBox().expand(range, range, range));
 		ResourceLocation targetID = new ResourceLocation(idName);
 		Class<? extends Entity> target = EntityList.getClass(targetID);
 		
-		if(target == null) return;
+		if(target == null) return false;
 		
 		int n = 0;
 		
@@ -131,13 +138,18 @@ public class TaskMeeting implements ITaskTickable
 			
 			if(n >= amount)
 			{
-				setComplete(playerID);
-                QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-                if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
-				return;
+                DBEntry<IParty> party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getParty(playerID);
+                final List<UUID> progress = party == null ? Collections.singletonList(playerID) : party.getValue().getMembers();
+                progress.forEach((value) -> {
+                    if(isComplete(value)) return;
+                    setComplete(value);
+                });
+				return true;
 			}
 		}
-	}
+		
+		return false;
+    }
 	
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound json)

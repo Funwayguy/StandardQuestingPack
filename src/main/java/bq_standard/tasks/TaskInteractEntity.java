@@ -3,6 +3,7 @@ package bq_standard.tasks;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
@@ -25,10 +26,12 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Tuple;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
@@ -64,10 +67,9 @@ public class TaskInteractEntity implements ITask
         return FactoryTaskInteractEntity.INSTANCE.getRegistryName();
     }
     
-    public void onInteract(DBEntry<IQuest> quest, EntityPlayer player, EnumHand hand, ItemStack item, Entity entity, boolean isHit)
+    public void onInteract(EntityPlayer player, EnumHand hand, ItemStack item, Entity entity, boolean isHit, Runnable dirtyCallback)
     {
         UUID playerID = QuestingAPI.getQuestingUUID(player);
-        if(isComplete(playerID)) return;
         
         if((!onHit && isHit) || (!onInteract && !isHit)) return;
         if((!useMainHand && hand == EnumHand.MAIN_HAND) || (!useOffHand && hand == EnumHand.OFF_HAND)) return;
@@ -99,13 +101,18 @@ public class TaskInteractEntity implements ITask
                 return;
             }
         }
+		
+        DBEntry<IParty> party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getParty(playerID);
+        final List<Tuple<UUID, Integer>> progress = getBulkProgress(party == null ? Collections.singletonList(playerID) : party.getValue().getMembers());
         
-        int progress = getUsersProgress(playerID);
-        setUserProgress(playerID, ++progress);
-        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-        if(qc != null) qc.markQuestDirty(quest.getID());
+        progress.forEach((value) -> {
+            if(isComplete(value.getFirst())) return;
+            int np = Math.min(required, value.getSecond() + 1);
+            setUserProgress(value.getFirst(), np);
+            if(np >= required) setComplete(value.getFirst());
+        });
         
-        detect(player, quest.getValue());
+        if(dirtyCallback != null) dirtyCallback.run();
     }
     
     @Override
@@ -286,4 +293,12 @@ public class TaskInteractEntity implements ITask
         Integer n = userProgress.get(uuid);
         return n == null? 0 : n;
 	}
+	
+	private List<Tuple<UUID, Integer>> getBulkProgress(@Nonnull List<UUID> uuids)
+    {
+        if(uuids.size() <= 0) return Collections.emptyList();
+        List<Tuple<UUID, Integer>> list = new ArrayList<>();
+        uuids.forEach((key) -> list.add(new Tuple<>(key, getUsersProgress(key))));
+        return list;
+    }
 }

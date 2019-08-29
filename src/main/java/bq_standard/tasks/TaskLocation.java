@@ -3,6 +3,7 @@ package bq_standard.tasks;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
+import betterquesting.api.questing.party.IParty;
 import betterquesting.api2.cache.CapabilityProviderQuestCache;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
@@ -81,23 +82,28 @@ public class TaskLocation implements ITaskTickable
 	}
 	
 	@Override
-	public void tickTask(@Nonnull DBEntry<IQuest> quest, @Nonnull EntityPlayer player)
+	public void tickTask(@Nonnull EntityPlayer player, Runnable callback)
 	{
-		if(player.ticksExisted%100 == 0) // Only auto-detect every 5 seconds
-		{
-			detect(player, quest.getValue());
-		}
+		if(player.ticksExisted%100 == 0 && internalDetect(player) && callback != null) callback.run();
 	}
 	
 	@Override
-	public void detect(EntityPlayer player, IQuest quest)
+	public void detect(@Nonnull EntityPlayer player, IQuest quest)
 	{
+		if(internalDetect(player))
+        {
+		    QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
+            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+        }
+	}
+	
+	private boolean internalDetect(@Nonnull EntityPlayer player)
+    {
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
-		if(!player.isEntityAlive() || isComplete(playerID) || !(player instanceof EntityPlayerMP)) return;
+		if(!player.isEntityAlive() || !(player instanceof EntityPlayerMP)) return false;
 		
 		EntityPlayerMP playerMP = (EntityPlayerMP)player;
-		QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
 		
 		boolean flag = false;
 		
@@ -105,10 +111,10 @@ public class TaskLocation implements ITaskTickable
 		{
 		    if(!StringUtils.isNullOrEmpty(biome) && !new ResourceLocation(biome).equals(playerMP.getServerWorld().getBiome(playerMP.getPosition()).getRegistryName()))
             {
-                if(!invert) return;
+                if(!invert) return false;
             } else if(!StringUtils.isNullOrEmpty(structure) && !playerMP.getServerWorld().getChunkProvider().isInsideStructure(playerMP.world, structure, playerMP.getPosition()))
             {
-                if(!invert) return;
+                if(!invert) return false;
             } else if(visible && range > 0) // Do not do ray casting with infinite range!
 			{
 				Vec3d pPos = new Vec3d(player.posX, player.posY + player.getEyeHeight(), player.posZ);
@@ -127,10 +133,17 @@ public class TaskLocation implements ITaskTickable
 		
 		if(flag != invert)
         {
-            setComplete(playerID);
-            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+            DBEntry<IParty> party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getParty(playerID);
+            final List<UUID> progress = party == null ? Collections.singletonList(playerID) : party.getValue().getMembers();
+            progress.forEach((value) -> {
+                if(isComplete(value)) return;
+                setComplete(value);
+            });
+            return true;
         }
-	}
+		
+		return false;
+    }
 	
 	private double getDistance(EntityPlayer player)
     {
