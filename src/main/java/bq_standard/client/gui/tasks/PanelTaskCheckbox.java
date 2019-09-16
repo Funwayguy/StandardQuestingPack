@@ -1,6 +1,5 @@
 package bq_standard.client.gui.tasks;
 
-import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api2.client.gui.controls.PanelButton;
@@ -10,16 +9,17 @@ import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.CanvasEmpty;
 import betterquesting.api2.client.gui.resources.colors.GuiColorStatic;
 import betterquesting.api2.client.gui.themes.presets.PresetIcon;
+import betterquesting.api2.storage.DBEntry;
 import bq_standard.network.handlers.NetTaskCheckbox;
 import bq_standard.tasks.TaskCheckbox;
 import net.minecraft.client.Minecraft;
 
 public class PanelTaskCheckbox extends CanvasEmpty
 {
-    private final IQuest quest;
+    private final DBEntry<IQuest> quest;
     private final TaskCheckbox task;
     
-    public PanelTaskCheckbox(IGuiRect rect, IQuest quest, TaskCheckbox task)
+    public PanelTaskCheckbox(IGuiRect rect, DBEntry<IQuest> quest, TaskCheckbox task)
     {
         super(rect);
         this.quest = quest;
@@ -32,8 +32,8 @@ public class PanelTaskCheckbox extends CanvasEmpty
         super.initPanel();
         
         boolean isComplete = task.isComplete(QuestingAPI.getQuestingUUID(Minecraft.getMinecraft().player));
-        final int questID = QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest);
-        final int taskID = quest.getTasks().getID(task);
+        final int questID = quest.getID();
+        final int taskID = quest.getValue().getTasks().getID(task);
     
         PanelButton btnCheck = new PanelButton(new GuiTransform(GuiAlign.MID_CENTER, -16, -16, 32, 32, 0), -1, "")
         {

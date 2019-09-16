@@ -1,14 +1,10 @@
 package bq_standard.tasks;
 
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.party.IParty;
-import betterquesting.api2.cache.CapabilityProviderQuestCache;
-import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.storage.DBEntry;
+import betterquesting.api2.utils.ParticipantInfo;
 import bq_standard.client.gui.tasks.PanelTaskLocation;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskLocation;
@@ -82,44 +78,38 @@ public class TaskLocation implements ITaskTickable
 	}
 	
 	@Override
-	public void tickTask(@Nonnull EntityPlayer player, Runnable callback)
+	public void tickTask(@Nonnull ParticipantInfo pInfo, DBEntry<IQuest> quest)
 	{
-		if(player.ticksExisted%100 == 0 && internalDetect(player) && callback != null) callback.run();
+		if(pInfo.PLAYER.ticksExisted%100 == 0) internalDetect(pInfo, quest);
 	}
 	
 	@Override
-	public void detect(@Nonnull EntityPlayer player, IQuest quest)
+	public void detect(@Nonnull ParticipantInfo pInfo, DBEntry<IQuest> quest)
 	{
-		if(internalDetect(player))
-        {
-		    QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
-        }
+		internalDetect(pInfo, quest);
 	}
 	
-	private boolean internalDetect(@Nonnull EntityPlayer player)
+	private void internalDetect(@Nonnull ParticipantInfo pInfo, DBEntry<IQuest> quest)
     {
-		UUID playerID = QuestingAPI.getQuestingUUID(player);
+		if(!pInfo.PLAYER.isEntityAlive() || !(pInfo.PLAYER instanceof EntityPlayerMP)) return;
 		
-		if(!player.isEntityAlive() || !(player instanceof EntityPlayerMP)) return false;
-		
-		EntityPlayerMP playerMP = (EntityPlayerMP)player;
+		EntityPlayerMP playerMP = (EntityPlayerMP)pInfo.PLAYER;
 		
 		boolean flag = false;
 		
-		if(player.dimension == dim && (range <= 0 || getDistance(player) <= range))
+		if(playerMP.dimension == dim && (range <= 0 || getDistance(playerMP) <= range))
 		{
 		    if(!StringUtils.isNullOrEmpty(biome) && !new ResourceLocation(biome).equals(playerMP.getServerWorld().getBiome(playerMP.getPosition()).getRegistryName()))
             {
-                if(!invert) return false;
+                if(!invert) return;
             } else if(!StringUtils.isNullOrEmpty(structure) && !playerMP.getServerWorld().getChunkProvider().isInsideStructure(playerMP.world, structure, playerMP.getPosition()))
             {
-                if(!invert) return false;
+                if(!invert) return;
             } else if(visible && range > 0) // Do not do ray casting with infinite range!
 			{
-				Vec3d pPos = new Vec3d(player.posX, player.posY + player.getEyeHeight(), player.posZ);
+				Vec3d pPos = new Vec3d(playerMP.posX, playerMP.posY + playerMP.getEyeHeight(), playerMP.posZ);
 				Vec3d tPos = new Vec3d(x, y, z);
-				RayTraceResult mop = player.world.rayTraceBlocks(pPos, tPos, false, true, false);
+				RayTraceResult mop = playerMP.world.rayTraceBlocks(pPos, tPos, false, true, false);
 				
 				if(mop == null || mop.typeOfHit != RayTraceResult.Type.BLOCK)
 				{
@@ -133,16 +123,11 @@ public class TaskLocation implements ITaskTickable
 		
 		if(flag != invert)
         {
-            DBEntry<IParty> party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getParty(playerID);
-            final List<UUID> progress = party == null ? Collections.singletonList(playerID) : party.getValue().getMembers();
-            progress.forEach((value) -> {
-                if(isComplete(value)) return;
-                setComplete(value);
+            pInfo.ACTIVE_UUIDS.forEach((uuid) -> {
+                if(!isComplete(uuid)) setComplete(uuid);
             });
-            return true;
+            pInfo.markDirtyParty(Collections.singletonList(quest.getID()));
         }
-		
-		return false;
     }
 	
 	private double getDistance(EntityPlayer player)
@@ -231,13 +216,13 @@ public class TaskLocation implements ITaskTickable
 	}
  
 	@Override
-	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
+	public IGuiPanel getTaskGui(IGuiRect rect, DBEntry<IQuest> quest)
 	{
 	    return new PanelTaskLocation(rect, this);
 	}
  
 	@Override
-	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
+	public GuiScreen getTaskEditor(GuiScreen parent, DBEntry<IQuest> quest)
 	{
 		return null;
 	}

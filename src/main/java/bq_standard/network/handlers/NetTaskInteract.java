@@ -6,9 +6,8 @@ import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.storage.DBEntry;
-import bq_standard.handlers.EventHandler;
+import betterquesting.api2.utils.ParticipantInfo;
 import bq_standard.tasks.TaskInteractItem;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
@@ -19,7 +18,6 @@ import net.minecraft.util.Tuple;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class NetTaskInteract
@@ -44,23 +42,19 @@ public class NetTaskInteract
 	{
 	    EntityPlayerMP sender = message.getSecond();
 	    NBTTagCompound tag = message.getFirst();
-		
-		List<EntityPlayer> actParty = EventHandler.getActiveParty(sender);
-		List<DBEntry<IQuest>> actQuest = QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(EventHandler.getSharedQuests(actParty));
-		List<Integer> dirty = new ArrayList<>();
+        
+        ParticipantInfo pInfo = new ParticipantInfo(sender);
+		List<DBEntry<IQuest>> actQuest = QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(pInfo.getSharedQuests());
         
         EnumHand hand = tag.getBoolean("isMainHand") ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
         boolean isHit = tag.getBoolean("isHit");
 		
 		for(DBEntry<IQuest> entry : actQuest)
 		{
-		    Runnable callback = () -> dirty.add(entry.getID());
 		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
             {
-                if(task.getValue() instanceof TaskInteractItem) ((TaskInteractItem)task.getValue()).onInteract(sender, hand, ItemStack.EMPTY, Blocks.AIR.getDefaultState(), sender.getPosition(), isHit, callback);
+                if(task.getValue() instanceof TaskInteractItem) ((TaskInteractItem)task.getValue()).onInteract(pInfo, entry, hand, ItemStack.EMPTY, Blocks.AIR.getDefaultState(), sender.getPosition(), isHit);
             }
 		}
-		
-		if(dirty.size() > 0) EventHandler.bulkMarkDirtyPlayer(actParty, dirty);
     }
 }

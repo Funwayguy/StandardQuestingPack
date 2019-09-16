@@ -1,6 +1,5 @@
 package bq_standard.client.gui.rewards;
 
-import betterquesting.api.questing.IQuest;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api2.client.gui.misc.*;
 import betterquesting.api2.client.gui.panels.CanvasEmpty;
@@ -20,13 +19,11 @@ import org.lwjgl.util.vector.Vector4f;
 
 public class PanelRewardRecipe extends CanvasEmpty
 {
-    private final IQuest quest;
     private final RewardRecipe reward;
     
-    public PanelRewardRecipe(IGuiRect rect, IQuest quest, RewardRecipe reward)
+    public PanelRewardRecipe(IGuiRect rect, RewardRecipe reward)
     {
         super(rect);
-        this.quest = quest;
         this.reward = reward;
     }
     

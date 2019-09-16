@@ -1,6 +1,5 @@
 package bq_standard.client.gui.rewards;
 
-import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.utils.BigItemStack;
@@ -11,6 +10,7 @@ import betterquesting.api2.client.gui.panels.content.PanelItemSlot;
 import betterquesting.api2.client.gui.panels.content.PanelTextBox;
 import betterquesting.api2.client.gui.panels.lists.CanvasScrolling;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
+import betterquesting.api2.storage.DBEntry;
 import bq_standard.network.handlers.NetRewardChoice;
 import bq_standard.rewards.RewardChoice;
 import net.minecraft.client.Minecraft;
@@ -20,10 +20,10 @@ import java.util.UUID;
 
 public class PanelRewardChoice extends CanvasEmpty
 {
-    private final IQuest quest;
+    private final DBEntry<IQuest> quest;
     private final RewardChoice reward;
     
-    public PanelRewardChoice(IGuiRect rect, IQuest quest, RewardChoice reward)
+    public PanelRewardChoice(IGuiRect rect, DBEntry<IQuest> quest, RewardChoice reward)
     {
         super(rect);
         this.quest = quest;
@@ -47,8 +47,8 @@ public class PanelRewardChoice extends CanvasEmpty
         PanelItemSlot slot = new PanelItemSlot(new GuiTransform(new Vector4f(0F, 0.5F, 0F, 0.5F), 0, -16, 32, 32, 0), -1, sel < 0 ? null : reward.choices.get(sel));
         this.addPanel(slot);
         
-        final int qID = QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest);
-        final int rID = quest.getRewards().getID(reward);
+        final int qID = quest.getID();
+        final int rID = quest.getValue().getRewards().getID(reward);
         
         int listWidth = cvList.getTransform().getWidth();
         for(int i = 0; i < reward.choices.size(); i++)

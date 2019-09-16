@@ -1,14 +1,10 @@
 package bq_standard.tasks;
 
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.party.IParty;
-import betterquesting.api2.cache.CapabilityProviderQuestCache;
-import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.storage.DBEntry;
+import betterquesting.api2.utils.ParticipantInfo;
 import bq_standard.ScoreboardBQ;
 import bq_standard.client.gui.editors.tasks.GuiEditTaskScoreboard;
 import bq_standard.client.gui.tasks.PanelTaskScoreboard;
@@ -16,7 +12,6 @@ import bq_standard.core.BQ_Standard;
 import bq_standard.network.handlers.NetScoreSync;
 import bq_standard.tasks.factory.FactoryTaskScoreboard;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -79,26 +74,15 @@ public class TaskScoreboard implements ITaskTickable
 	}
 	
 	@Override
-	public void tickTask(@Nonnull EntityPlayer player, Runnable callback)
+	public void tickTask(@Nonnull ParticipantInfo pInfo, DBEntry<IQuest> quest)
 	{
-		if(player.ticksExisted%20 == 0 && internalDetect(player) && callback != null) callback.run(); // Auto-detect once per second
+		if(pInfo.PLAYER.ticksExisted%20 == 0) detect(pInfo, quest); // Auto-detect once per second
 	}
 	
 	@Override
-	public void detect(@Nonnull EntityPlayer player, IQuest quest)
+	public void detect(@Nonnull ParticipantInfo pInfo, DBEntry<IQuest> quest)
 	{
-		if(internalDetect(player))
-		{
-		    QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-			if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
-		}
-	}
-	
-	private boolean internalDetect(@Nonnull EntityPlayer player)
-    {
-	    UUID playerID = QuestingAPI.getQuestingUUID(player);
-     
-		Scoreboard board = player.getWorldScoreboard();
+		Scoreboard board = pInfo.PLAYER.getWorldScoreboard();
 		ScoreObjective scoreObj = board.getObjective(scoreName);
 		
 		if(scoreObj == null)
@@ -112,31 +96,24 @@ public class TaskScoreboard implements ITaskTickable
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to create score '" + scoreName + "' for task!", e);
-				return false;
+				return;
 			}
 		}
 
-		Score score = board.getOrCreateScore(player.getName(), scoreObj);
+		Score score = board.getOrCreateScore(pInfo.PLAYER.getName(), scoreObj);
 		int points = score.getScorePoints();
-		ScoreboardBQ.INSTANCE.setScore(playerID, scoreName, points);
+		ScoreboardBQ.INSTANCE.setScore(pInfo.UUID, scoreName, points);
 		
-		if(player instanceof EntityPlayerMP)
+		if(pInfo.PLAYER instanceof EntityPlayerMP)
         {
-            NetScoreSync.sendScore((EntityPlayerMP)player);
+            NetScoreSync.sendScore((EntityPlayerMP)pInfo.PLAYER);
         }
 		
 		if(operation.checkValues(points, target))
 		{
-            DBEntry<IParty> party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getParty(playerID);
-            final List<UUID> progress = party == null ? Collections.singletonList(playerID) : party.getValue().getMembers();
-            progress.forEach((value) -> {
-                if(isComplete(value)) return;
-                setComplete(value);
-            });
-			return true;
+		    setComplete(pInfo.UUID);
+		    pInfo.markDirty(Collections.singletonList(quest.getID()));
 		}
-		
-		return false;
     }
 	
 	@Override
@@ -254,14 +231,14 @@ public class TaskScoreboard implements ITaskTickable
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
+	public IGuiPanel getTaskGui(IGuiRect rect, DBEntry<IQuest> quest)
 	{
 	    return new PanelTaskScoreboard(rect, this);
 	}
 	
 	@Override
 	@SideOnly(Side.CLIENT)
-	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
+	public GuiScreen getTaskEditor(GuiScreen parent, DBEntry<IQuest> quest)
 	{
 	    return new GuiEditTaskScoreboard(parent, quest, this);
 	}

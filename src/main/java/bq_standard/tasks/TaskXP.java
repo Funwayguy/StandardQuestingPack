@@ -1,18 +1,15 @@
 package bq_standard.tasks;
 
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
-import betterquesting.api2.cache.CapabilityProviderQuestCache;
-import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
+import betterquesting.api2.utils.ParticipantInfo;
 import bq_standard.XPHelper;
 import bq_standard.client.gui.tasks.PanelTaskXP;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskXP;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
@@ -50,37 +47,33 @@ public class TaskXP implements ITaskTickable
 	}
 	
 	@Override
-	public void tickTask(@Nonnull EntityPlayer player, Runnable callback)
+	public void tickTask(@Nonnull ParticipantInfo pInfo, DBEntry<IQuest> quest)
 	{
-	    if(consume || player.ticksExisted%60 != 0) return; // Every 3 seconds
-	    
-		UUID playerID = QuestingAPI.getQuestingUUID(player);
+	    if(consume || pInfo.PLAYER.ticksExisted%60 != 0) return; // Every 3 seconds
         
-        long curProg = getUsersProgress(playerID);
-        long nxtProg = XPHelper.getPlayerXP(player);
+        long curProg = getUsersProgress(pInfo.UUID);
+        long nxtProg = XPHelper.getPlayerXP(pInfo.PLAYER);
         
         if(curProg != nxtProg)
         {
-            setUserProgress(playerID, XPHelper.getPlayerXP(player));
-            if(callback != null) callback.run();
+            setUserProgress(pInfo.UUID, XPHelper.getPlayerXP(pInfo.PLAYER));
+            pInfo.markDirty(Collections.singletonList(quest.getID()));
         }
         
         long rawXP = levels? XPHelper.getLevelXP(amount) : amount;
-        long totalXP = getUsersProgress(playerID);
+        long totalXP = getUsersProgress(pInfo.UUID);
         
-        if(totalXP >= rawXP) setComplete(playerID);
+        if(totalXP >= rawXP) setComplete(pInfo.UUID);
 	}
 	
 	@Override
-	public void detect(EntityPlayer player, IQuest quest)
+	public void detect(ParticipantInfo pInfo, DBEntry<IQuest> quest)
 	{
-		UUID playerID = QuestingAPI.getQuestingUUID(player);
+		if(isComplete(pInfo.UUID)) return;
 		
-		if(isComplete(playerID)) return;
-		
-		long progress = getUsersProgress(playerID);
+		long progress = getUsersProgress(pInfo.UUID);
 		long rawXP = levels? XPHelper.getLevelXP(amount) : amount;
-		long plrXP = XPHelper.getPlayerXP(player);
+		long plrXP = XPHelper.getPlayerXP(pInfo.PLAYER);
 		long remaining = rawXP - progress;
 		long cost = Math.min(remaining, plrXP);
 		
@@ -89,27 +82,26 @@ public class TaskXP implements ITaskTickable
 		if(consume && cost != 0)
         {
             progress += cost;
-            setUserProgress(playerID, progress);
-            XPHelper.addXP(player, -cost);
+            setUserProgress(pInfo.UUID, progress);
+            XPHelper.addXP(pInfo.PLAYER, -cost);
             changed = true;
 		} else if(!consume && progress != plrXP)
         {
-            setUserProgress(playerID, plrXP);
+            setUserProgress(pInfo.UUID, plrXP);
             changed = true;
         }
 		
-		long totalXP = getUsersProgress(playerID);
+		long totalXP = getUsersProgress(pInfo.UUID);
 		
 		if(totalXP >= rawXP)
         {
-            setComplete(playerID);
+            setComplete(pInfo.UUID);
             changed = true;
         }
 		
 		if(changed) // Needs to be here because even if no additional progress was added, a party memeber may have completed the task anyway
         {
-            QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+            pInfo.markDirty(Collections.singletonList(quest.getID()));
         }
 	}
 	
@@ -225,13 +217,13 @@ public class TaskXP implements ITaskTickable
 	}
 	
 	@Override
-	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
+	public IGuiPanel getTaskGui(IGuiRect rect, DBEntry<IQuest> quest)
 	{
 	    return new PanelTaskXP(rect, this);
 	}
 	
 	@Override
-	public GuiScreen getTaskEditor(GuiScreen screen, IQuest quest)
+	public GuiScreen getTaskEditor(GuiScreen screen, DBEntry<IQuest> quest)
 	{
 		return null;
 	}

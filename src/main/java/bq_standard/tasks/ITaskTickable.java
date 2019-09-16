@@ -1,11 +1,13 @@
 package bq_standard.tasks;
 
+import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
-import net.minecraft.entity.player.EntityPlayer;
+import betterquesting.api2.storage.DBEntry;
+import betterquesting.api2.utils.ParticipantInfo;
 
 import javax.annotation.Nonnull;
 
 public interface ITaskTickable extends ITask
 {
-    void tickTask(@Nonnull EntityPlayer player, Runnable callback);
+    void tickTask(@Nonnull ParticipantInfo pInfo, DBEntry<IQuest> quest);
 }

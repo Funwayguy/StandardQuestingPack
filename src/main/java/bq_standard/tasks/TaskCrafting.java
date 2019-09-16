@@ -1,23 +1,18 @@
 package bq_standard.tasks;
 
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api.utils.JsonHelper;
-import betterquesting.api2.cache.CapabilityProviderQuestCache;
-import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.storage.DBEntry;
+import betterquesting.api2.utils.ParticipantInfo;
 import bq_standard.client.gui.tasks.PanelTaskCrafting;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskCrafting;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
@@ -70,62 +65,47 @@ public class TaskCrafting implements ITask
 	}
 	
 	@Override
-	public void detect(EntityPlayer player, IQuest quest)
+	public void detect(ParticipantInfo pInfo, DBEntry<IQuest> quest)
 	{
-		UUID playerID = QuestingAPI.getQuestingUUID(player);
-		
-		if(isComplete(playerID)) return;
-		
-		int[] progress = getUsersProgress(playerID);
-		
-		boolean flag = true;
-		
-		for(int i = 0; i < requiredItems.size(); i++)
-		{
-			BigItemStack rStack = requiredItems.get(i);
-			
-			if(progress[i] < rStack.stackSize)
-			{
-				flag = false;
-				break;
-			}
-		}
-		
-		if(flag)
-		{
-			setComplete(playerID);
-            QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
-		}
+	    pInfo.ACTIVE_UUIDS.forEach((uuid) -> {
+            if(isComplete(uuid)) return;
+            
+            int[] tmp = getUsersProgress(uuid);
+            for(int i = 0; i < requiredItems.size(); i++)
+            {
+                BigItemStack rStack = requiredItems.get(i);
+                if(tmp[i] < rStack.stackSize) return;
+            }
+            setComplete(uuid);
+        });
+	    
+	    pInfo.markDirtyParty(Collections.singletonList(quest.getID()));
 	}
 	
-	public void onItemCraft(EntityPlayer player, ItemStack stack, Runnable callback)
+	public void onItemCraft(ParticipantInfo pInfo, DBEntry<IQuest> quest, ItemStack stack)
     {
         if(!allowCraft) return;
-        onItemInternal(player, stack, callback);
+        onItemInternal(pInfo, quest, stack);
     }
 	
-	public void onItemSmelt(EntityPlayer player, ItemStack stack, Runnable callback)
+	public void onItemSmelt(ParticipantInfo pInfo, DBEntry<IQuest> quest, ItemStack stack)
     {
         if(!allowSmelt) return;
-        onItemInternal(player, stack, callback);
+        onItemInternal(pInfo, quest, stack);
     }
 	
-	public void onItemAnvil(EntityPlayer player, ItemStack stack, Runnable callback)
+	public void onItemAnvil(ParticipantInfo pInfo, DBEntry<IQuest> quest, ItemStack stack)
     {
         if(!allowAnvil) return;
-        onItemInternal(player, stack, callback);
+        onItemInternal(pInfo, quest, stack);
     }
 	
-	private void onItemInternal(EntityPlayer player, ItemStack stack, Runnable callback)
+	private void onItemInternal(ParticipantInfo pInfo, DBEntry<IQuest> quest, ItemStack stack)
 	{
 	    if(stack.isEmpty()) return;
-	    
-		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
-        DBEntry<IParty> party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getParty(playerID);
-        final List<Tuple<UUID, int[]>> progress = getBulkProgress(party == null ? Collections.singletonList(playerID) : party.getValue().getMembers());
-		final List<UUID> updated = new ArrayList<>();
+        final List<Tuple<UUID, int[]>> progress = getBulkProgress(pInfo.ACTIVE_UUIDS);
+        boolean changed = false;
 		
 		for(int i = 0; i < requiredItems.size(); i++)
 		{
@@ -136,32 +116,13 @@ public class TaskCrafting implements ITask
 			{
 			    progress.forEach((entry) -> {
 			        if(entry.getSecond()[index] >= rStack.stackSize) return;
-			        entry.getSecond()[index] += stack.getCount();
-			        updated.add(entry.getFirst());
+			        entry.getSecond()[index] = Math.max(entry.getSecond()[index] + stack.getCount(), rStack.stackSize);
                 });
+			    changed = true;
 			}
 		}
 		
-		if(updated.size() > 0)
-        {
-            setBulkProgress(progress);
-            
-            updated.forEach((uuid) -> {
-                if(isComplete(playerID)) return;
-                
-                int[] tmp = getUsersProgress(playerID);
-                
-                for(int i = 0; i < requiredItems.size(); i++)
-                {
-                    BigItemStack rStack = requiredItems.get(i);
-                    if(tmp[i] < rStack.stackSize) return;
-                }
-                
-                setComplete(uuid);
-            });
-            
-            if(callback != null) callback.run();
-        }
+		if(changed) detect(pInfo, quest);
 	}
 	
 	@Override
@@ -301,14 +262,14 @@ public class TaskCrafting implements ITask
 	}
  
 	@Override
-	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
+	public IGuiPanel getTaskGui(IGuiRect rect, DBEntry<IQuest> context)
 	{
 	    return new PanelTaskCrafting(rect, this);
 	}
 	
 	@Override
 	@SideOnly(Side.CLIENT)
-	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
+	public GuiScreen getTaskEditor(GuiScreen parent, DBEntry<IQuest> quest)
 	{
 		return null;
 	}

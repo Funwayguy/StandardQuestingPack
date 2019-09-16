@@ -1,24 +1,19 @@
 package bq_standard.tasks;
 
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.party.IParty;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
-import betterquesting.api2.cache.CapabilityProviderQuestCache;
-import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.storage.DBEntry;
+import betterquesting.api2.utils.ParticipantInfo;
 import bq_standard.NbtBlockType;
 import bq_standard.client.gui.tasks.PanelTaskInteractItem;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskInteractItem;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -66,17 +61,15 @@ public class TaskInteractItem implements ITask
         return FactoryTaskInteractItem.INSTANCE.getRegistryName();
     }
     
-    public void onInteract(EntityPlayer player, EnumHand hand, ItemStack item, IBlockState state, BlockPos pos, boolean isHit, Runnable dirtyCallback)
+    public void onInteract(ParticipantInfo pInfo, DBEntry<IQuest> quest, EnumHand hand, ItemStack item, IBlockState state, BlockPos pos, boolean isHit)
     {
-        UUID playerID = QuestingAPI.getQuestingUUID(player);
-        
         if((!onHit && isHit) || (!onInteract && !isHit)) return;
         if((!useMainHand && hand == EnumHand.MAIN_HAND) || (!useOffHand && hand == EnumHand.OFF_HAND)) return;
         
         if(targetBlock.b != Blocks.AIR)
         {
             if(state.getBlock() == Blocks.AIR) return;
-            TileEntity tile = state.getBlock().hasTileEntity(state) ? player.world.getTileEntity(pos) : null;
+            TileEntity tile = state.getBlock().hasTileEntity(state) ? pInfo.PLAYER.world.getTileEntity(pos) : null;
             NBTTagCompound tags = tile == null ? null : tile.writeToNBT(new NBTTagCompound());
             
             int tmpMeta = (targetBlock.m < 0 || targetBlock.m == OreDictionary.WILDCARD_VALUE)? OreDictionary.WILDCARD_VALUE : state.getBlock().getMetaFromState(state);
@@ -99,8 +92,7 @@ public class TaskInteractItem implements ITask
             }
         }
 		
-        DBEntry<IParty> party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getParty(playerID);
-        final List<Tuple<UUID, Integer>> progress = getBulkProgress(party == null ? Collections.singletonList(playerID) : party.getValue().getMembers());
+        final List<Tuple<UUID, Integer>> progress = getBulkProgress(pInfo.ACTIVE_UUIDS);
         
         progress.forEach((value) -> {
             if(isComplete(value.getFirst())) return;
@@ -109,21 +101,19 @@ public class TaskInteractItem implements ITask
             if(np >= required) setComplete(value.getFirst());
         });
         
-        if(dirtyCallback != null) dirtyCallback.run();
+		pInfo.markDirtyParty(Collections.singletonList(quest.getID()));
     }
     
     @Override
-    public void detect(EntityPlayer player, IQuest quest)
+    public void detect(ParticipantInfo pInfo, DBEntry<IQuest> quest)
     {
-        UUID playerID = QuestingAPI.getQuestingUUID(player);
-        if(isComplete(playerID)) return;
+        final List<Tuple<UUID, Integer>> progress = getBulkProgress(pInfo.ACTIVE_UUIDS);
         
-        if(getUsersProgress(playerID) >= required)
-        {
-            setComplete(playerID);
-            QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
-        }
+        progress.forEach((value) -> {
+            if(value.getSecond() >= required) setComplete(value.getFirst());
+        });
+        
+		pInfo.markDirtyParty(Collections.singletonList(quest.getID()));
     }
 	
 	@Override
@@ -154,7 +144,7 @@ public class TaskInteractItem implements ITask
     
     @Override
 	@SideOnly(Side.CLIENT)
-    public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
+    public IGuiPanel getTaskGui(IGuiRect rect, DBEntry<IQuest> quest)
     {
         return new PanelTaskInteractItem(rect, this);
     }
@@ -162,7 +152,7 @@ public class TaskInteractItem implements ITask
     @Override
     @Nullable
 	@SideOnly(Side.CLIENT)
-    public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
+    public GuiScreen getTaskEditor(GuiScreen parent, DBEntry<IQuest> quest)
     {
         return null;
     }

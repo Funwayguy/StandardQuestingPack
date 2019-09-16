@@ -24,6 +24,7 @@ import betterquesting.api2.client.gui.panels.content.PanelTextBox;
 import betterquesting.api2.client.gui.resources.textures.ItemTexture;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
 import betterquesting.api2.client.gui.themes.presets.PresetTexture;
+import betterquesting.api2.storage.DBEntry;
 import betterquesting.api2.utils.QuestTranslation;
 import bq_standard.tasks.TaskAdvancement;
 import net.minecraft.advancements.Advancement;
@@ -38,12 +39,12 @@ import java.util.List;
 
 public class GuiEditTaskAdvancement extends GuiScreenCanvas implements IVolatileScreen
 {
-    private final IQuest quest;
+    private final DBEntry<IQuest> quest;
     private final TaskAdvancement task;
     
     private ResourceLocation selected;
     
-    public GuiEditTaskAdvancement(GuiScreen parent, IQuest quest, TaskAdvancement task)
+    public GuiEditTaskAdvancement(GuiScreen parent, DBEntry<IQuest> quest, TaskAdvancement task)
     {
         super(parent);
         this.quest = quest;
@@ -123,11 +124,11 @@ public class GuiEditTaskAdvancement extends GuiScreenCanvas implements IVolatile
     {
         task.advID = selected;
 		NBTTagCompound base = new NBTTagCompound();
-		base.setTag("config", quest.writeToNBT(new NBTTagCompound()));
-		base.setTag("progress", quest.writeProgressToNBT(new NBTTagCompound(), null)); // TODO: Remove this when partial writes are implemented
+		base.setTag("config", quest.getValue().writeToNBT(new NBTTagCompound()));
+		base.setTag("progress", quest.getValue().writeProgressToNBT(new NBTTagCompound(), null)); // TODO: Remove this when partial writes are implemented
 		NBTTagCompound tags = new NBTTagCompound();
 		tags.setInteger("action", EnumPacketAction.EDIT.ordinal()); // Action: Update data
-		tags.setInteger("questID", QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+		tags.setInteger("questID", quest.getID());
 		tags.setTag("data",base);
 		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(QUEST_EDIT, tags));
     }

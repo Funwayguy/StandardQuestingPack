@@ -7,6 +7,7 @@ import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
 import bq_standard.NBTReplaceUtil;
 import bq_standard.client.gui.rewards.PanelRewardChoice;
 import bq_standard.core.BQ_Standard;
@@ -32,8 +33,8 @@ public class RewardChoice implements IReward
 	 * The selected reward index to be claimed.<br>
 	 * Should only ever be used client side. NEVER onHit server
 	 */
-	public ArrayList<BigItemStack> choices = new ArrayList<BigItemStack>();
-	private HashMap<UUID,Integer> selected = new HashMap<UUID,Integer>();
+	public ArrayList<BigItemStack> choices = new ArrayList<>();
+	private HashMap<UUID,Integer> selected = new HashMap<>();
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -63,7 +64,7 @@ public class RewardChoice implements IReward
 	}
 	
 	@Override
-	public boolean canClaim(EntityPlayer player, IQuest quest)
+	public boolean canClaim(EntityPlayer player, DBEntry<IQuest> quest)
 	{
 		if(!selected.containsKey(QuestingAPI.getQuestingUUID(player)))
 		{
@@ -75,7 +76,7 @@ public class RewardChoice implements IReward
 	}
 
 	@Override
-	public void claimReward(EntityPlayer player, IQuest quest)
+	public void claimReward(EntityPlayer player, DBEntry<IQuest> quest)
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
@@ -159,14 +160,14 @@ public class RewardChoice implements IReward
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public IGuiPanel getRewardGui(IGuiRect rect, IQuest quest)
+	public IGuiPanel getRewardGui(IGuiRect rect, DBEntry<IQuest> quest)
 	{
 	    return new PanelRewardChoice(rect, quest, this);
 	}
 	
 	@Override
 	@SideOnly(Side.CLIENT)
-	public GuiScreen getRewardEditor(GuiScreen screen, IQuest quest)
+	public GuiScreen getRewardEditor(GuiScreen screen, DBEntry<IQuest> quest)
 	{
 		return null;
 	}

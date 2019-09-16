@@ -5,6 +5,7 @@ import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
 import bq_standard.AdminExecute;
 import bq_standard.client.gui.rewards.PanelRewardCommand;
 import bq_standard.rewards.factory.FactoryRewardCommand;
@@ -46,14 +47,14 @@ public class RewardCommand implements IReward
 	}
 	
 	@Override
-	public boolean canClaim(EntityPlayer player, IQuest quest)
+	public boolean canClaim(EntityPlayer player, DBEntry<IQuest> quest)
 	{
 		return true;
 	}
 	
     @Override
 	@SuppressWarnings("ConstantConditions")
-	public void claimReward(final EntityPlayer player, IQuest quest)
+	public void claimReward(final EntityPlayer player, DBEntry<IQuest> quest)
 	{
 		if(player.world.isRemote)
 		{
@@ -97,13 +98,13 @@ public class RewardCommand implements IReward
 	}
 	
 	@Override
-	public IGuiPanel getRewardGui(IGuiRect rect, IQuest quest)
+	public IGuiPanel getRewardGui(IGuiRect rect, DBEntry<IQuest> quest)
 	{
-	    return new PanelRewardCommand(rect, quest, this);
+	    return new PanelRewardCommand(rect, this);
 	}
 	
 	@Override
-	public GuiScreen getRewardEditor(GuiScreen screen, IQuest quest)
+	public GuiScreen getRewardEditor(GuiScreen screen, DBEntry<IQuest> quest)
 	{
 		return null;
 	}

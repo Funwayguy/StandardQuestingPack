@@ -1,15 +1,11 @@
 package bq_standard.tasks;
 
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.party.IParty;
 import betterquesting.api.utils.ItemComparison;
-import betterquesting.api2.cache.CapabilityProviderQuestCache;
-import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.storage.DBEntry;
+import betterquesting.api2.utils.ParticipantInfo;
 import bq_standard.client.gui.editors.tasks.GuiEditTaskMeeting;
 import bq_standard.client.gui.tasks.PanelTaskMeeting;
 import bq_standard.core.BQ_Standard;
@@ -17,7 +13,6 @@ import bq_standard.tasks.factory.FactoryTaskMeeting;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
@@ -82,32 +77,21 @@ public class TaskMeeting implements ITaskTickable
 	}
 	
 	@Override
-	public void tickTask(@Nonnull EntityPlayer player, Runnable callback)
+	public void tickTask(@Nonnull ParticipantInfo pInfo, DBEntry<IQuest> quest)
 	{
-		if(player.ticksExisted%60 == 0 && internalDetect(player) && callback != null) callback.run();
+		if(pInfo.PLAYER.ticksExisted%60 == 0) detect(pInfo, quest);
 	}
 	
 	@Override
-	public void detect(EntityPlayer player, IQuest quest)
+	public void detect(@Nonnull ParticipantInfo pInfo, DBEntry<IQuest> quest)
 	{
-		if(internalDetect(player))
-        {
-            QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
-        }
-	}
-	
-	private boolean internalDetect(@Nonnull EntityPlayer player)
-    {
-		UUID playerID = QuestingAPI.getQuestingUUID(player);
+		if(!pInfo.PLAYER.isEntityAlive()) return;
 		
-		if(!player.isEntityAlive()) return false;
-		
-		List<Entity> list = player.world.getEntitiesWithinAABBExcludingEntity(player, player.getEntityBoundingBox().expand(range, range, range));
 		ResourceLocation targetID = new ResourceLocation(idName);
 		Class<? extends Entity> target = EntityList.getClass(targetID);
+		if(target == null) return;
 		
-		if(target == null) return false;
+		List<Entity> list = pInfo.PLAYER.world.getEntitiesWithinAABBExcludingEntity(pInfo.PLAYER, pInfo.PLAYER.getEntityBoundingBox().expand(range, range, range));
 		
 		int n = 0;
 		
@@ -134,22 +118,16 @@ public class TaskMeeting implements ITaskTickable
 				if(!ItemComparison.CompareNBTTag(targetTags, subjectTags, true)) continue;
 			}
 			
-			n++;
-			
-			if(n >= amount)
+			if(++n >= amount)
 			{
-                DBEntry<IParty> party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getParty(playerID);
-                final List<UUID> progress = party == null ? Collections.singletonList(playerID) : party.getValue().getMembers();
-                progress.forEach((value) -> {
-                    if(isComplete(value)) return;
-                    setComplete(value);
+			    pInfo.ACTIVE_UUIDS.forEach((uuid) -> {
+			        if(!isComplete(uuid)) setComplete(uuid);
                 });
-				return true;
+			    pInfo.markDirtyParty(Collections.singletonList(quest.getID()));
+				return;
 			}
 		}
-		
-		return false;
-    }
+	}
 	
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound json)
@@ -217,13 +195,13 @@ public class TaskMeeting implements ITaskTickable
 	 */
 	@Override
 	@SideOnly(Side.CLIENT)
-	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
+	public GuiScreen getTaskEditor(GuiScreen parent, DBEntry<IQuest> quest)
 	{
-	    return new GuiEditTaskMeeting(parent, quest, this);
+	    return new GuiEditTaskMeeting(parent, quest.getValue(), this);
 	}
 
 	@Override
-	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
+	public IGuiPanel getTaskGui(IGuiRect rect, DBEntry<IQuest> quest)
 	{
 	    return new PanelTaskMeeting(rect, this);
 	}

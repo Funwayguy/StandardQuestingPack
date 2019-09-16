@@ -1,13 +1,11 @@
 package bq_standard.tasks;
 
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
-import betterquesting.api2.cache.CapabilityProviderQuestCache;
-import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
+import betterquesting.api2.utils.ParticipantInfo;
 import bq_standard.client.gui.editors.tasks.GuiEditTaskAdvancement;
 import bq_standard.client.gui.tasks.PanelTaskAdvancement;
 import bq_standard.core.BQ_Standard;
@@ -15,7 +13,6 @@ import bq_standard.tasks.factory.FactoryTaskAdvancement;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.PlayerAdvancements;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -46,28 +43,23 @@ public class TaskAdvancement implements ITask
         return FactoryTaskAdvancement.INSTANCE.getRegistryName();
     }
     
-    public void onAdvancementGet(IQuest quest, EntityPlayer player, Advancement advancement)
+    public void onAdvancementGet(DBEntry<IQuest> quest, ParticipantInfo pInfo, Advancement advancement)
     {
         if(advancement == null || advID == null || !advID.equals(advancement.getId())) return;
-        detect(player, quest);
+        detect(pInfo, quest);
     }
     
     @Override
-    public void detect(EntityPlayer player, IQuest quest)
+    public void detect(ParticipantInfo pInfo, DBEntry<IQuest> quest)
     {
-        if(!(player instanceof EntityPlayerMP) || player.getServer() == null || advID == null) return;
+        if(!(pInfo.PLAYER instanceof EntityPlayerMP) || pInfo.PLAYER.getServer() == null || advID == null) return;
         
-		UUID playerID = QuestingAPI.getQuestingUUID(player);
-        
-        Advancement adv = player.getServer().getAdvancementManager().getAdvancement(advID);
-        PlayerAdvancements playerAdv = player.getServer().getPlayerList().getPlayerAdvancements((EntityPlayerMP)player);
-        
+        Advancement adv = pInfo.PLAYER.getServer().getAdvancementManager().getAdvancement(advID);
         if(adv == null) return;
+        PlayerAdvancements playerAdv = pInfo.PLAYER.getServer().getPlayerList().getPlayerAdvancements((EntityPlayerMP)pInfo.PLAYER);
         
-        if(playerAdv.getProgress(adv).isDone()) setComplete(playerID);
-        
-        QuestCache qc = player.getCapability(CapabilityProviderQuestCache.CAP_QUEST_CACHE, null);
-        if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+        if(playerAdv.getProgress(adv).isDone()) setComplete(pInfo.UUID);
+        pInfo.markDirty(Collections.singletonList(quest.getID()));
     }
     
     @Override
@@ -97,7 +89,7 @@ public class TaskAdvancement implements ITask
     @Nullable
     @Override
 	@SideOnly(Side.CLIENT)
-    public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
+    public IGuiPanel getTaskGui(IGuiRect rect, DBEntry<IQuest> quest)
     {
         return new PanelTaskAdvancement(rect, this);
     }
@@ -105,7 +97,7 @@ public class TaskAdvancement implements ITask
     @Override
     @Nullable
 	@SideOnly(Side.CLIENT)
-    public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
+    public GuiScreen getTaskEditor(GuiScreen parent, DBEntry<IQuest> quest)
     {
         return new GuiEditTaskAdvancement(parent, quest, this);
     }

@@ -7,6 +7,7 @@ import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
 import bq_standard.NBTReplaceUtil;
 import bq_standard.client.gui.rewards.PanelRewardItem;
 import bq_standard.core.BQ_Standard;
@@ -14,7 +15,6 @@ import bq_standard.rewards.factory.FactoryRewardItem;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
@@ -24,7 +24,7 @@ import java.util.ArrayList;
 
 public class RewardItem implements IReward
 {
-	public ArrayList<BigItemStack> items = new ArrayList<BigItemStack>();
+	public ArrayList<BigItemStack> items = new ArrayList<>();
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -39,13 +39,13 @@ public class RewardItem implements IReward
 	}
 	
 	@Override
-	public boolean canClaim(EntityPlayer player, IQuest quest)
+	public boolean canClaim(EntityPlayer player, DBEntry<IQuest> quest)
 	{
 		return true;
 	}
 
 	@Override
-	public void claimReward(EntityPlayer player, IQuest quest)
+	public void claimReward(EntityPlayer player, DBEntry<IQuest> quest)
 	{
 		for(BigItemStack r : items)
 		{
@@ -70,28 +70,14 @@ public class RewardItem implements IReward
 	@Override
 	public void readFromNBT(NBTTagCompound json)
 	{
-		items = new ArrayList<BigItemStack>();
+		items = new ArrayList<>();
 		NBTTagList rList = json.getTagList("rewards", 10);
 		for(int i = 0; i < rList.tagCount(); i++)
 		{
-			NBTBase entry = rList.get(i);
-			
-			if(entry == null || entry.getId() != 10)
-			{
-				continue;
-			}
-			
 			try
 			{
-				BigItemStack item = JsonHelper.JsonToItemStack((NBTTagCompound)entry);
-				
-				if(item != null)
-				{
-					items.add(item);
-				} else
-				{
-					continue;
-				}
+				BigItemStack item = JsonHelper.JsonToItemStack(rList.getCompoundTagAt(i));
+				if(item != null) items.add(item);
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load reward item data", e);
@@ -112,13 +98,13 @@ public class RewardItem implements IReward
 	}
 
 	@Override
-	public IGuiPanel getRewardGui(IGuiRect rect, IQuest quest)
+	public IGuiPanel getRewardGui(IGuiRect rect, DBEntry<IQuest> quest)
 	{
-	    return new PanelRewardItem(rect, quest, this);
+	    return new PanelRewardItem(rect, this);
 	}
 	
 	@Override
-	public GuiScreen getRewardEditor(GuiScreen screen, IQuest quest)
+	public GuiScreen getRewardEditor(GuiScreen screen, DBEntry<IQuest> quest)
 	{
 		return null;
 	}

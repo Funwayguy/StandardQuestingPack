@@ -4,6 +4,7 @@ import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
 import bq_standard.client.gui.rewards.PanelRewardRecipe;
 import bq_standard.rewards.factory.FactoryRewardRecipe;
 import net.minecraft.client.gui.GuiScreen;
@@ -32,13 +33,13 @@ public class RewardRecipe implements IReward
     }
     
     @Override
-    public boolean canClaim(EntityPlayer player, IQuest quest)
+    public boolean canClaim(EntityPlayer player, DBEntry<IQuest> quest)
     {
         return true;
     }
     
     @Override
-    public void claimReward(EntityPlayer player, IQuest quest)
+    public void claimReward(EntityPlayer player, DBEntry<IQuest> quest)
     {
         String[] recSplit = recipeNames.split("\n");
         ResourceLocation[] loc = new ResourceLocation[recSplit.length];
@@ -51,15 +52,15 @@ public class RewardRecipe implements IReward
     @Nullable
     @Override
     @SideOnly(Side.CLIENT)
-    public IGuiPanel getRewardGui(IGuiRect rect, IQuest quest)
+    public IGuiPanel getRewardGui(IGuiRect rect, DBEntry<IQuest> quest)
     {
-        return new PanelRewardRecipe(rect, quest, this);
+        return new PanelRewardRecipe(rect, this);
     }
     
     @Nullable
     @Override
     @SideOnly(Side.CLIENT)
-    public GuiScreen getRewardEditor(GuiScreen parent, IQuest quest)
+    public GuiScreen getRewardEditor(GuiScreen parent, DBEntry<IQuest> quest)
     {
         return null;
     }
