@@ -124,7 +124,7 @@ public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask
 			{
 				final FluidStack rStack = requiredFluids.get(j);
                 FluidStack drainOG = rStack.copy();
-                if(ignoreNbt) drainOG = null;
+                if(ignoreNbt) drainOG.tag = null;
                 
                 FluidStack sample = handler.drain(drainOG, false); // Pre-check
                 if(sample == null || sample.amount <= 0) continue;

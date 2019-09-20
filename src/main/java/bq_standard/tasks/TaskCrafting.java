@@ -106,7 +106,7 @@ public class TaskCrafting implements ITask
 		
         final List<Tuple<UUID, int[]>> progress = getBulkProgress(pInfo.ACTIVE_UUIDS);
         boolean changed = false;
-		
+        
 		for(int i = 0; i < requiredItems.size(); i++)
 		{
 			final BigItemStack rStack = requiredItems.get(i);
@@ -116,13 +116,17 @@ public class TaskCrafting implements ITask
 			{
 			    progress.forEach((entry) -> {
 			        if(entry.getSecond()[index] >= rStack.stackSize) return;
-			        entry.getSecond()[index] = Math.max(entry.getSecond()[index] + stack.getCount(), rStack.stackSize);
+			        entry.getSecond()[index] = Math.min(entry.getSecond()[index] + stack.getCount(), rStack.stackSize);
                 });
 			    changed = true;
 			}
 		}
 		
-		if(changed) detect(pInfo, quest);
+		if(changed)
+        {
+		    setBulkProgress(progress);
+            detect(pInfo, quest);
+        }
 	}
 	
 	@Override
