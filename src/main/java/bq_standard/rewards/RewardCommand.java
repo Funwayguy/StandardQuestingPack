@@ -25,6 +25,7 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.UUID;
 
 public class RewardCommand implements IReward
 {
@@ -33,6 +34,7 @@ public class RewardCommand implements IReward
 	public String desc = "Run a command script";
 	public boolean viaPlayer = false;
 	public boolean hideIcon = true;
+	public boolean asScript = true;
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -56,45 +58,54 @@ public class RewardCommand implements IReward
 	@SuppressWarnings("ConstantConditions")
 	public void claimReward(final EntityPlayer player, DBEntry<IQuest> quest)
 	{
-		if(player.world.isRemote)
-		{
-			return;
-		}
+		if(player.world.isRemote) return;
+        
+        UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
 		// NOTE: These replacements are only kept for legacy reasons. Entity selectors are much more suitable and more powerful
 		String tmp = command.replaceAll("VAR_NAME", player.getName());
-		String finCom = tmp.replaceAll("VAR_UUID", QuestingAPI.getQuestingUUID(player).toString());
+		String finCom = tmp.replaceAll("VAR_UUID", playerID.toString());
 		String[] comAry = finCom.split("\n");
 		
-		// New functions don't support preceeding forward slash so we remove them on legacy commands
-		for(int i = 0; i < comAry.length; i++) if(comAry[i].startsWith("/")) comAry[i] = comAry[i].replaceFirst("/", "");
-		
-		MinecraftServer server = player.world.getMinecraftServer();
-        FunctionObject func = FunctionObject.create(server.getFunctionManager(), Arrays.asList(comAry));
+        MinecraftServer server = player.world.getMinecraftServer();
         ICommandSender sender = viaPlayer ? new AdminExecute(player) : new RewardCommandSender(player);
-        
-        server.getFunctionManager().execute(func, sender);
+		
+		if(asScript)
+        {
+            // New functions don't support preceeding forward slash so we remove them on legacy commands
+            for(int i = 0; i < comAry.length; i++)
+                if(comAry[i].startsWith("/")) comAry[i] = comAry[i].replaceFirst("/", "");
+    
+            FunctionObject func = FunctionObject.create(server.getFunctionManager(), Arrays.asList(comAry));
+    
+            server.getFunctionManager().execute(func, sender);
+        } else
+        {
+            server.getCommandManager().executeCommand(sender, finCom);
+        }
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json)
+	public void readFromNBT(NBTTagCompound nbt)
 	{
-		command = json.getString("command");
-		title = json.hasKey("title", 8) ? json.getString("title") : "bq_standard.reward.command";
-		desc = json.hasKey("description", 8) ? json.getString("description") : "Run a command script";
-		viaPlayer = json.getBoolean("viaPlayer");
-		hideIcon = !json.hasKey("hideBlockIcon", 1) || json.getBoolean("hideBlockIcon");
+		command = nbt.getString("command");
+		title = nbt.hasKey("title", 8) ? nbt.getString("title") : "bq_standard.reward.command";
+		desc = nbt.hasKey("description", 8) ? nbt.getString("description") : "Run a command script";
+		viaPlayer = nbt.getBoolean("viaPlayer");
+		hideIcon = !nbt.hasKey("hideBlockIcon", 1) || nbt.getBoolean("hideBlockIcon");
+		asScript = !nbt.hasKey("asScript", 1) || nbt.getBoolean("asScript");
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json)
+	public NBTTagCompound writeToNBT(NBTTagCompound nbt)
 	{
-		json.setString("command", command);
-		json.setString("title", title);
-		json.setString("description", desc);
-		json.setBoolean("viaPlayer", viaPlayer);
-		json.setBoolean("hideBlockIcon", hideIcon);
-		return json;
+		nbt.setString("command", command);
+		nbt.setString("title", title);
+		nbt.setString("description", desc);
+		nbt.setBoolean("viaPlayer", viaPlayer);
+		nbt.setBoolean("hideBlockIcon", hideIcon);
+		nbt.setBoolean("asScript", asScript);
+		return nbt;
 	}
 	
 	@Override

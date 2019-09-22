@@ -113,7 +113,11 @@ public class TaskBlockBreak implements ITask
 			}
 		}
 		
-		if(changed) detect(pInfo, quest);
+		if(changed)
+        {
+            setBulkProgress(progress);
+            detect(pInfo, quest);
+        }
 	}
 	
 	@Override
