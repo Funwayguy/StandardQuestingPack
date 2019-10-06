@@ -21,10 +21,11 @@ import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class RewardItem implements IReward
 {
-	public ArrayList<BigItemStack> items = new ArrayList<>();
+	public final List<BigItemStack> items = new ArrayList<>();
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -70,7 +71,7 @@ public class RewardItem implements IReward
 	@Override
 	public void readFromNBT(NBTTagCompound json)
 	{
-		items = new ArrayList<>();
+		items.clear();
 		NBTTagList rList = json.getTagList("rewards", 10);
 		for(int i = 0; i < rList.tagCount(); i++)
 		{

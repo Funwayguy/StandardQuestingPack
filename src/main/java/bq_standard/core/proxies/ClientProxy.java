@@ -52,7 +52,7 @@ public class ClientProxy extends CommonProxy
 	{
 		super.registerRenderers();
 		
-		registerItemModelSubtypes(BQ_Standard.lootChest, 0, 103, BQ_Standard.lootChest.getRegistryName().toString());
+		registerItemModelSubtypes(BQ_Standard.lootChest, 0, 104, BQ_Standard.lootChest.getRegistryName().toString());
 	}
 	
 	@SideOnly(Side.CLIENT)

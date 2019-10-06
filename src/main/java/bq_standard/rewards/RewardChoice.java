@@ -15,7 +15,6 @@ import bq_standard.rewards.factory.FactoryRewardChoice;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
@@ -33,8 +32,8 @@ public class RewardChoice implements IReward
 	 * The selected reward index to be claimed.<br>
 	 * Should only ever be used client side. NEVER onHit server
 	 */
-	public ArrayList<BigItemStack> choices = new ArrayList<>();
-	private HashMap<UUID,Integer> selected = new HashMap<>();
+	public final ArrayList<BigItemStack> choices = new ArrayList<>();
+	private final HashMap<UUID,Integer> selected = new HashMap<>();
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -123,26 +122,11 @@ public class RewardChoice implements IReward
 	@Override
 	public void readFromNBT(NBTTagCompound json)
 	{
-		choices = new ArrayList<BigItemStack>();
+		choices.clear();
 		NBTTagList cList = json.getTagList("choices", 10);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			NBTBase entry = cList.get(i);
-			
-			if(entry == null || entry.getId() != 10)
-			{
-				continue;
-			}
-			
-			BigItemStack item = JsonHelper.JsonToItemStack((NBTTagCompound)entry);
-			
-			if(item != null)
-			{
-				choices.add(item);
-			} else
-			{
-				continue;
-			}
+			choices.add(JsonHelper.JsonToItemStack(cList.getCompoundTagAt(i)));
 		}
 	}
 

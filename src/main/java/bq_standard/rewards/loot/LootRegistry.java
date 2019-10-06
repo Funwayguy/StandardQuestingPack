@@ -1,19 +1,11 @@
 package bq_standard.rewards.loot;
 
-import betterquesting.api.utils.BigItemStack;
 import betterquesting.api2.storage.DBEntry;
 import betterquesting.api2.storage.INBTPartial;
 import betterquesting.api2.storage.SimpleDatabase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.world.WorldServer;
-import net.minecraft.world.storage.loot.LootContext;
-import net.minecraft.world.storage.loot.LootTable;
-import net.minecraft.world.storage.loot.LootTableList;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -117,19 +109,4 @@ public class LootRegistry extends SimpleDatabase<LootGroup> implements INBTParti
             this.add(this.nextID(), group);
         }
     }
-	
-	public static List<BigItemStack> getStandardLoot(@Nonnull EntityPlayer player)
-	{
-		List<BigItemStack> stacks = new ArrayList<>();
-		
-		LootTable table = player.world.getLootTableManager().getLootTableFromLocation(LootTableList.CHESTS_SIMPLE_DUNGEON);
-		
-		LootContext.Builder lcBuilder = new LootContext.Builder((WorldServer)player.world);
-		for(ItemStack s : table.generateLootForPools(player.getRNG(), lcBuilder.build()))
-		{
-			stacks.add(new BigItemStack(s));
-		}
-		
-		return stacks;
-	}
 }
