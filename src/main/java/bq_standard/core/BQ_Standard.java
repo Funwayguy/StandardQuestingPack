@@ -14,6 +14,7 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
+import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.*;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -54,6 +55,12 @@ public class BQ_Standard
     @EventHandler
     public void init(FMLInitializationEvent event)
     {
+        ModContainer modContainer = Loader.instance().getIndexedModList().get("bq_standard");
+        if(modContainer != null && modContainer.getMod() instanceof BQ_Standard)
+        {
+            BQ_Standard modInstance = (BQ_Standard)modContainer.getMod();
+            // DO THINGS...
+        }
     }
     
     @EventHandler

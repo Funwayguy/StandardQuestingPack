@@ -191,7 +191,7 @@ public class TaskMeeting implements ITaskTickable
 	@SideOnly(Side.CLIENT)
 	public GuiScreen getTaskEditor(GuiScreen parent, DBEntry<IQuest> quest)
 	{
-	    return new GuiEditTaskMeeting(parent, quest.getValue(), this);
+	    return new GuiEditTaskMeeting(parent, quest, this);
 	}
 
 	@Override

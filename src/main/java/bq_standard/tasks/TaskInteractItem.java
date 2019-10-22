@@ -234,7 +234,7 @@ public class TaskInteractItem implements ITask
     @Override
     public synchronized NBTTagCompound writeToNBT(NBTTagCompound nbt)
     {
-        nbt.setTag("item", targetItem .writeToNBT(new NBTTagCompound()));
+        nbt.setTag("item", targetItem.writeToNBT(new NBTTagCompound()));
         nbt.setTag("block", targetBlock.writeToNBT(new NBTTagCompound()));
         nbt.setBoolean("ignoreNbt", ignoreNBT);
         nbt.setBoolean("partialMatch", partialMatch);

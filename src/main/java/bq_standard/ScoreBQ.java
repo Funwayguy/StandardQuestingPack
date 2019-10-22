@@ -26,6 +26,11 @@ public class ScoreBQ implements INBTPartial<NBTTagList, UUID>
 		playerScores.put(uuid, value);
 	}
 	
+	public boolean hasEntry(@Nonnull UUID uuid)
+    {
+        return playerScores.containsKey(uuid);
+    }
+	
 	@Override
 	public NBTTagList writeToNBT(NBTTagList nbt, @Nullable List<UUID> subset)
 	{

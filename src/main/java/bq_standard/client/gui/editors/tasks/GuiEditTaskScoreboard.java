@@ -3,7 +3,6 @@ package bq_standard.client.gui.editors.tasks;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.misc.IVolatileScreen;
-import betterquesting.api.enums.EnumPacketAction;
 import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api2.client.gui.GuiScreenCanvas;
@@ -27,6 +26,7 @@ import bq_standard.tasks.TaskScoreboard;
 import bq_standard.tasks.TaskScoreboard.ScoreOperation;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Keyboard;
 
@@ -99,13 +99,14 @@ public class GuiEditTaskScoreboard extends GuiScreenCanvas implements IVolatileS
     private static final ResourceLocation QUEST_EDIT = new ResourceLocation("betterquesting:quest_edit"); // TODO: Really need to make the native packet types accessible in the API
     private void sendChanges()
     {
-		NBTTagCompound base = new NBTTagCompound();
-		base.setTag("config", quest.getValue().writeToNBT(new NBTTagCompound()));
-		base.setTag("progress", quest.getValue().writeProgressToNBT(new NBTTagCompound(), null));
-		NBTTagCompound tags = new NBTTagCompound();
-		tags.setInteger("action", EnumPacketAction.EDIT.ordinal()); // Action: Update data
-		tags.setInteger("questID", quest.getID());
-		tags.setTag("data",base);
-		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(QUEST_EDIT, tags));
+		NBTTagCompound payload = new NBTTagCompound();
+        NBTTagList dataList = new NBTTagList();
+        NBTTagCompound entry = new NBTTagCompound();
+        entry.setInteger("questID", quest.getID());
+		entry.setTag("config", quest.getValue().writeToNBT(new NBTTagCompound()));
+		dataList.appendTag(entry);
+		payload.setTag("data", dataList);
+		payload.setInteger("action", 0); // Action: Update data
+		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(QUEST_EDIT, payload));
     }
 }

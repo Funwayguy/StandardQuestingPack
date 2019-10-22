@@ -237,7 +237,7 @@ public class TaskInteractEntity implements ITask
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound nbt)
     {
-        nbt.setTag("item", targetItem .writeToNBT(new NBTTagCompound()));
+        nbt.setTag("item", targetItem.writeToNBT(new NBTTagCompound()));
         nbt.setBoolean("ignoreItemNBT", ignoreItemNBT);
         nbt.setBoolean("partialItemMatch", partialItemMatch);
         

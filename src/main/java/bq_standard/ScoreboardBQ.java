@@ -30,30 +30,28 @@ public class ScoreboardBQ implements INBTPartial<NBTTagList, UUID>
 	}
 	
 	@Override
-	public synchronized void readFromNBT(NBTTagList json, boolean merge)
+	public synchronized void readFromNBT(NBTTagList nbt, boolean merge)
 	{
         if(!merge) objectives.clear();
-		
-		for(int i = 0; i < json.tagCount(); i++)
+		for(int i = 0; i < nbt.tagCount(); i++)
 		{
-			NBTTagCompound jObj = json.getCompoundTagAt(i);
-			ScoreBQ score = new ScoreBQ();
+			NBTTagCompound jObj = nbt.getCompoundTagAt(i);
+			ScoreBQ score = objectives.computeIfAbsent(jObj.getString("name"), (key) -> new ScoreBQ());
 			score.readFromNBT(jObj.getTagList("scores", 10), merge);
-			objectives.put(jObj.getString("name"), score);
 		}
 	}
 	
 	@Override
-	public synchronized NBTTagList writeToNBT(NBTTagList json, @Nullable List<UUID> subset)
+	public synchronized NBTTagList writeToNBT(NBTTagList nbt, @Nullable List<UUID> users)
 	{
 		for(Entry<String,ScoreBQ> entry : objectives.entrySet())
 		{
 			NBTTagCompound jObj = new NBTTagCompound();
 			jObj.setString("name", entry.getKey());
-			jObj.setTag("scores", entry.getValue().writeToNBT(new NBTTagList(), subset));
-			json.appendTag(jObj);
+			jObj.setTag("scores", entry.getValue().writeToNBT(new NBTTagList(), users));
+			nbt.appendTag(jObj);
 		}
 		
-		return json;
+		return nbt;
 	}
 }

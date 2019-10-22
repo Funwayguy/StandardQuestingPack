@@ -14,6 +14,7 @@ import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskRetrieval;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
@@ -79,8 +80,7 @@ public class TaskRetrieval implements ITaskInventory, IItemTask
 	@Override
 	public void detect(ParticipantInfo pInfo, DBEntry<IQuest> quest)
 	{
-	    if(consume && isComplete(pInfo.UUID)) return;
-		if(pInfo.PLAYER.inventory == null) return;
+	    if(isComplete(pInfo.UUID)) return;
 		
         final List<Tuple<UUID, int[]>> progress = getBulkProgress(consume ? Collections.singletonList(pInfo.UUID) : pInfo.ACTIVE_UUIDS);
 		boolean updated = false;
@@ -108,43 +108,56 @@ public class TaskRetrieval implements ITaskInventory, IItemTask
             }
         }
 		
-		for(int i = 0; i < pInfo.PLAYER.inventory.getSizeInventory(); i++)
-		{
-            ItemStack stack = pInfo.PLAYER.inventory.getStackInSlot(i);
-            if(stack.isEmpty()) continue;
-            int remStack = stack.getCount(); // Allows the stack detection to split across multiple requirements
-            
-			for(int j = 0; j < requiredItems.size(); j++)
-			{
-				BigItemStack rStack = requiredItems.get(j);
-				
-				if(!ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) && !ItemComparison.OreDictionaryMatch(rStack.getOreIngredient(), rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
+		final List<InventoryPlayer> invoList;
+		if(consume)
+        {
+            invoList = Collections.singletonList(pInfo.PLAYER.inventory);
+        } else
+        {
+            invoList = new ArrayList<>();
+            pInfo.ACTIVE_PLAYERS.forEach((p) -> invoList.add(p.inventory));
+        }
+		
+		for(InventoryPlayer invo : invoList)
+        {
+            for(int i = 0; i < invo.getSizeInventory(); i++)
+            {
+                ItemStack stack = invo.getStackInSlot(i);
+                if(stack.isEmpty()) continue;
+                int remStack = stack.getCount(); // Allows the stack detection to split across multiple requirements
+                
+                for(int j = 0; j < requiredItems.size(); j++)
                 {
-                    continue;
-                }
-				
-				// Theoretically this could work in consume mode for parties but the priority order and manual submission code would need changing
-				for(Tuple<UUID, int[]> value : progress)
-                {
-                    if(value.getSecond()[j] >= rStack.stackSize) continue;
+                    BigItemStack rStack = requiredItems.get(j);
                     
-                    int remaining = rStack.stackSize - value.getSecond()[j];
-                    
-                    if(consume)
+                    if(!ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) && !ItemComparison.OreDictionaryMatch(rStack.getOreIngredient(), rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
                     {
-                        ItemStack removed = pInfo.PLAYER.inventory.decrStackSize(i, remaining);
-                        value.getSecond()[j] += removed.getCount();
-                    } else
-                    {
-                        int temp = Math.min(remaining, remStack);
-                        remStack -= temp;
-                        value.getSecond()[j] += temp;
+                        continue;
                     }
-    
-                    updated = true;
+                    
+                    // Theoretically this could work in consume mode for parties but the priority order and manual submission code would need changing
+                    for(Tuple<UUID, int[]> value : progress)
+                    {
+                        if(value.getSecond()[j] >= rStack.stackSize) continue;
+                        
+                        int remaining = rStack.stackSize - value.getSecond()[j];
+                        
+                        if(consume)
+                        {
+                            ItemStack removed = invo.decrStackSize(i, remaining);
+                            value.getSecond()[j] += removed.getCount();
+                        } else
+                        {
+                            int temp = Math.min(remaining, remStack);
+                            remStack -= temp;
+                            value.getSecond()[j] += temp;
+                        }
+        
+                        updated = true;
+                    }
                 }
-			}
-		}
+            }
+        }
 		
 		if(updated) setBulkProgress(progress);
 		checkAndComplete(pInfo, quest, updated);
@@ -169,12 +182,6 @@ public class TaskRetrieval implements ITaskInventory, IItemTask
             
             if(!hasAll) continue;
             updated = true;
-            
-            if(!consume)
-            {
-                pInfo.ACTIVE_UUIDS.forEach(this::setComplete);
-                break;
-            }
             
             setComplete(value.getFirst());
         }
