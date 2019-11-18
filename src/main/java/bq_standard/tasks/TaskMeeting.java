@@ -120,7 +120,7 @@ public class TaskMeeting implements ITaskTickable
 			
 			if(++n >= amount)
 			{
-			    pInfo.ACTIVE_UUIDS.forEach((uuid) -> {
+			    pInfo.ALL_UUIDS.forEach((uuid) -> {
 			        if(!isComplete(uuid)) setComplete(uuid);
                 });
 			    pInfo.markDirtyParty(Collections.singletonList(quest.getID()));

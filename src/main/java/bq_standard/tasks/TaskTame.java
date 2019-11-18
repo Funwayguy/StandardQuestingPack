@@ -57,7 +57,7 @@ public class TaskTame implements ITask
     @Override
     public void detect(ParticipantInfo pInfo, DBEntry<IQuest> quest)
     {
-        final List<Tuple<UUID, Integer>> progress = getBulkProgress(pInfo.ACTIVE_UUIDS);
+        final List<Tuple<UUID, Integer>> progress = getBulkProgress(pInfo.ALL_UUIDS);
         int prev = completeUsers.size();
         
         progress.forEach((value) -> {
@@ -89,7 +89,7 @@ public class TaskTame implements ITask
 		entity.writeToNBTOptional(subjectTags);
 		if(!ignoreNBT && !ItemComparison.CompareNBTTag(targetTags, subjectTags, true)) return;
 		
-        final List<Tuple<UUID, Integer>> progress = getBulkProgress(pInfo.ACTIVE_UUIDS);
+        final List<Tuple<UUID, Integer>> progress = getBulkProgress(pInfo.ALL_UUIDS);
         
         progress.forEach((value) -> {
             if(isComplete(value.getFirst())) return;

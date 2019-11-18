@@ -82,7 +82,7 @@ public class TaskRetrieval implements ITaskInventory, IItemTask
 	{
 	    if(isComplete(pInfo.UUID)) return;
 		
-        final List<Tuple<UUID, int[]>> progress = getBulkProgress(consume ? Collections.singletonList(pInfo.UUID) : pInfo.ACTIVE_UUIDS);
+        final List<Tuple<UUID, int[]>> progress = getBulkProgress(consume ? Collections.singletonList(pInfo.UUID) : pInfo.ALL_UUIDS);
 		boolean updated = false;
 		
 		if(!consume)
@@ -165,7 +165,7 @@ public class TaskRetrieval implements ITaskInventory, IItemTask
 	
 	private void checkAndComplete(ParticipantInfo pInfo, DBEntry<IQuest> quest, boolean resync)
     {
-        final List<Tuple<UUID, int[]>> progress = getBulkProgress(consume ? Collections.singletonList(pInfo.UUID) : pInfo.ACTIVE_UUIDS);
+        final List<Tuple<UUID, int[]>> progress = getBulkProgress(consume ? Collections.singletonList(pInfo.UUID) : pInfo.ALL_UUIDS);
         boolean updated = resync;
         
         for(Tuple<UUID, int[]> value : progress)

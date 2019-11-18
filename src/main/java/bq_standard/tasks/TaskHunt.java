@@ -71,7 +71,7 @@ public class TaskHunt implements ITask
 	@Override
 	public void detect(ParticipantInfo pInfo, DBEntry<IQuest> quest)
 	{
-        final List<Tuple<UUID, Integer>> progress = getBulkProgress(pInfo.ACTIVE_UUIDS);
+        final List<Tuple<UUID, Integer>> progress = getBulkProgress(pInfo.ALL_UUIDS);
         
         progress.forEach((value) -> {
             if(value.getSecond() >= required) setComplete(value.getFirst());
@@ -104,7 +104,7 @@ public class TaskHunt implements ITask
 		entity.writeToNBTOptional(subjectTags);
 		if(!ignoreNBT && !ItemComparison.CompareNBTTag(targetTags, subjectTags, true)) return;
 		
-        final List<Tuple<UUID, Integer>> progress = getBulkProgress(pInfo.ACTIVE_UUIDS);
+        final List<Tuple<UUID, Integer>> progress = getBulkProgress(pInfo.ALL_UUIDS);
         
         progress.forEach((value) -> {
             if(isComplete(value.getFirst())) return;

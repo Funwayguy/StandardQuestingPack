@@ -71,7 +71,7 @@ public class TaskBlockBreak implements ITask
 	@Override
 	public void detect(ParticipantInfo pInfo, DBEntry<IQuest> quest)
 	{
-	    pInfo.ACTIVE_UUIDS.forEach((uuid) -> {
+	    pInfo.ALL_UUIDS.forEach((uuid) -> {
             if(isComplete(uuid)) return;
             
             int[] tmp = getUsersProgress(uuid);
@@ -91,7 +91,7 @@ public class TaskBlockBreak implements ITask
 		TileEntity tile = state.getBlock().hasTileEntity(state) ? pInfo.PLAYER.world.getTileEntity(pos) : null;
 		NBTTagCompound tags = tile == null ? null : tile.writeToNBT(new NBTTagCompound());
 		
-        final List<Tuple<UUID, int[]>> progress = getBulkProgress(pInfo.ACTIVE_UUIDS);
+        final List<Tuple<UUID, int[]>> progress = getBulkProgress(pInfo.ALL_UUIDS);
         boolean changed = false;
 		
 		for(int i = 0; i < blockTypes.size(); i++)

@@ -86,7 +86,7 @@ public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask
 	    if(isComplete(pInfo.UUID)) return;
 	    
 	    // Removing the consume check here would make the task cheaper on groups and for that reason sharing is restricted to detect only
-        final List<Tuple<UUID, int[]>> progress = getBulkProgress(consume ? Collections.singletonList(pInfo.UUID) : pInfo.ACTIVE_UUIDS);
+        final List<Tuple<UUID, int[]>> progress = getBulkProgress(consume ? Collections.singletonList(pInfo.UUID) : pInfo.ALL_UUIDS);
 		boolean updated = false;
 		
         if(!consume)
@@ -174,7 +174,7 @@ public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask
 	
 	private void checkAndComplete(ParticipantInfo pInfo, DBEntry<IQuest> quest, boolean resync)
     {
-        final List<Tuple<UUID, int[]>> progress = getBulkProgress(consume ? Collections.singletonList(pInfo.UUID) : pInfo.ACTIVE_UUIDS);
+        final List<Tuple<UUID, int[]>> progress = getBulkProgress(consume ? Collections.singletonList(pInfo.UUID) : pInfo.ALL_UUIDS);
         boolean updated = resync;
         
         for(Tuple<UUID, int[]> value : progress)
@@ -405,12 +405,17 @@ public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask
 	@Override
 	public FluidStack submitFluid(UUID owner, DBEntry<IQuest> quest, FluidStack fluid)
 	{
+		return submitFluidInternal(owner, quest, fluid, true);
+	}
+	
+	private FluidStack submitFluidInternal(UUID owner, DBEntry<IQuest> quest, FluidStack fluid, boolean doFill)
+	{
 		if(owner == null || fluid == null || fluid.amount <= 0 || !consume || isComplete(owner) || requiredFluids.size() <= 0)
 		{
 			return fluid;
 		}
 		
-		int[] progress = getUsersProgress(owner);
+		int[] progress = getUsersProgress(owner).clone();
 		boolean updated = false;
 		
 		for(int j = 0; j < requiredFluids.size(); j++)
@@ -436,7 +441,7 @@ public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask
 			}
 		}
 		
-		if(updated)
+		if(updated && doFill)
         {
             setUserProgress(owner, progress);
     
@@ -481,13 +486,15 @@ public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask
         {
             if(!tank.canDrain() || tank.getContents() == null || !tank.canDrainFluidType(tank.getContents())) continue;
             
-            FluidStack remaining = submitFluid(owner, quest, tank.getContents());
+            // Figure out how much of this fluid is left to submit to the task
+            FluidStack remaining = submitFluidInternal(owner, quest, tank.getContents().copy(), false);
             FluidStack drain = tank.getContents().copy();
             drain.amount -= remaining == null ? 0 : remaining.amount;
             
             if(drain.amount <= 0) continue;
             
-            handler.drain(tank.getContents(), true);
+            // Attempt drain of remaining amount and submit to task progress
+            submitFluidInternal(owner, quest, handler.drain(drain, true), true);
             hasDrained = true;
         }
 		

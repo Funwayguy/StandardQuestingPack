@@ -123,7 +123,7 @@ public class TaskLocation implements ITaskTickable
 		
 		if(flag != invert)
         {
-            pInfo.ACTIVE_UUIDS.forEach((uuid) -> {
+            pInfo.ALL_UUIDS.forEach((uuid) -> {
                 if(!isComplete(uuid)) setComplete(uuid);
             });
             pInfo.markDirtyParty(Collections.singletonList(quest.getID()));

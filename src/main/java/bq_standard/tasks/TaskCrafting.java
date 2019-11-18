@@ -67,7 +67,7 @@ public class TaskCrafting implements ITask
 	@Override
 	public void detect(ParticipantInfo pInfo, DBEntry<IQuest> quest)
 	{
-	    pInfo.ACTIVE_UUIDS.forEach((uuid) -> {
+	    pInfo.ALL_UUIDS.forEach((uuid) -> {
             if(isComplete(uuid)) return;
             
             int[] tmp = getUsersProgress(uuid);
@@ -104,7 +104,7 @@ public class TaskCrafting implements ITask
 	{
 	    if(stack.isEmpty()) return;
 		
-        final List<Tuple<UUID, int[]>> progress = getBulkProgress(pInfo.ACTIVE_UUIDS);
+        final List<Tuple<UUID, int[]>> progress = getBulkProgress(pInfo.ALL_UUIDS);
         boolean changed = false;
         
 		for(int i = 0; i < requiredItems.size(); i++)
