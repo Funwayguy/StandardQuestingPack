@@ -124,7 +124,9 @@ public class TaskRetrieval implements ITaskInventory, IItemTask
             {
                 ItemStack stack = invo.getStackInSlot(i);
                 if(stack.isEmpty()) continue;
-                int remStack = stack.getCount(); // Allows the stack detection to split across multiple requirements
+                // Allows the stack detection to split across multiple requirements. Counts may vary per person
+                int[] remCounts = new int[progress.size()];
+                Arrays.fill(remCounts, stack.getCount());
                 
                 for(int j = 0; j < requiredItems.size(); j++)
                 {
@@ -136,8 +138,9 @@ public class TaskRetrieval implements ITaskInventory, IItemTask
                     }
                     
                     // Theoretically this could work in consume mode for parties but the priority order and manual submission code would need changing
-                    for(Tuple<UUID, int[]> value : progress)
+                    for(int n = 0; n < progress.size(); n++)
                     {
+                        Tuple<UUID, int[]> value = progress.get(n);
                         if(value.getSecond()[j] >= rStack.stackSize) continue;
                         
                         int remaining = rStack.stackSize - value.getSecond()[j];
@@ -148,8 +151,8 @@ public class TaskRetrieval implements ITaskInventory, IItemTask
                             value.getSecond()[j] += removed.getCount();
                         } else
                         {
-                            int temp = Math.min(remaining, remStack);
-                            remStack -= temp;
+                            int temp = Math.min(remaining, remCounts[n]);
+                            remCounts[n] -= temp;
                             value.getSecond()[j] += temp;
                         }
         
