@@ -19,7 +19,7 @@ public class FtbqTaskKill
         task.ignoreNBT = true;
         task.subtypes = true;
     
-        FTBQQuestImporter.provideIcon(new BigItemStack(Items.DIAMOND_SWORD));
+        FTBQQuestImporter.provideQuestIcon(new BigItemStack(Items.DIAMOND_SWORD));
         
         return new ITask[]{task};
     }

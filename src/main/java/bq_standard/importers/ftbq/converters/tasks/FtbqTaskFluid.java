@@ -32,7 +32,7 @@ public class FtbqTaskFluid
             rem -= split;
         }
     
-        FTBQQuestImporter.provideIcon(new BigItemStack(Items.BUCKET));
+        FTBQQuestImporter.provideQuestIcon(new BigItemStack(Items.BUCKET));
         
         return new ITask[]{task};
     }

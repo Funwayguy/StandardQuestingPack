@@ -18,7 +18,7 @@ public class FtbqTaskXP
         TaskXP task = new TaskXP();
         task.consume = true; // FTBQ is consume only. Not really sure why it doesn't allow detect
         task.amount = (int)(tag.getLong("value") % Integer.MAX_VALUE); // Suuuure FTBQ. The vanilla int XP level can totally exceed 2.14B
-        FTBQQuestImporter.provideIcon(new BigItemStack(Items.EXPERIENCE_BOTTLE));
+        FTBQQuestImporter.provideQuestIcon(new BigItemStack(Items.EXPERIENCE_BOTTLE));
         
         return new ITask[]{task};
     }

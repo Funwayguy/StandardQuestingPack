@@ -30,7 +30,7 @@ public class FtbqTaskEnergy
             task.readFromNBT(rfTaskTag);
         }
     
-        FTBQQuestImporter.provideIcon(new BigItemStack(Blocks.REDSTONE_BLOCK));
+        FTBQQuestImporter.provideQuestIcon(new BigItemStack(Blocks.REDSTONE_BLOCK));
         
         return new ITask[]{task};
     }

@@ -22,7 +22,7 @@ public class FtbqTaskDimension
         task.visible = true;
         task.name = tag.hasKey("title", 8) ? tag.getString("title") : DimensionType.getById(task.dim).getName();
     
-        FTBQQuestImporter.provideIcon(new BigItemStack(Blocks.PORTAL));
+        FTBQQuestImporter.provideQuestIcon(new BigItemStack(Blocks.PORTAL));
         
         return new ITask[]{task};
     }

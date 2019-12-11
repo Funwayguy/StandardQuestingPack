@@ -35,7 +35,7 @@ public class FtbqTaskItem
                 rem -= split;
             }
             
-            FTBQQuestImporter.provideIcon(item);
+            FTBQQuestImporter.provideQuestIcon(item);
         } else if(nbt.hasKey("items", 9)) // Note: Non-NBT items in this list are stored in Compound > String because... I have no idea
         {
             NBTTagList tagList = nbt.getTagList("items", 10);
@@ -61,7 +61,7 @@ public class FtbqTaskItem
                     rem -= split;
                 }
                 
-                FTBQQuestImporter.provideIcon(item);
+                FTBQQuestImporter.provideQuestIcon(item);
             }
         } else BQ_Standard.logger.error("Unable read item tag!");
         

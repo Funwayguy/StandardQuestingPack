@@ -19,7 +19,7 @@ public class FtbqTaskStat
         task.operation = ScoreOperation.MORE_OR_EQUAL;
         task.target = tag.getInteger("value");
     
-        FTBQQuestImporter.provideIcon(new BigItemStack(Items.PAPER));
+        FTBQQuestImporter.provideQuestIcon(new BigItemStack(Items.PAPER));
         
         return new ITask[]{task};
     }

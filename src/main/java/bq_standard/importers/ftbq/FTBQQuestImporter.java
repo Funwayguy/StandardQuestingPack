@@ -19,6 +19,7 @@ import bq_standard.tasks.TaskCheckbox;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.math.MathHelper;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -79,7 +80,8 @@ public class FTBQQuestImporter implements IImporter
     {
         int[] indexIDs = tagIndex.getIntArray("index"); // Read out the chapter index names
         ID_MAP.clear();
-        requestIcon(null);
+        requestQuestIcon(null);
+        requestChapterIcon(null);
         
         HashMap<IQuest, String[]> parentMap = new HashMap<>();
         
@@ -124,6 +126,16 @@ public class FTBQQuestImporter implements IImporter
                         if(i + 1 < desc.tagCount()) sb.append("\n");
                     }
                     questLine.setProperty(NativeProps.DESC, sb.toString());
+                    if(qTag.hasKey("icon"))
+                    {
+                        // We're not even going to try and make an equivalent dynamic icon (although BQ could support it later)
+                        BigItemStack icoStack = FTBQUtils.convertItem(qTag.getTag("icon"));
+                        if(!icoStack.getBaseStack().isEmpty()) questLine.setProperty(NativeProps.ICON, icoStack);
+                        requestChapterIcon(null);
+                    } else
+                    {
+                        requestChapterIcon(questLine);
+                    }
                     continue;
                 }
                 
@@ -150,12 +162,18 @@ public class FTBQQuestImporter implements IImporter
                     // We're not even going to try and make an equivalent dynamic icon (although BQ could support it later)
                     BigItemStack icoStack = FTBQUtils.convertItem(qTag.getTag("icon"));
                     if(!icoStack.getBaseStack().isEmpty()) quest.setProperty(NativeProps.ICON, icoStack);
-                    requestIcon(null);
+                    requestQuestIcon(null);
                 } else
                 {
-                    requestIcon(quest);
+                    requestQuestIcon(quest);
                 }
-                qle.setPosition(qTag.getInteger("x") * 24, qTag.getInteger("y") * 24); // Fun Fact: FTBQ has a hard limit of -25 to +25 for it's quest coordinates even if you try forcing it higher
+                
+                // Fun Fact: FTBQ used to have a hard limit of -25 to +25 for it's quest coordinates even if you try forcing it higher
+                // Update: It's now infinite, uses double floating point percision, isn't grid snapped, and has size. Progress!
+                double size = qTag.hasKey("size") ? qTag.getDouble("size") : 1D;
+                size *= 24D;
+                qle.setSize(MathHelper.ceil(size), MathHelper.ceil(size));
+                qle.setPosition(MathHelper.ceil(qTag.getDouble("x") * 24D -(size / 2D)), MathHelper.ceil(qTag.getInteger("y") * 24D -(size / 2D)));
                 
                 // === PARENTING INFO ===
                 
@@ -248,18 +266,41 @@ public class FTBQQuestImporter implements IImporter
     }
     
     private static IQuest iconQuest;
+    private static IQuestLine iconChapter;
     
-    private static void requestIcon(IQuest quest)
+    private static void requestQuestIcon(IQuest quest)
     {
         iconQuest = quest;
     }
     
-    public static void provideIcon(BigItemStack stack)
+    private static void requestChapterIcon(IQuestLine chapter)
     {
-        if(iconQuest != null && stack != null)
+        iconChapter = chapter;
+    }
+    
+    public static void provideQuestIcon(BigItemStack stack)
+    {
+        if(stack == null) return;
+        
+        if(iconQuest != null)
         {
             iconQuest.setProperty(NativeProps.ICON, stack);
             iconQuest = null; // Request fufilled
+        }
+        
+        if(iconChapter != null)
+        {
+            iconChapter.setProperty(NativeProps.ICON, stack);
+            iconChapter = null; // Request fufilled
+        }
+    }
+    
+    public static void provideChapterIcon(BigItemStack stack)
+    {
+        if(iconChapter != null && stack != null)
+        {
+            iconChapter.setProperty(NativeProps.ICON, stack);
+            iconChapter = null; // Request fufilled
         }
     }
     
@@ -274,6 +315,7 @@ public class FTBQQuestImporter implements IImporter
         taskConverters.put("kill", new FtbqTaskKill()::convertTask);
         taskConverters.put("location", new FtbqTaskLocation()::convertTask);
         taskConverters.put("checkmark", tag -> new ITask[]{new TaskCheckbox()});
+        taskConverters.put("advancement", new FtbqTaskAdvancement()::converTask);
         
         rewardConverters.put("item", new FtbqRewardItem()::convertTask);
         rewardConverters.put("xp", new FtbqRewardXP(false)::convertTask);
