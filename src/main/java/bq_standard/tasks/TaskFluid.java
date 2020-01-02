@@ -177,6 +177,7 @@ public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask
         final List<Tuple<UUID, int[]>> progress = getBulkProgress(consume ? Collections.singletonList(pInfo.UUID) : pInfo.ALL_UUIDS);
         boolean updated = resync;
         
+        topLoop:
         for(Tuple<UUID, int[]> value : progress)
         {
             boolean hasAll = true;
@@ -184,15 +185,19 @@ public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask
             for(int j = 0; j < requiredFluids.size(); j++)
             {
                 if(value.getSecond()[j] >= requiredFluids.get(j).amount) continue;
-                
-                hasAll = false;
-                break;
+                continue topLoop;
             }
             
-            if(!hasAll) continue;
             updated = true;
             
-            setComplete(value.getFirst());
+            if(consume)
+            {
+                setComplete(value.getFirst());
+            } else
+            {
+                progress.forEach((pair) -> setComplete(pair.getFirst()));
+                break;
+            }
         }
 		
 		if(updated)

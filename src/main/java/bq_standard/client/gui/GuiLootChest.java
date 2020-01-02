@@ -40,7 +40,7 @@ public class GuiLootChest extends GuiScreenCanvas
         this.addPanel(new PanelTextBox(new GuiTransform(GuiAlign.MID_CENTER, -64, 40, 128, 56, -1), QuestTranslation.translate(title)).setAlignment(1));
     
         IGuiTexture texGlow = BQSTextures.LOOT_GLOW.getTexture();
-        int rowMax = (int)Math.ceil(rewards.size()/8F);
+        int rowMax = (int)Math.max(1D, Math.ceil(rewards.size()/8D));
         rowMax = rewards.size()/rowMax;
         
         for(int i = 0; i < rewards.size(); i++)

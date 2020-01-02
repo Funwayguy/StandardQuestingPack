@@ -171,22 +171,25 @@ public class TaskRetrieval implements ITaskInventory, IItemTask
         final List<Tuple<UUID, int[]>> progress = getBulkProgress(consume ? Collections.singletonList(pInfo.UUID) : pInfo.ALL_UUIDS);
         boolean updated = resync;
         
+        topLoop:
         for(Tuple<UUID, int[]> value : progress)
         {
-            boolean hasAll = true;
-            
             for(int j = 0; j < requiredItems.size(); j++)
             {
                 if(value.getSecond()[j] >= requiredItems.get(j).stackSize) continue;
-                
-                hasAll = false;
-                break;
+                continue topLoop;
             }
             
-            if(!hasAll) continue;
             updated = true;
             
-            setComplete(value.getFirst());
+            if(consume)
+            {
+                setComplete(value.getFirst());
+            } else
+            {
+                progress.forEach((pair) -> setComplete(pair.getFirst()));
+                break;
+            }
         }
 		
 		if(updated)

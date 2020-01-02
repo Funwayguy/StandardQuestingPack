@@ -16,6 +16,7 @@ import bq_standard.importers.ftbq.converters.rewards.FtbqRewardItem;
 import bq_standard.importers.ftbq.converters.rewards.FtbqRewardXP;
 import bq_standard.importers.ftbq.converters.tasks.*;
 import bq_standard.tasks.TaskCheckbox;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -80,6 +81,8 @@ public class FTBQQuestImporter implements IImporter
     {
         int[] indexIDs = tagIndex.getIntArray("index"); // Read out the chapter index names
         ID_MAP.clear();
+        
+        // Cleanup from previous imports
         requestQuestIcon(null);
         requestChapterIcon(null);
         
@@ -98,6 +101,9 @@ public class FTBQQuestImporter implements IImporter
             int lineID = lineDB.nextID();
             IQuestLine questLine = lineDB.createNew(lineID);
             ID_MAP.put(hexName, new FTBEntry(lineID, questLine, FTBEntryType.LINE));
+            
+            // File order may but valid icon providing quest before the chapter file so we request early
+            requestChapterIcon(questLine);
 
             for(File questFile : contents)
             {
@@ -132,12 +138,11 @@ public class FTBQQuestImporter implements IImporter
                         BigItemStack icoStack = FTBQUtils.convertItem(qTag.getTag("icon"));
                         if(!icoStack.getBaseStack().isEmpty()) questLine.setProperty(NativeProps.ICON, icoStack);
                         requestChapterIcon(null);
-                    } else
-                    {
-                        requestChapterIcon(questLine);
                     }
                     continue;
                 }
+                
+                requestQuestIcon(null);
                 
                 // === QUEST DATA ===
                 
@@ -173,7 +178,7 @@ public class FTBQQuestImporter implements IImporter
                 double size = qTag.hasKey("size") ? qTag.getDouble("size") : 1D;
                 size *= 24D;
                 qle.setSize(MathHelper.ceil(size), MathHelper.ceil(size));
-                qle.setPosition(MathHelper.ceil(qTag.getDouble("x") * 24D -(size / 2D)), MathHelper.ceil(qTag.getInteger("y") * 24D -(size / 2D)));
+                qle.setPosition(MathHelper.ceil(qTag.getDouble("x") * 24D -(size / 2D)), MathHelper.ceil(qTag.getDouble("y") * 24D -(size / 2D)));
                 
                 // === PARENTING INFO ===
                 
@@ -231,6 +236,18 @@ public class FTBQQuestImporter implements IImporter
                         for(IReward t : tsks) rewardReg.add(rewardReg.nextID(), t);
                     }
                 }
+                
+                if(iconQuest != null)
+                {
+                    iconQuest.setProperty(NativeProps.ICON, new BigItemStack(ItemStack.EMPTY));
+                    iconQuest = null;
+                }
+            }
+            
+            if(iconChapter != null)
+            {
+                iconChapter.setProperty(NativeProps.ICON, new BigItemStack(ItemStack.EMPTY));
+                iconChapter = null;
             }
         }
         

@@ -2,6 +2,8 @@ package bq_standard.network.handlers;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.events.DatabaseEvent;
+import betterquesting.api.events.DatabaseEvent.DBType;
 import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
@@ -13,6 +15,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Tuple;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -90,6 +93,7 @@ public class NetRewardChoice
 		if(reward instanceof RewardChoice)
 		{
 		    ((RewardChoice)reward).setSelection(QuestingAPI.getQuestingUUID(player), sel);
+		    MinecraftForge.EVENT_BUS.post(new DatabaseEvent.Update(DBType.QUEST));
             //MinecraftForge.EVENT_BUS.post(new Update());
         }
 	}
