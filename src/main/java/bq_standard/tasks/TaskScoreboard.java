@@ -89,8 +89,7 @@ public class TaskScoreboard implements ITaskTickable
 		{
 			try
 			{
-		        IScoreCriteria criteria = IScoreCriteria.INSTANCES.get(type);
-		        criteria = criteria != null? criteria : new ScoreCriteria(scoreName);
+		        IScoreCriteria criteria = IScoreCriteria.INSTANCES.computeIfAbsent(type, (t) -> new ScoreCriteria(scoreName));
 				scoreObj = board.addScoreObjective(scoreName, criteria);
 				scoreObj.setDisplayName(scoreDisp);
 			} catch(Exception e)
@@ -99,14 +98,14 @@ public class TaskScoreboard implements ITaskTickable
 				return;
 			}
 		}
-
-		Score score = board.getOrCreateScore(pInfo.PLAYER.getName(), scoreObj);
-		int points = score.getScorePoints();
-		ScoreboardBQ.INSTANCE.setScore(pInfo.UUID, scoreName, points);
 		
-		if(pInfo.PLAYER instanceof EntityPlayerMP)
+		int points = board.getOrCreateScore(pInfo.PLAYER.getName(), scoreObj).getScorePoints();
+		int lastValue = ScoreboardBQ.INSTANCE.getScore(pInfo.UUID, scoreName);
+		
+		if(points != lastValue)
         {
-            NetScoreSync.sendScore((EntityPlayerMP)pInfo.PLAYER);
+            ScoreboardBQ.INSTANCE.setScore(pInfo.UUID, scoreName, points);
+            if(pInfo.PLAYER instanceof EntityPlayerMP) NetScoreSync.sendScore((EntityPlayerMP)pInfo.PLAYER);
         }
 		
 		if(operation.checkValues(points, target))

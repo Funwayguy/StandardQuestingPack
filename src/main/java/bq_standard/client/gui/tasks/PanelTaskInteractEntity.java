@@ -27,6 +27,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.Optional.Method;
 
 import java.util.UUID;
 
@@ -84,9 +85,10 @@ public class PanelTaskInteractEntity extends CanvasEmpty
         if(target != null) this.addPanel(new PanelEntityPreview(new GuiTransform(GuiAlign.FULL_BOX, new GuiPadding(48, 0, 0, 0), 0), target).setRotationDriven(new ValueFuncIO<>(() -> 15F), new ValueFuncIO<>(() -> (float)(Minecraft.getSystemTime()%30000L / 30000D * 360D))));
     }
     
+    @Method(modid = "jei")
     private void lookupRecipe(ItemStack stack)
     {
-        if(stack == null || stack.isEmpty()) return;
+        if(stack == null || stack.isEmpty() || Internal.getRuntime() == null) return;
         Internal.getRuntime().getRecipesGui().show(new Focus<>(Mode.OUTPUT, stack));
     }
 }

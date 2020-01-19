@@ -21,6 +21,7 @@ import mezz.jei.api.recipe.IFocus.Mode;
 import mezz.jei.gui.Focus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.fml.common.Optional.Method;
 
 import java.util.UUID;
 
@@ -70,9 +71,10 @@ public class PanelTaskInteractItem extends CanvasEmpty
         this.addPanel(new PanelGeneric(new GuiTransform(GuiAlign.MID_CENTER, 40, 24, 8, 8, 0), task.onInteract ? txTick : txCross));
     }
     
+    @Method(modid = "jei")
     private void lookupRecipe(ItemStack stack)
     {
-        if(stack == null || stack.isEmpty()) return;
+        if(stack == null || stack.isEmpty() || Internal.getRuntime() == null) return;
         Internal.getRuntime().getRecipesGui().show(new Focus<>(Mode.OUTPUT, stack));
     }
 }

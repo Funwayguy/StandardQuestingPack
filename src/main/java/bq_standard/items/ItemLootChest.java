@@ -143,7 +143,7 @@ public class ItemLootChest extends Item
     	    float rarity = stack.getItemDamage() == 101 ? itemRand.nextFloat() : MathHelper.clamp(stack.getItemDamage(), 0, 100)/100F;
     		LootGroup group = LootRegistry.INSTANCE.getWeightedGroup(rarity, itemRand);
 	    	List<BigItemStack> loot = new ArrayList<>();
-	    	String title = "NULL";
+	    	String title = "No Loot Setup";
 	    	
 	    	if(group != null)
 	    	{
@@ -183,7 +183,9 @@ public class ItemLootChest extends Item
     	
     	return new ActionResult<>(EnumActionResult.PASS, stack);
     }
-
+    
+    private List<ItemStack> subItems = null;
+    
     /**
      * returns a list of items with the same ID, but different meta (eg: dye returns 16 items)
      */
@@ -192,31 +194,53 @@ public class ItemLootChest extends Item
     @SuppressWarnings("rawtypes")
     public void getSubItems(@Nonnull CreativeTabs tab, @Nonnull NonNullList<ItemStack> list)
     {
-    	if(tab == CreativeTabs.SEARCH || tab == this.getCreativeTab())
-		{
-			list.add(new ItemStack(this, 1, 0));
-			list.add(new ItemStack(this, 1, 25));
-			list.add(new ItemStack(this, 1, 50));
-			list.add(new ItemStack(this, 1, 75));
-			list.add(new ItemStack(this, 1, 100));
-			list.add(new ItemStack(this, 1, 101));
-			list.add(new ItemStack(this, 1, 102));
-			
-			NBTTagCompound tag = new NBTTagCompound();
-			tag.setString("loottable", "minecraft:chests/simple_dungeon");
-			ItemStack lootStack = new ItemStack(this, 1, 103);
-			lootStack.setTagCompound(tag);
-			list.add(lootStack);
-			
-			tag = new NBTTagCompound();
-			NBTTagList tagList = new NBTTagList();
-			tagList.appendTag(new BigItemStack(Blocks.STONE).writeToNBT(new NBTTagCompound()));
-			ItemStack fixedLootStack = new ItemStack(this, 1, 104);
-			tag.setTag("fixedLootList", tagList);
-			tag.setString("fixedLootName", "Item Set");
-			fixedLootStack.setTagCompound(tag);
-			list.add(fixedLootStack);
-		}
+        if(tab != CreativeTabs.SEARCH && tab != this.getCreativeTab()) return;
+        if(subItems != null) // CACHED ITEMS
+        {
+            list.addAll(subItems);
+            return;
+        }
+        
+        subItems = new ArrayList<>();
+        
+        // NORMAL RARITY
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setBoolean("hideLootInfo", true);
+        for(int i = 0; i < 5; i++)
+        {
+            ItemStack tmp = new ItemStack(this, 1, 25 * i);
+            tmp.setTagCompound(tag.copy());
+            subItems.add(tmp);
+        }
+        
+        // TRUE RANDOM
+        ItemStack tmp = new ItemStack(this, 1, 101);
+        tmp.setTagCompound(tag.copy());
+        subItems.add(tmp);
+        
+        // EDIT
+        subItems.add(new ItemStack(this, 1, 102));
+        
+        // VANILLA LOOT TABLE
+        tag = new NBTTagCompound();
+        tag.setBoolean("hideLootInfo", true);
+        tag.setString("loottable", "minecraft:chests/simple_dungeon");
+        ItemStack lootStack = new ItemStack(this, 1, 103);
+        lootStack.setTagCompound(tag);
+        subItems.add(lootStack);
+        
+        // FIXED ITEM SET
+        tag = new NBTTagCompound();
+        tag.setBoolean("hideLootInfo", true);
+        NBTTagList tagList = new NBTTagList();
+        tagList.appendTag(new BigItemStack(Blocks.STONE).writeToNBT(new NBTTagCompound()));
+        ItemStack fixedLootStack = new ItemStack(this, 1, 104);
+        tag.setTag("fixedLootList", tagList);
+        tag.setString("fixedLootName", "Item Set");
+        fixedLootStack.setTagCompound(tag);
+        subItems.add(fixedLootStack);
+        
+        list.addAll(subItems);
     }
 	
 	@Override
@@ -233,17 +257,19 @@ public class ItemLootChest extends Item
 	@SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn)
     {
-        if(!QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE)) return;
+        super.addInformation(stack, worldIn, tooltip, flagIn);
+        
+        NBTTagCompound tag = stack.getTagCompound();
+        boolean hideTooltip = tag == null || !tag.getBoolean("hideLootInfo");
+        if(hideTooltip && !QuestingAPI.getAPI(ApiReference.SETTINGS).getProperty(NativeProps.EDIT_MODE)) return;
         
         if(stack.getItemDamage() == 104)
         {
-            NBTTagCompound tag = stack.getTagCompound();
             if(tag == null) return;
             tooltip.add(QuestTranslation.translate("bq_standard.tooltip.fixed_loot", tag.getString("fixedLootName")));
             tooltip.add(QuestTranslation.translate("bq_standard.tooltip.fixed_loot_size", tag.getTagList("fixedLootList", 10).tagCount()));
         } else if(stack.getItemDamage() == 103)
         {
-            NBTTagCompound tag = stack.getTagCompound();
             if(tag == null) return;
             tooltip.add(QuestTranslation.translate("bq_standard.tooltip.loot_table", tag.getString("loottable")));
         } else if(stack.getItemDamage() > 101)
