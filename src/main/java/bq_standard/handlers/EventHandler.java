@@ -98,7 +98,7 @@ public class EventHandler
 		{
 		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
             {
-                if(task.getValue() instanceof TaskInteractEntity) ((TaskInteractEntity)task.getValue()).onInteract(entry, player, player.getHeldItem(), event.target, true);
+                if(task.getValue() instanceof TaskInteractEntity) ((TaskInteractEntity)task.getValue()).onInteract(entry, player, player.getHeldItem(), event.target, false);
             }
 		}
     }
@@ -168,9 +168,9 @@ public class EventHandler
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void onEntityKilled(LivingDeathEvent event)
 	{
-		if(event.source == null || !(event.source.getSourceOfDamage() instanceof EntityPlayer) || event.source.getSourceOfDamage().worldObj.isRemote || event.isCanceled()) return;
+		if(event.source == null || !(event.source.getEntity() instanceof EntityPlayer) || event.source.getEntity().worldObj.isRemote || event.isCanceled()) return;
 		
-		EntityPlayer player = (EntityPlayer)event.source.getSourceOfDamage();
+		EntityPlayer player = (EntityPlayer)event.source.getEntity();
         QuestCache qc = (QuestCache)player.getExtendedProperties(QuestCache.LOC_QUEST_CACHE.toString());
 		if(qc == null) return;
 		

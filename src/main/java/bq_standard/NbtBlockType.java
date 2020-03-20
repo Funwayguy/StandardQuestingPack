@@ -38,11 +38,12 @@ public class NbtBlockType // TODO: Make a version of this for the base mod and g
     
     public NBTTagCompound writeToNBT(NBTTagCompound json)
     {
-        json.setString("blockID", Block.blockRegistry.getNameForObject(b));
+        String bName = Block.blockRegistry.getNameForObject(b);
+        json.setString("blockID", bName == null ? "" : bName);
         json.setInteger("meta", m);
         json.setTag("nbt", tags);
         json.setInteger("amount", n);
-        json.setString("oreDict", oreDict);
+        json.setString("oreDict", oreDict == null ? "" : oreDict);
         return json;
     }
     
