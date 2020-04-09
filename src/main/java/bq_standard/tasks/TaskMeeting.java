@@ -1,13 +1,11 @@
 package bq_standard.tasks;
 
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.utils.ItemComparison;
-import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.storage.DBEntry;
+import betterquesting.api2.utils.ParticipantInfo;
 import bq_standard.client.gui.editors.tasks.GuiEditTaskMeeting;
 import bq_standard.client.gui.tasks.PanelTaskMeeting;
 import bq_standard.core.BQ_Standard;
@@ -17,7 +15,6 @@ import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
@@ -25,13 +22,12 @@ import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import javax.annotation.Nullable;
+import java.util.*;
 
 public class TaskMeeting implements ITaskTickable
 {
-	private final List<UUID> completeUsers = new ArrayList<>();
+	private final Set<UUID> completeUsers = new TreeSet<>();
 	
 	public String idName = "Villager";
 	public int range = 4;
@@ -65,44 +61,36 @@ public class TaskMeeting implements ITaskTickable
 	@Override
 	public void setComplete(UUID uuid)
 	{
-		if(!completeUsers.contains(uuid))
-		{
-			completeUsers.add(uuid);
-		}
+		completeUsers.add(uuid);
 	}
 
 	@Override
-	public void resetUser(UUID uuid)
+	public void resetUser(@Nullable UUID uuid)
 	{
-		completeUsers.remove(uuid);
-	}
-
-	@Override
-	public void resetAll()
-	{
-		completeUsers.clear();
-	}
-	
-	@Override
-	public void tickTask(@Nonnull DBEntry<IQuest> quest, @Nonnull EntityPlayer player)
-	{
-		if(player.ticksExisted%60 == 0)
-		{
-			detect(player, quest.getValue());
-		}
+	    if(uuid == null)
+        {
+		    completeUsers.clear();
+        } else
+        {
+            completeUsers.remove(uuid);
+        }
 	}
 	
 	@Override
-    @SuppressWarnings("unchecked")
-	public void detect(EntityPlayer player, IQuest quest)
+	public void tickTask(@Nonnull ParticipantInfo pInfo, DBEntry<IQuest> quest)
 	{
-		UUID playerID = QuestingAPI.getQuestingUUID(player);
-		
-		if(!player.isEntityAlive() || isComplete(playerID)) return;
-		
-		List<Entity> list = player.worldObj.getEntitiesWithinAABBExcludingEntity(player, player.boundingBox.expand(range, range, range));
-		Class<? extends Entity> target = (Class<? extends Entity>)EntityList.stringToClassMapping.get(idName);
-		
+		if(pInfo.PLAYER.ticksExisted%60 == 0) detect(pInfo, quest);
+	}
+	
+	@Override
+	public void detect(@Nonnull ParticipantInfo pInfo, DBEntry<IQuest> quest)
+	{
+		if(!pInfo.PLAYER.isEntityAlive()) return;
+        
+        //noinspection unchecked
+        List<Entity> list = pInfo.PLAYER.worldObj.getEntitiesWithinAABBExcludingEntity(pInfo.PLAYER, pInfo.PLAYER.boundingBox.expand(range, range, range));
+        //noinspection unchecked
+        Class<? extends Entity> target = (Class<? extends Entity>)EntityList.stringToClassMapping.get(idName);
 		if(target == null) return;
 		
 		int n = 0;
@@ -130,13 +118,12 @@ public class TaskMeeting implements ITaskTickable
 				if(!ItemComparison.CompareNBTTag(targetTags, subjectTags, true)) continue;
 			}
 			
-			n++;
-			
-			if(n >= amount)
+			if(++n >= amount)
 			{
-				setComplete(playerID);
-                QuestCache qc = (QuestCache)player.getExtendedProperties(QuestCache.LOC_QUEST_CACHE.toString());
-                if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+			    pInfo.ALL_UUIDS.forEach((uuid) -> {
+			        if(!isComplete(uuid)) setComplete(uuid);
+                });
+			    pInfo.markDirtyParty(Collections.singletonList(quest.getID()));
 				return;
 			}
 		}
@@ -158,7 +145,7 @@ public class TaskMeeting implements ITaskTickable
 	@Override
 	public void readFromNBT(NBTTagCompound json)
 	{
-		idName = json.hasKey("target", 8) ? json.getString("target") : "minecraft:villager";
+		idName = json.hasKey("target", 8) ? json.getString("target") : "Villager";
 		range = json.getInteger("range");
 		amount = json.getInteger("amount");
 		subtypes = json.getBoolean("subtypes");
@@ -201,14 +188,14 @@ public class TaskMeeting implements ITaskTickable
 	 */
 	@Override
 	@SideOnly(Side.CLIENT)
-	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
+	public GuiScreen getTaskEditor(GuiScreen parent, DBEntry<IQuest> quest)
 	{
 	    return new GuiEditTaskMeeting(parent, quest, this);
 	}
 
 	@Override
-	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
+	public IGuiPanel getTaskGui(IGuiRect rect, DBEntry<IQuest> quest)
 	{
-	    return new PanelTaskMeeting(rect, quest, this);
+	    return new PanelTaskMeeting(rect, this);
 	}
 }

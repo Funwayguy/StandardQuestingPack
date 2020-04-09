@@ -1,12 +1,10 @@
 package bq_standard.tasks;
 
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
-import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.storage.DBEntry;
+import betterquesting.api2.utils.ParticipantInfo;
 import bq_standard.client.gui.tasks.PanelTaskLocation;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskLocation;
@@ -26,14 +24,12 @@ import net.minecraftforge.common.DimensionManager;
 import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import javax.annotation.Nullable;
+import java.util.*;
 
 public class TaskLocation implements ITaskTickable
 {
-	private ArrayList<UUID> completeUsers = new ArrayList<>();
+	private final Set<UUID> completeUsers = new TreeSet<>();
 	public String name = "New Location";
 	public String structure = "";
 	public int biome = -1;
@@ -68,46 +64,42 @@ public class TaskLocation implements ITaskTickable
 	@Override
 	public void setComplete(UUID uuid)
 	{
-		if(!completeUsers.contains(uuid))
-		{
-			completeUsers.add(uuid);
-		}
+		completeUsers.add(uuid);
 	}
-
+ 
 	@Override
-	public void resetUser(UUID uuid)
+	public void resetUser(@Nullable UUID uuid)
 	{
-		completeUsers.remove(uuid);
-	}
-
-	@Override
-	public void resetAll()
-	{
-		completeUsers.clear();
+	    if(uuid == null)
+        {
+		    completeUsers.clear();
+        } else
+        {
+            completeUsers.remove(uuid);
+        }
 	}
 	
 	@Override
-	public void tickTask(@Nonnull DBEntry<IQuest> quest, @Nonnull EntityPlayer player)
+	public void tickTask(@Nonnull ParticipantInfo pInfo, DBEntry<IQuest> quest)
 	{
-		if(player.ticksExisted%100 == 0) // Only auto-detect every 5 seconds
-		{
-			detect(player, quest.getValue());
-		}
+		if(pInfo.PLAYER.ticksExisted%100 == 0) internalDetect(pInfo, quest);
 	}
 	
 	@Override
-	public void detect(EntityPlayer player, IQuest quest)
+	public void detect(@Nonnull ParticipantInfo pInfo, DBEntry<IQuest> quest)
 	{
-		UUID playerID = QuestingAPI.getQuestingUUID(player);
+		internalDetect(pInfo, quest);
+	}
+	
+	private void internalDetect(@Nonnull ParticipantInfo pInfo, DBEntry<IQuest> quest)
+	{
+		if(!pInfo.PLAYER.isEntityAlive() || !(pInfo.PLAYER instanceof EntityPlayerMP)) return;
 		
-		if(!player.isEntityAlive() || isComplete(playerID) || !(player instanceof EntityPlayerMP)) return;
-		
-		EntityPlayerMP playerMP = (EntityPlayerMP)player;
-		QuestCache qc = (QuestCache)player.getExtendedProperties(QuestCache.LOC_QUEST_CACHE.toString());
+		EntityPlayerMP playerMP = (EntityPlayerMP)pInfo.PLAYER;
 		
 		boolean flag = false;
 		
-		if(player.dimension == dim && (range <= 0 || getDistance(player) <= range))
+		if(playerMP.dimension == dim && (range <= 0 || getDistance(playerMP) <= range))
 		{
 			if(biome >= 0 && biome != playerMP.getServerForPlayer().getBiomeGenForCoords(playerMP.serverPosX, playerMP.serverPosZ).biomeID)
             {
@@ -117,9 +109,9 @@ public class TaskLocation implements ITaskTickable
                 if(!invert) return;
             } else if(visible && range > 0) // Do not do ray casting with infinite range!
 			{
-				Vec3 pPos = Vec3.createVectorHelper(player.posX, player.posY + player.getEyeHeight(), player.posZ);
+				Vec3 pPos = Vec3.createVectorHelper(playerMP.posX, playerMP.posY + playerMP.getEyeHeight(), playerMP.posZ);
 				Vec3 tPos = Vec3.createVectorHelper(x, y, z);
-				MovingObjectPosition mop = player.worldObj.func_147447_a(pPos, tPos, false, true, false);
+				MovingObjectPosition mop = playerMP.worldObj.func_147447_a(pPos, tPos, false, true, false);
 				
 				flag = mop == null || mop.typeOfHit != MovingObjectType.BLOCK;
 			} else
@@ -130,8 +122,10 @@ public class TaskLocation implements ITaskTickable
 		
 		if(flag != invert)
         {
-            setComplete(playerID);
-            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+            pInfo.ALL_UUIDS.forEach((uuid) -> {
+                if(!isComplete(uuid)) setComplete(uuid);
+            });
+            pInfo.markDirtyParty(Collections.singletonList(quest.getID()));
         }
 	}
 	
@@ -154,6 +148,8 @@ public class TaskLocation implements ITaskTickable
 		nbt.setInteger("posY", y);
 		nbt.setInteger("posZ", z);
 		nbt.setInteger("dimension", dim);
+		nbt.setInteger("biome", biome);
+		nbt.setString("structure", structure);
 		nbt.setInteger("range", range);
 		nbt.setBoolean("visible", visible);
 		nbt.setBoolean("hideInfo", hideInfo);
@@ -171,6 +167,8 @@ public class TaskLocation implements ITaskTickable
 		y = nbt.getInteger("posY");
 		z = nbt.getInteger("posZ");
 		dim = nbt.getInteger("dimension");
+		biome = nbt.getInteger("biome");
+		structure = nbt.getString("structure");
 		range = nbt.getInteger("range");
 		visible = nbt.getBoolean("visible");
 		hideInfo = nbt.getBoolean("hideInfo");
@@ -179,23 +177,24 @@ public class TaskLocation implements ITaskTickable
 	}
 	
 	@Override
-	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound nbt, @Nullable List<UUID> users)
 	{
 		NBTTagList jArray = new NBTTagList();
-		for(UUID uuid : completeUsers)
-		{
-			jArray.appendTag(new NBTTagString(uuid.toString()));
-		}
-		json.setTag("completeUsers", jArray);
 		
-		return json;
+		completeUsers.forEach((uuid) -> {
+		    if(users == null || users.contains(uuid)) jArray.appendTag(new NBTTagString(uuid.toString()));
+		});
+		
+		nbt.setTag("completeUsers", jArray);
+		
+		return nbt;
 	}
  
 	@Override
-	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
+	public void readProgressFromNBT(NBTTagCompound nbt, boolean merge)
 	{
-		completeUsers = new ArrayList<>();
-		NBTTagList cList = json.getTagList("completeUsers", 8);
+		if(!merge) completeUsers.clear();
+		NBTTagList cList = nbt.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
 			try
@@ -207,15 +206,15 @@ public class TaskLocation implements ITaskTickable
 			}
 		}
 	}
-
+ 
 	@Override
-	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
+	public IGuiPanel getTaskGui(IGuiRect rect, DBEntry<IQuest> quest)
 	{
-	    return new PanelTaskLocation(rect, quest, this);
+	    return new PanelTaskLocation(rect, this);
 	}
-
+ 
 	@Override
-	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
+	public GuiScreen getTaskEditor(GuiScreen parent, DBEntry<IQuest> quest)
 	{
 		return null;
 	}

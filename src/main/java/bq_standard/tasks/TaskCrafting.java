@@ -1,44 +1,38 @@
 package bq_standard.tasks;
 
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.party.IParty;
-import betterquesting.api.questing.tasks.IProgression;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api.utils.NBTConverter;
-import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.storage.DBEntry;
+import betterquesting.api2.utils.ParticipantInfo;
+import betterquesting.api2.utils.Tuple2;
 import bq_standard.client.gui.tasks.PanelTaskCrafting;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskCrafting;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
 import net.minecraft.nbt.NBTBase.NBTPrimitive;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.UUID;
 
-public class TaskCrafting implements ITask, IProgression<int[]>
+public class TaskCrafting implements ITask
 {
-	private final List<UUID> completeUsers = new ArrayList<>();
+	private final Set<UUID> completeUsers = new TreeSet<>();
 	public final List<BigItemStack> requiredItems = new ArrayList<>();
-	public final HashMap<UUID, int[]> userProgress = new HashMap<>();
+	public final TreeMap<UUID, int[]> userProgress = new TreeMap<>();
 	public boolean partialMatch = true;
 	public boolean ignoreNBT = false;
 	public boolean allowAnvil = false;
@@ -60,10 +54,7 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	@Override
 	public void setComplete(UUID uuid)
 	{
-		if(!completeUsers.contains(uuid))
-		{
-			completeUsers.add(uuid);
-		}
+		completeUsers.add(uuid);
 	}
 	
 	@Override
@@ -73,85 +64,68 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	}
 	
 	@Override
-	public void detect(EntityPlayer player, IQuest quest)
+	public void detect(ParticipantInfo pInfo, DBEntry<IQuest> quest)
 	{
-		UUID playerID = QuestingAPI.getQuestingUUID(player);
-		
-		if(isComplete(playerID)) return;
-		
-		int[] progress = quest == null || !quest.getProperty(NativeProps.GLOBAL)? getPartyProgress(playerID) : getGlobalProgress();
-		
-		boolean flag = true;
-		
-		for(int i = 0; i < requiredItems.size(); i++)
-		{
-			BigItemStack rStack = requiredItems.get(i);
-			
-			if(progress[i] < rStack.stackSize)
-			{
-				flag = false;
-				break;
-			}
-		}
-		
-		if(flag)
-		{
-			setComplete(playerID);
-            QuestCache qc = (QuestCache)player.getExtendedProperties(QuestCache.LOC_QUEST_CACHE.toString());
-            if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
-		}
+	    pInfo.ALL_UUIDS.forEach((uuid) -> {
+            if(isComplete(uuid)) return;
+            
+            int[] tmp = getUsersProgress(uuid);
+            for(int i = 0; i < requiredItems.size(); i++)
+            {
+                BigItemStack rStack = requiredItems.get(i);
+                if(tmp[i] < rStack.stackSize) return;
+            }
+            setComplete(uuid);
+        });
+	    
+	    pInfo.markDirtyParty(Collections.singletonList(quest.getID()));
 	}
 	
-	public void onItemCraft(DBEntry<IQuest> quest, EntityPlayer player, ItemStack stack)
+	public void onItemCraft(ParticipantInfo pInfo, DBEntry<IQuest> quest, ItemStack stack)
     {
         if(!allowCraft) return;
-        onItemInternal(quest, player, stack);
+        onItemInternal(pInfo, quest, stack);
     }
 	
-	public void onItemSmelt(DBEntry<IQuest> quest, EntityPlayer player, ItemStack stack)
+	public void onItemSmelt(ParticipantInfo pInfo, DBEntry<IQuest> quest, ItemStack stack)
     {
         if(!allowSmelt) return;
-        onItemInternal(quest, player, stack);
+        onItemInternal(pInfo, quest, stack);
     }
 	
-	public void onItemAnvil(DBEntry<IQuest> quest, EntityPlayer player, ItemStack stack)
+	public void onItemAnvil(ParticipantInfo pInfo, DBEntry<IQuest> quest, ItemStack stack)
     {
         if(!allowAnvil) return;
-        onItemInternal(quest, player, stack);
+        onItemInternal(pInfo, quest, stack);
     }
 	
-	private void onItemInternal(DBEntry<IQuest> quest, EntityPlayer player, ItemStack stack)
+	private void onItemInternal(ParticipantInfo pInfo, DBEntry<IQuest> quest, ItemStack stack)
 	{
 	    if(stack == null || stack.stackSize <= 0) return;
-	    
-		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
-		if(isComplete(playerID)) return;
-		
-		int[] progress = getUsersProgress(playerID);
-		boolean updated = false;
-		
+        final List<Tuple2<UUID, int[]>> progress = getBulkProgress(pInfo.ALL_UUIDS);
+        boolean changed = false;
+        
 		for(int i = 0; i < requiredItems.size(); i++)
 		{
-			BigItemStack rStack = requiredItems.get(i);
-			
-			if(progress[i] >= rStack.stackSize) continue;
+			final BigItemStack rStack = requiredItems.get(i);
+			final int index = i;
 			
 			if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.getOreIngredient(), rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
 			{
-				progress[i] += stack.stackSize; // Clamp?
-				updated = true;
+			    progress.forEach((entry) -> {
+			        if(entry.getSecond()[index] >= rStack.stackSize) return;
+			        entry.getSecond()[index] = Math.min(entry.getSecond()[index] + stack.stackSize, rStack.stackSize);
+                });
+			    changed = true;
 			}
 		}
 		
-		if(updated)
+		if(changed)
         {
-            setUserProgress(playerID, progress);
-            QuestCache qc = (QuestCache)player.getExtendedProperties(QuestCache.LOC_QUEST_CACHE.toString());
-            if(qc != null) qc.markQuestDirty(quest.getID());
+		    setBulkProgress(progress);
+            detect(pInfo, quest);
         }
-		
-		detect(player, quest.getValue());
 	}
 	
 	@Override
@@ -267,99 +241,53 @@ public class TaskCrafting implements ITask, IProgression<int[]>
 	}
 
 	@Override
-	public void resetUser(UUID uuid)
+	public void resetUser(@Nullable UUID uuid)
 	{
-		completeUsers.remove(uuid);
-		userProgress.remove(uuid);
+	    if(uuid == null)
+        {
+            completeUsers.clear();
+            userProgress.clear();
+        } else
+        {
+            completeUsers.remove(uuid);
+            userProgress.remove(uuid);
+        }
 	}
-
+ 
 	@Override
-	public void resetAll()
+	public IGuiPanel getTaskGui(IGuiRect rect, DBEntry<IQuest> context)
 	{
-		completeUsers.clear();
-		userProgress.clear();
-	}
-	
-	@Override
-	public float getParticipation(UUID uuid)
-	{
-		if(requiredItems.size() <= 0)
-		{
-			return 1F;
-		}
-		
-		float total = 0F;
-		
-		int[] progress = getUsersProgress(uuid);
-		for(int i = 0; i < requiredItems.size(); i++)
-		{
-			BigItemStack rStack = requiredItems.get(i);
-			total += progress[i] / (float)rStack.stackSize;
-		}
-		
-		return total / (float)requiredItems.size();
-	}
-
-	@Override
-	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
-	{
-	    return new PanelTaskCrafting(rect, quest, this);
+	    return new PanelTaskCrafting(rect, this);
 	}
 	
 	@Override
 	@SideOnly(Side.CLIENT)
-	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
+	public GuiScreen getTaskEditor(GuiScreen parent, DBEntry<IQuest> quest)
 	{
 		return null;
 	}
 	
-	@Override
-	public void setUserProgress(UUID uuid, int[] progress)
+	private void setUserProgress(UUID uuid, int[] progress)
 	{
 		userProgress.put(uuid, progress);
 	}
 	
-	@Override
-	public int[] getUsersProgress(UUID... users)
+	public int[] getUsersProgress(UUID uuid)
 	{
-		int[] progress = new int[requiredItems.size()];
-		
-		for(UUID uuid : users)
-		{
-			int[] tmp = userProgress.get(uuid);
-			
-			if(tmp == null || tmp.length != requiredItems.size()) continue;
-			
-			for(int n = 0; n < progress.length; n++)
-			{
-				progress[n] += tmp[n];
-			}
-		}
-		
-		return progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
+		int[] progress = userProgress.get(uuid);
+		return progress == null || progress.length != requiredItems.size()? new int[requiredItems.size()] : progress;
 	}
 	
-	public int[] getPartyProgress(UUID uuid)
-	{
-		IParty party = QuestingAPI.getAPI(ApiReference.PARTY_DB).getUserParty(uuid);
-        return getUsersProgress(party == null ? new UUID[]{uuid} : party.getMembers().toArray(new UUID[0]));
-	}
-	
-	@Override
-	public int[] getGlobalProgress()
-	{
-		int[] total = new int[requiredItems.size()];
-		
-		for(int[] up : userProgress.values())
-		{
-			if(up == null || up.length != requiredItems.size()) continue;
-			
-			for(int i = 0; i < up.length; i++)
-			{
-				total[i] += up[i];
-			}
-		}
-		
-		return total;
-	}
+	private List<Tuple2<UUID, int[]>> getBulkProgress(@Nonnull List<UUID> uuids)
+    {
+        if(uuids.size() <= 0) return Collections.emptyList();
+        List<Tuple2<UUID, int[]>> list = new ArrayList<>();
+        uuids.forEach((key) -> list.add(new Tuple2<>(key, getUsersProgress(key))));
+        return list;
+    }
+    
+    private void setBulkProgress(@Nonnull List<Tuple2<UUID, int[]>> list)
+    {
+        list.forEach((entry) -> setUserProgress(entry.getFirst(), entry.getSecond()));
+    }
 }

@@ -2,7 +2,6 @@ package bq_standard.core.proxies;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.network.IPacketRegistry;
 import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.registry.IFactoryData;
@@ -59,13 +58,13 @@ public class CommonProxy
 		rewardReg.register(FactoryRewardScoreboard.INSTANCE);
 		rewardReg.register(FactoryRewardXP.INSTANCE);
 		
-		IPacketRegistry packetReg = QuestingAPI.getAPI(ApiReference.PACKET_REG);
-		packetReg.registerHandler(new PktHandlerLootDatabase());
-		packetReg.registerHandler(new PktHandlerCheckbox());
-		packetReg.registerHandler(new PktHandlerScoreboard());
-		packetReg.registerHandler(new PktHandlerChoice());
-		packetReg.registerHandler(new PktHandlerLootImport());
-		packetReg.registerHandler(new PktHandlerInteract());
+		NetLootSync.registerHandler();
+		NetLootClaim.registerHandler();
+		NetTaskCheckbox.registerHandler();
+		NetScoreSync.registerHandler();
+		NetRewardChoice.registerHandler();
+		NetLootImport.registerHandler();
+		NetTaskInteract.registerHandler();
 		
 		BQ_Standard.lootChest.setCreativeTab(QuestingAPI.getAPI(ApiReference.CREATIVE_TAB));
 	}
