@@ -7,6 +7,7 @@ import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
 import bq_standard.NBTReplaceUtil;
 import bq_standard.client.gui.rewards.PanelRewardChoice;
 import bq_standard.core.BQ_Standard;
@@ -21,10 +22,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class RewardChoice implements IReward
 {
@@ -33,7 +31,7 @@ public class RewardChoice implements IReward
 	 * Should only ever be used client side. NEVER onHit server
 	 */
 	public final List<BigItemStack> choices = new ArrayList<>();
-	private final HashMap<UUID,Integer> selected = new HashMap<>();
+	private final TreeMap<UUID,Integer> selected = new TreeMap<>();
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -63,19 +61,16 @@ public class RewardChoice implements IReward
 	}
 	
 	@Override
-	public boolean canClaim(EntityPlayer player, IQuest quest)
+	public boolean canClaim(EntityPlayer player, DBEntry<IQuest> quest)
 	{
-		if(!selected.containsKey(QuestingAPI.getQuestingUUID(player)))
-		{
-			return false;
-		}
+		if(!selected.containsKey(QuestingAPI.getQuestingUUID(player))) return false;
 		
 		int tmp = selected.get(QuestingAPI.getQuestingUUID(player));
 		return choices.size() <= 0 || (tmp >= 0 && tmp < choices.size());
 	}
 
 	@Override
-	public void claimReward(EntityPlayer player, IQuest quest)
+	public void claimReward(EntityPlayer player, DBEntry<IQuest> quest)
 	{
 		UUID playerID = QuestingAPI.getQuestingUUID(player);
 		
@@ -120,45 +115,38 @@ public class RewardChoice implements IReward
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json)
+	public void readFromNBT(NBTTagCompound nbt)
 	{
 		choices.clear();
-		NBTTagList cList = json.getTagList("choices", 10);
+		NBTTagList cList = nbt.getTagList("choices", 10);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
-			NBTTagCompound entry = cList.getCompoundTagAt(i);
-			
-			BigItemStack item = JsonHelper.JsonToItemStack(entry);
-			
-			if(item != null)
-			{
-				choices.add(item);
-			}
+			choices.add(JsonHelper.JsonToItemStack(cList.getCompoundTagAt(i)));
 		}
 	}
 
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json)
+	public NBTTagCompound writeToNBT(NBTTagCompound nbt)
 	{
 		NBTTagList rJson = new NBTTagList();
 		for(BigItemStack stack : choices)
 		{
 			rJson.appendTag(JsonHelper.ItemStackToJson(stack, new NBTTagCompound()));
 		}
-		json.setTag("choices", rJson);
-		return json;
+		nbt.setTag("choices", rJson);
+		return nbt;
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public IGuiPanel getRewardGui(IGuiRect rect, IQuest quest)
+	public IGuiPanel getRewardGui(IGuiRect rect, DBEntry<IQuest> quest)
 	{
 	    return new PanelRewardChoice(rect, quest, this);
 	}
 	
 	@Override
 	@SideOnly(Side.CLIENT)
-	public GuiScreen getRewardEditor(GuiScreen screen, IQuest quest)
+	public GuiScreen getRewardEditor(GuiScreen screen, DBEntry<IQuest> quest)
 	{
 		return null;
 	}

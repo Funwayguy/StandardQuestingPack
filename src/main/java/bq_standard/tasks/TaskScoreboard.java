@@ -1,12 +1,10 @@
 package bq_standard.tasks;
 
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
-import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.storage.DBEntry;
+import betterquesting.api2.utils.ParticipantInfo;
 import bq_standard.ScoreboardBQ;
 import bq_standard.client.gui.editors.tasks.GuiEditTaskScoreboard;
 import bq_standard.client.gui.tasks.PanelTaskScoreboard;
@@ -15,22 +13,23 @@ import bq_standard.tasks.factory.FactoryTaskScoreboard;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
-import net.minecraft.scoreboard.*;
+import net.minecraft.scoreboard.IScoreObjectiveCriteria;
+import net.minecraft.scoreboard.ScoreDummyCriteria;
+import net.minecraft.scoreboard.ScoreObjective;
+import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import javax.annotation.Nullable;
+import java.util.*;
 
 public class TaskScoreboard implements ITaskTickable
 {
-	private final List<UUID> completeUsers = new ArrayList<>();
+	private final Set<UUID> completeUsers = new TreeSet<>();
 	public String scoreName = "Score";
 	public String scoreDisp = "Score";
 	public String type = "dummy";
@@ -60,42 +59,31 @@ public class TaskScoreboard implements ITaskTickable
 	@Override
 	public void setComplete(UUID uuid)
 	{
-		if(!completeUsers.contains(uuid))
-		{
-			completeUsers.add(uuid);
-		}
+		completeUsers.add(uuid);
 	}
 
 	@Override
-	public void resetUser(UUID uuid)
+	public void resetUser(@Nullable UUID uuid)
 	{
-		completeUsers.remove(uuid);
-	}
-
-	@Override
-	public void resetAll()
-	{
-		completeUsers.clear();
-	}
-	
-	@Override
-	public void tickTask(@Nonnull DBEntry<IQuest> quest, @Nonnull EntityPlayer player)
-	{
-		if(player.ticksExisted%20 == 0) // Auto-detect once per second
-		{
-			detect(player, quest.getValue());
-		}
+	    if(uuid == null)
+        {
+		    completeUsers.clear();
+        } else
+        {
+            completeUsers.remove(uuid);
+        }
 	}
 	
 	@Override
-	public void detect(EntityPlayer player, IQuest quest)
+	public void tickTask(@Nonnull ParticipantInfo pInfo, DBEntry<IQuest> quest)
 	{
-	    UUID playerID = QuestingAPI.getQuestingUUID(player);
-		if(isComplete(playerID)) return;
-		
-        QuestCache qc = (QuestCache)player.getExtendedProperties(QuestCache.LOC_QUEST_CACHE.toString());
-        
-		Scoreboard board = player.getWorldScoreboard();
+		if(pInfo.PLAYER.ticksExisted%20 == 0) detect(pInfo, quest); // Auto-detect once per second
+	}
+	
+	@Override
+	public void detect(@Nonnull ParticipantInfo pInfo, DBEntry<IQuest> quest)
+	{
+		Scoreboard board = pInfo.PLAYER.getWorldScoreboard();
 		ScoreObjective scoreObj = board.getObjective(scoreName);
 		
 		if(scoreObj == null)
@@ -112,45 +100,44 @@ public class TaskScoreboard implements ITaskTickable
 				return;
 			}
 		}
-
-		Score score = board.func_96529_a(player.getCommandSenderName(), scoreObj);
-		int points = score.getScorePoints();
-		ScoreboardBQ.setScore(player, scoreName, points);
+		
+		int points = board.func_96529_a(pInfo.PLAYER.getCommandSenderName(), scoreObj).getScorePoints();
+		ScoreboardBQ.INSTANCE.setScore(pInfo.UUID, scoreName, points);
 		
 		if(operation.checkValues(points, target))
 		{
-			setComplete(playerID);
-			if(qc != null) qc.markQuestDirty(QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
+			setComplete(pInfo.UUID);
+			pInfo.markDirty(Collections.singletonList(quest.getID()));
 		}
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json)
+	public NBTTagCompound writeToNBT(NBTTagCompound nbt)
 	{
-		json.setString("scoreName", scoreName);
-		json.setString("scoreDisp", scoreDisp);
-		json.setString("type", type);
-		json.setInteger("target", target);
-		json.setFloat("unitConversion", conversion);
-		json.setString("unitSuffix", suffix);
-		json.setString("operation", operation.name());
+		nbt.setString("scoreName", scoreName);
+		nbt.setString("scoreDisp", scoreDisp);
+		nbt.setString("type", type);
+		nbt.setInteger("target", target);
+		nbt.setFloat("unitConversion", conversion);
+		nbt.setString("unitSuffix", suffix);
+		nbt.setString("operation", operation.name());
 		
-		return json;
+		return nbt;
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json)
+	public void readFromNBT(NBTTagCompound nbt)
 	{
-		scoreName = json.getString("scoreName");
+		scoreName = nbt.getString("scoreName");
 		scoreName = scoreName.replaceAll(" ", "_");
-		scoreDisp = json.getString("scoreDisp");
-		type = json.hasKey("type", 8) ? json.getString("type") : "dummy";
-		target = json.getInteger("target");
-		conversion = json.getFloat("unitConversion");
-		suffix = json.getString("unitSuffix");
+		scoreDisp = nbt.getString("scoreDisp");
+		type = nbt.hasKey("type", 8) ? nbt.getString("type") : "dummy";
+		target = nbt.getInteger("target");
+		conversion = nbt.getFloat("unitConversion");
+		suffix = nbt.getString("unitSuffix");
 		try
         {
-            operation = ScoreOperation.valueOf(json.hasKey("operation", 8) ? json.getString("operation") : "MORE_OR_EQUAL");
+            operation = ScoreOperation.valueOf(nbt.hasKey("operation", 8) ? nbt.getString("operation") : "MORE_OR_EQUAL");
         } catch(Exception e)
         {
             operation = ScoreOperation.MORE_OR_EQUAL;
@@ -158,23 +145,24 @@ public class TaskScoreboard implements ITaskTickable
 	}
 	
 	@Override
-	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, List<UUID> users)
+	public NBTTagCompound writeProgressToNBT(NBTTagCompound nbt, List<UUID> users)
 	{
 		NBTTagList jArray = new NBTTagList();
-		for(UUID uuid : completeUsers)
-		{
-			jArray.appendTag(new NBTTagString(uuid.toString()));
-		}
-		json.setTag("completeUsers", jArray);
 		
-		return json;
+		completeUsers.forEach((uuid) -> {
+		    if(users == null || users.contains(uuid)) jArray.appendTag(new NBTTagString(uuid.toString()));
+		});
+		
+		nbt.setTag("completeUsers", jArray);
+		
+		return nbt;
 	}
  
 	@Override
-	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
+	public void readProgressFromNBT(NBTTagCompound nbt, boolean merge)
 	{
-		completeUsers.clear();
-		NBTTagList cList = json.getTagList("completeUsers", 8);
+		if(!merge) completeUsers.clear();
+		NBTTagList cList = nbt.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
 			try
@@ -232,14 +220,14 @@ public class TaskScoreboard implements ITaskTickable
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public IGuiPanel getTaskGui(IGuiRect rect, IQuest quest)
+	public IGuiPanel getTaskGui(IGuiRect rect, DBEntry<IQuest> quest)
 	{
-	    return new PanelTaskScoreboard(rect, quest, this);
+	    return new PanelTaskScoreboard(rect, this);
 	}
 	
 	@Override
 	@SideOnly(Side.CLIENT)
-	public GuiScreen getTaskEditor(GuiScreen parent, IQuest quest)
+	public GuiScreen getTaskEditor(GuiScreen parent, DBEntry<IQuest> quest)
 	{
 	    return new GuiEditTaskScoreboard(parent, quest, this);
 	}

@@ -2,6 +2,7 @@ package bq_standard.commands;
 
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api.utils.NBTConverter;
+import bq_standard.network.handlers.NetLootSync;
 import bq_standard.rewards.loot.LootRegistry;
 import com.google.gson.JsonObject;
 import net.minecraft.command.CommandBase;
@@ -48,7 +49,7 @@ public class BQS_Commands extends CommandBase
 			if(args[1].equalsIgnoreCase("save"))
 			{
 				NBTTagCompound jsonQ = new NBTTagCompound();
-				LootRegistry.INSTANCE.writeToNBT(jsonQ);
+				LootRegistry.INSTANCE.writeToNBT(jsonQ, null);
 				JsonHelper.WriteToFile(new File(MinecraftServer.getServer().getFile("config/betterquesting/"), "DefaultLoot.json"), NBTConverter.NBTtoJSON_Compound(jsonQ, new JsonObject(), true));
 				sender.addChatMessage(new ChatComponentText("Loot database set as global default"));
 			} else if(args[1].equalsIgnoreCase("load"))
@@ -59,8 +60,8 @@ public class BQS_Commands extends CommandBase
 				if(f1.exists())
 				{
 					j1 = NBTConverter.JSONtoNBT_Object(JsonHelper.ReadFromFile(f1), new NBTTagCompound(), true);
-					LootRegistry.INSTANCE.readFromNBT(j1);
-					LootRegistry.INSTANCE.updateClients();
+					LootRegistry.INSTANCE.readFromNBT(j1, false);
+                    NetLootSync.sendSync(null);
 					sender.addChatMessage(new ChatComponentText("Reloaded default loot database"));
 				} else
 				{
@@ -75,7 +76,7 @@ public class BQS_Commands extends CommandBase
 			if(args[1].equalsIgnoreCase("all"))
 			{
 				LootRegistry.INSTANCE.reset();
-				LootRegistry.INSTANCE.updateClients();
+                NetLootSync.sendSync(null);
 				sender.addChatMessage(new ChatComponentText("Deleted all loot groups"));
 			} else
 			{
@@ -84,7 +85,7 @@ public class BQS_Commands extends CommandBase
 					int idx = Integer.parseInt(args[1]);
 					if(LootRegistry.INSTANCE.removeID(idx))
                     {
-                        LootRegistry.INSTANCE.updateClients();
+                        NetLootSync.sendSync(null);
                         sender.addChatMessage(new ChatComponentText("Deleted loot group with ID " + idx));
                     } else
                     {

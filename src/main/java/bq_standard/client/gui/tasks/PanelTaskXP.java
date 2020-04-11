@@ -1,8 +1,6 @@
 package bq_standard.client.gui.tasks;
 
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.properties.NativeProps;
-import betterquesting.api.questing.IQuest;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api2.client.gui.controls.io.ValueFuncIO;
 import betterquesting.api2.client.gui.misc.GuiAlign;
@@ -24,13 +22,11 @@ import org.lwjgl.util.vector.Vector4f;
 
 public class PanelTaskXP extends CanvasEmpty
 {
-    private final IQuest quest;
     private final TaskXP task;
     
-    public PanelTaskXP(IGuiRect rect, IQuest quest, TaskXP task)
+    public PanelTaskXP(IGuiRect rect, TaskXP task)
     {
         super(rect);
-        this.quest = quest;
         this.task = task;
     }
     
@@ -41,7 +37,7 @@ public class PanelTaskXP extends CanvasEmpty
         
         this.addPanel(new PanelGeneric(new GuiTransform(GuiAlign.MID_CENTER, -16, -32, 32, 32, 0), new ItemTexture(new BigItemStack(Items.experience_bottle))));
         
-		long xp = quest == null || !quest.getProperty(NativeProps.GLOBAL) ? task.getPartyProgress(QuestingAPI.getQuestingUUID(Minecraft.getMinecraft().thePlayer)) : task.getGlobalProgress();
+		long xp = task.getUsersProgress(QuestingAPI.getQuestingUUID(Minecraft.getMinecraft().thePlayer));
 		xp = !task.levels? xp : XPHelper.getXPLevel(xp);
 		final float xpPercent = (float)((double)xp/(double)task.amount);
         

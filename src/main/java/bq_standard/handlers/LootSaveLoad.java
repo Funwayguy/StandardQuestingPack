@@ -42,12 +42,12 @@ public class LootSaveLoad
 			}
 		}
 		
-		LootRegistry.INSTANCE.readFromNBT(NBTConverter.JSONtoNBT_Object(j1, new NBTTagCompound(), true));
+		LootRegistry.INSTANCE.readFromNBT(NBTConverter.JSONtoNBT_Object(j1, new NBTTagCompound(), true), false);
     }
     
     public void SaveLoot()
     {
-        JsonHelper.WriteToFile(new File(worldDir, "QuestLoot.json"), NBTConverter.NBTtoJSON_Compound(LootRegistry.INSTANCE.writeToNBT(new NBTTagCompound()), new JsonObject(), true));
+        JsonHelper.WriteToFile(new File(worldDir, "QuestLoot.json"), NBTConverter.NBTtoJSON_Compound(LootRegistry.INSTANCE.writeToNBT(new NBTTagCompound(), null), new JsonObject(), true));
     }
     
     public void UnloadLoot()

@@ -1,7 +1,6 @@
 package bq_standard.client.gui.tasks;
 
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.questing.IQuest;
 import betterquesting.api2.client.gui.misc.GuiPadding;
 import betterquesting.api2.client.gui.misc.GuiTransform;
 import betterquesting.api2.client.gui.misc.IGuiRect;
@@ -18,13 +17,11 @@ import java.text.DecimalFormat;
 
 public class PanelTaskScoreboard extends CanvasEmpty
 {
-    private final IQuest quest;
     private final TaskScoreboard task;
     
-    public PanelTaskScoreboard(IGuiRect rect, IQuest quest, TaskScoreboard task)
+    public PanelTaskScoreboard(IGuiRect rect, TaskScoreboard task)
     {
         super(rect);
-        this.quest = quest;
         this.task = task;
     }
     
@@ -33,7 +30,7 @@ public class PanelTaskScoreboard extends CanvasEmpty
     {
         super.initPanel();
         
-		int score = ScoreboardBQ.getScore(QuestingAPI.getQuestingUUID(Minecraft.getMinecraft().thePlayer), task.scoreName);
+		int score = ScoreboardBQ.INSTANCE.getScore(QuestingAPI.getQuestingUUID(Minecraft.getMinecraft().thePlayer), task.scoreName);
 		DecimalFormat df = new DecimalFormat("0.##");
 		String value = df.format(score/task.conversion) + task.suffix;
 		

@@ -1,15 +1,11 @@
 package bq_standard.tasks;
 
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.IItemTask;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.ItemComparison;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api.utils.NBTConverter;
-import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.storage.DBEntry;
@@ -123,29 +119,37 @@ public class TaskRetrieval implements ITaskInventory, IItemTask
             {
                 ItemStack stack = invo.getStackInSlot(i);
                 if(stack == null || stack.stackSize <= 0) continue;
-                int remStack = stack.stackSize; // Allows the stack detection to split across multiple requirements
-    
+                // Allows the stack detection to split across multiple requirements. Counts may vary per person
+                int[] remCounts = new int[progress.size()];
+                Arrays.fill(remCounts, stack.stackSize);
+                
                 for(int j = 0; j < requiredItems.size(); j++)
                 {
                     BigItemStack rStack = requiredItems.get(j);
         
-                    if(progress[j] >= rStack.stackSize) continue;
-        
-                    int remaining = rStack.stackSize - progress[j];
-        
-                    if(ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.getOreIngredient(), rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
+                    if(!ItemComparison.StackMatch(rStack.getBaseStack(), stack, !ignoreNBT, partialMatch) || ItemComparison.OreDictionaryMatch(rStack.getOreIngredient(), rStack.GetTagCompound(), stack, !ignoreNBT, partialMatch))
                     {
+                        continue;
+                    }
+                    
+                    for(int n = 0; n < progress.size(); n++)
+                    {
+                        Tuple2<UUID, int[]> value = progress.get(n);
+                        if(value.getSecond()[j] >= rStack.stackSize) continue;
+                        
+                        int remaining = rStack.stackSize - value.getSecond()[j];
+                        
                         if(consume)
                         {
-                            ItemStack removed = player.inventory.decrStackSize(i, remaining);
-                            progress[j] += removed.stackSize;
+                            ItemStack removed = invo.decrStackSize(i, remaining);
+                            value.getSecond()[j] += removed.stackSize;
                         } else
                         {
-                            int temp = Math.min(remaining, remStack);
-                            remStack -= temp;
-                            progress[j] += temp;
+                            int temp = Math.min(remaining, remCounts[n]);
+                            remCounts[n] -= temp;
+                            value.getSecond()[j] += temp;
                         }
-            
+        
                         updated = true;
                     }
                 }

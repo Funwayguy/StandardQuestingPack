@@ -1,9 +1,5 @@
 package bq_standard.client.gui.editors;
 
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.client.gui.misc.IVolatileScreen;
-import betterquesting.api.network.QuestingPacket;
 import betterquesting.api2.client.gui.GuiScreenCanvas;
 import betterquesting.api2.client.gui.controls.PanelButton;
 import betterquesting.api2.client.gui.controls.PanelButtonStorage;
@@ -23,7 +19,7 @@ import betterquesting.api2.client.gui.themes.presets.PresetLine;
 import betterquesting.api2.client.gui.themes.presets.PresetTexture;
 import betterquesting.api2.storage.DBEntry;
 import betterquesting.api2.utils.QuestTranslation;
-import bq_standard.network.StandardPacketType;
+import bq_standard.network.handlers.NetLootImport;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootRegistry;
 import net.minecraft.client.gui.GuiScreen;
@@ -32,8 +28,9 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.vector.Vector4f;
 
 import java.text.DecimalFormat;
+import java.util.List;
 
-public class GuiEditLootGroup extends GuiScreenCanvas implements IVolatileScreen
+public class GuiEditLootGroup extends GuiScreenCanvas
 {
     private LootGroup selGroup;
     private int selectedID = -1;
@@ -48,6 +45,7 @@ public class GuiEditLootGroup extends GuiScreenCanvas implements IVolatileScreen
     public GuiEditLootGroup(GuiScreen parent)
     {
         super(parent);
+        this.setVolatile(true);
     }
     
     @Override
@@ -195,18 +193,18 @@ public class GuiEditLootGroup extends GuiScreenCanvas implements IVolatileScreen
     {
         lootList.resetCanvas();
         int lWidth = lootList.getTransform().getWidth();
-        final DBEntry<LootGroup>[] lgAry = LootRegistry.INSTANCE.getEntries();
+        final List<DBEntry<LootGroup>> lgAry = LootRegistry.INSTANCE.getEntries();
         
-        for(int i = 0; i < lgAry.length; i++)
+        for(int i = 0; i < lgAry.size(); i++)
         {
-            lootList.addPanel(new PanelButtonStorage<>(new GuiRectangle(0, i * 16, 16, 16, 0), -1, "", lgAry[i]).setCallback(value ->
+            lootList.addPanel(new PanelButtonStorage<>(new GuiRectangle(0, i * 16, 16, 16, 0), -1, "", lgAry.get(i)).setCallback(value ->
             {
                 LootRegistry.INSTANCE.removeID(value.getID());
                 refreshGroups();
                 SendChanges();
             }).setIcon(PresetIcon.ICON_TRASH.getTexture()));
             
-            lootList.addPanel(new PanelButtonStorage<>(new GuiRectangle(16, i * 16, lWidth - 16, 16, 0), -1, lgAry[i].getValue().name, lgAry[i]).setCallback(value ->
+            lootList.addPanel(new PanelButtonStorage<>(new GuiRectangle(16, i * 16, lWidth - 16, 16, 0), -1, lgAry.get(i).getValue().name, lgAry.get(i)).setCallback(value ->
             {
                 if(selGroup != null) SendChanges();
                 selectedID = value.getID();
@@ -223,11 +221,6 @@ public class GuiEditLootGroup extends GuiScreenCanvas implements IVolatileScreen
 	
 	private void SendChanges()
 	{
-		NBTTagCompound nbt = new NBTTagCompound();
-		LootRegistry.INSTANCE.writeToNBT(nbt);
-		NBTTagCompound tags = new NBTTagCompound();
-		tags.setInteger("ID", 1);
-		tags.setTag("Database", nbt);
-		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(StandardPacketType.LOOT_SYNC.GetLocation(), tags));
+        NetLootImport.importLoot(LootRegistry.INSTANCE.writeToNBT(new NBTTagCompound(), null));
 	}
 }

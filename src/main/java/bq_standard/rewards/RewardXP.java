@@ -4,6 +4,7 @@ import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
 import bq_standard.XPHelper;
 import bq_standard.client.gui.rewards.PanelRewardXP;
 import bq_standard.rewards.factory.FactoryRewardXP;
@@ -32,42 +33,42 @@ public class RewardXP implements IReward
 	}
 	
 	@Override
-	public boolean canClaim(EntityPlayer player, IQuest quest)
+	public boolean canClaim(EntityPlayer player, DBEntry<IQuest> quest)
 	{
 		return true;
 	}
 	
 	@Override
-	public void claimReward(EntityPlayer player, IQuest quest)
+	public void claimReward(EntityPlayer player, DBEntry<IQuest> quest)
 	{
 		XPHelper.addXP(player, !levels? amount : XPHelper.getLevelXP(amount));
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json)
+	public void readFromNBT(NBTTagCompound nbt)
 	{
-		amount = json.getInteger("amount");
-		levels = json.getBoolean("isLevels");
+		amount = nbt.getInteger("amount");
+		levels = nbt.getBoolean("isLevels");
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json)
+	public NBTTagCompound writeToNBT(NBTTagCompound nbt)
 	{
-		json.setInteger("amount", amount);
-		json.setBoolean("isLevels", levels);
-		return json;
-	}
-	
-	@Override
-	@SideOnly(Side.CLIENT)
-	public IGuiPanel getRewardGui(IGuiRect rect, IQuest quest)
-	{
-	    return new PanelRewardXP(rect, quest, this);
+		nbt.setInteger("amount", amount);
+		nbt.setBoolean("isLevels", levels);
+		return nbt;
 	}
 	
 	@Override
 	@SideOnly(Side.CLIENT)
-	public GuiScreen getRewardEditor(GuiScreen screen, IQuest quest)
+	public IGuiPanel getRewardGui(IGuiRect rect, DBEntry<IQuest> quest)
+	{
+	    return new PanelRewardXP(rect, this);
+	}
+	
+	@Override
+	@SideOnly(Side.CLIENT)
+	public GuiScreen getRewardEditor(GuiScreen screen, DBEntry<IQuest> quest)
 	{
 		return null;
 	}

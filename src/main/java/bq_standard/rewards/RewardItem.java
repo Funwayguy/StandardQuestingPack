@@ -7,6 +7,7 @@ import betterquesting.api.utils.BigItemStack;
 import betterquesting.api.utils.JsonHelper;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
 import bq_standard.NBTReplaceUtil;
 import bq_standard.client.gui.rewards.PanelRewardItem;
 import bq_standard.core.BQ_Standard;
@@ -39,13 +40,13 @@ public class RewardItem implements IReward
 	}
 	
 	@Override
-	public boolean canClaim(EntityPlayer player, IQuest quest)
+	public boolean canClaim(EntityPlayer player, DBEntry<IQuest> quest)
 	{
 		return true;
 	}
 
 	@Override
-	public void claimReward(EntityPlayer player, IQuest quest)
+	public void claimReward(EntityPlayer player, DBEntry<IQuest> quest)
 	{
 		for(BigItemStack r : items)
 		{
@@ -68,22 +69,16 @@ public class RewardItem implements IReward
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound json)
+	public void readFromNBT(NBTTagCompound nbt)
 	{
 		items.clear();
-		NBTTagList rList = json.getTagList("rewards", 10);
+		NBTTagList rList = nbt.getTagList("rewards", 10);
 		for(int i = 0; i < rList.tagCount(); i++)
 		{
-			NBTTagCompound entry = rList.getCompoundTagAt(i);
-			
 			try
 			{
-				BigItemStack item = JsonHelper.JsonToItemStack(entry);
-				
-				if(item != null)
-				{
-					items.add(item);
-				}
+				BigItemStack item = JsonHelper.JsonToItemStack(rList.getCompoundTagAt(i));
+				if(item != null) items.add(item);
 			} catch(Exception e)
 			{
 				BQ_Standard.logger.log(Level.ERROR, "Unable to load reward item data", e);
@@ -92,25 +87,25 @@ public class RewardItem implements IReward
 	}
 
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json)
+	public NBTTagCompound writeToNBT(NBTTagCompound nbt)
 	{
 		NBTTagList rJson = new NBTTagList();
 		for(BigItemStack stack : items)
 		{
 			rJson.appendTag(JsonHelper.ItemStackToJson(stack, new NBTTagCompound()));
 		}
-		json.setTag("rewards", rJson);
-		return json;
+		nbt.setTag("rewards", rJson);
+		return nbt;
 	}
 
 	@Override
-	public IGuiPanel getRewardGui(IGuiRect rect, IQuest quest)
+	public IGuiPanel getRewardGui(IGuiRect rect, DBEntry<IQuest> quest)
 	{
-	    return new PanelRewardItem(rect, quest, this);
+	    return new PanelRewardItem(rect, this);
 	}
 	
 	@Override
-	public GuiScreen getRewardEditor(GuiScreen screen, IQuest quest)
+	public GuiScreen getRewardEditor(GuiScreen screen, DBEntry<IQuest> quest)
 	{
 		return null;
 	}

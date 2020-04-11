@@ -1,7 +1,6 @@
 package bq_standard.client.gui.tasks;
 
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.questing.IQuest;
 import betterquesting.api2.client.gui.misc.*;
 import betterquesting.api2.client.gui.panels.CanvasEmpty;
 import betterquesting.api2.client.gui.panels.bars.PanelVScrollBar;

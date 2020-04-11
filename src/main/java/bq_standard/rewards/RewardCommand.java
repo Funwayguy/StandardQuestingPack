@@ -5,6 +5,7 @@ import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
+import betterquesting.api2.storage.DBEntry;
 import bq_standard.AdminExecute;
 import bq_standard.client.gui.rewards.PanelRewardCommand;
 import bq_standard.handlers.EventHandler;
@@ -38,18 +39,15 @@ public class RewardCommand implements IReward
 	}
 	
 	@Override
-	public boolean canClaim(EntityPlayer player, IQuest quest)
+	public boolean canClaim(EntityPlayer player, DBEntry<IQuest> quest)
 	{
 		return true;
 	}
 	
 	@Override
-	public void claimReward(final EntityPlayer player, IQuest quest)
+	public void claimReward(final EntityPlayer player, DBEntry<IQuest> quest)
 	{
-		if(player.worldObj.isRemote)
-		{
-			return;
-		}
+		if(player.worldObj.isRemote) return;
 		
 		String tmp = command.replaceAll("VAR_NAME", player.getCommandSenderName());
 		final String finCom = tmp.replaceAll("VAR_UUID", QuestingAPI.getQuestingUUID(player).toString());
@@ -67,30 +65,30 @@ public class RewardCommand implements IReward
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json)
+	public void readFromNBT(NBTTagCompound nbt)
 	{
-		command = json.getString("command");
-		hideCmd = json.getBoolean("hideCommand");
-		viaPlayer = json.getBoolean("viaPlayer");
+		command = nbt.getString("command");
+		hideCmd = nbt.getBoolean("hideCommand");
+		viaPlayer = nbt.getBoolean("viaPlayer");
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json)
+	public NBTTagCompound writeToNBT(NBTTagCompound nbt)
 	{
-		json.setString("command", command);
-		json.setBoolean("hideCommand", hideCmd);
-		json.setBoolean("viaPlayer", viaPlayer);
-		return json;
+		nbt.setString("command", command);
+		nbt.setBoolean("hideCommand", hideCmd);
+		nbt.setBoolean("viaPlayer", viaPlayer);
+		return nbt;
 	}
 	
 	@Override
-	public IGuiPanel getRewardGui(IGuiRect rect, IQuest quest)
+	public IGuiPanel getRewardGui(IGuiRect rect, DBEntry<IQuest> quest)
 	{
-	    return new PanelRewardCommand(rect, quest, this);
+	    return new PanelRewardCommand(rect, this);
 	}
 	
 	@Override
-	public GuiScreen getRewardEditor(GuiScreen screen, IQuest quest)
+	public GuiScreen getRewardEditor(GuiScreen screen, DBEntry<IQuest> quest)
 	{
 		return null;
 	}
@@ -100,7 +98,7 @@ public class RewardCommand implements IReward
 		private final World world;
 		private final ChunkCoordinates blockLoc;
 		
-		public RewardCommandSender(World world, int x, int y, int z)
+		private RewardCommandSender(World world, int x, int y, int z)
 	    {
 	    	blockLoc = new ChunkCoordinates(x, y, z);
 	    	this.world = world;

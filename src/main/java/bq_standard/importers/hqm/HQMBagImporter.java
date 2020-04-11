@@ -1,14 +1,11 @@
 package bq_standard.importers.hqm;
 
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.importers.IImporter;
-import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.questing.IQuestDatabase;
 import betterquesting.api.questing.IQuestLineDatabase;
 import betterquesting.api.utils.FileExtensionFilter;
 import betterquesting.api.utils.JsonHelper;
-import bq_standard.network.StandardPacketType;
+import bq_standard.network.handlers.NetLootImport;
 import bq_standard.rewards.loot.LootGroup;
 import bq_standard.rewards.loot.LootGroup.LootEntry;
 import com.google.gson.Gson;
@@ -146,7 +143,7 @@ public class HQMBagImporter implements IImporter
 		
 		base.setTag("groups", jAry);
 		tags.setTag("data", base);
-		QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(StandardPacketType.LOOT_IMPORT.GetLocation(), tags));
+        NetLootImport.importLoot(tags);
 	}
 	
 	private JsonArray ReadFromFile(File file)
