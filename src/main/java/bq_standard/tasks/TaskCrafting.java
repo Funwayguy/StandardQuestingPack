@@ -26,7 +26,6 @@ import org.apache.logging.log4j.Level;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.Map.Entry;
 
 public class TaskCrafting implements ITask
 {
@@ -167,7 +166,12 @@ public class TaskCrafting implements ITask
 	@Override
 	public void readProgressFromNBT(NBTTagCompound nbt, boolean merge)
 	{
-		completeUsers.clear();
+		if(!merge)
+        {
+            completeUsers.clear();
+            userProgress.clear();
+        }
+		
 		NBTTagList cList = nbt.getTagList("completeUsers", 8);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
@@ -180,7 +184,6 @@ public class TaskCrafting implements ITask
 			}
 		}
 		
-		userProgress.clear();
 		NBTTagList pList = nbt.getTagList("userProgress", 10);
 		for(int n = 0; n < pList.tagCount(); n++)
 		{
@@ -216,25 +219,39 @@ public class TaskCrafting implements ITask
 	public NBTTagCompound writeProgressToNBT(NBTTagCompound nbt, List<UUID> users)
 	{
 		NBTTagList jArray = new NBTTagList();
-		for(UUID uuid : completeUsers)
-		{
-			jArray.appendTag(new NBTTagString(uuid.toString()));
-		}
-		nbt.setTag("completeUsers", jArray);
-		
 		NBTTagList progArray = new NBTTagList();
-		for(Entry<UUID,int[]> entry : userProgress.entrySet())
-		{
-			NBTTagCompound pJson = new NBTTagCompound();
-			pJson.setString("uuid", entry.getKey().toString());
-			NBTTagList pArray = new NBTTagList();
-			for(int i : entry.getValue())
-			{
-				pArray.appendTag(new NBTTagInt(i));
-			}
-			pJson.setTag("data", pArray);
-			progArray.appendTag(pJson);
-		}
+		
+		if(users != null)
+        {
+            users.forEach((uuid) -> {
+                if(completeUsers.contains(uuid)) jArray.appendTag(new NBTTagString(uuid.toString()));
+                
+                int[] data = userProgress.get(uuid);
+                if(data != null)
+                {
+                    NBTTagCompound pJson = new NBTTagCompound();
+                    pJson.setString("uuid", uuid.toString());
+                    NBTTagList pArray = new NBTTagList(); // TODO: Why the heck isn't this just an int array?!
+                    for(int i : data) pArray.appendTag(new NBTTagInt(i));
+                    pJson.setTag("data", pArray);
+                    progArray.appendTag(pJson);
+                }
+            });
+        } else
+        {
+            completeUsers.forEach((uuid) -> jArray.appendTag(new NBTTagString(uuid.toString())));
+            
+            userProgress.forEach((uuid, data) -> {
+                NBTTagCompound pJson = new NBTTagCompound();
+			    pJson.setString("uuid", uuid.toString());
+                NBTTagList pArray = new NBTTagList(); // TODO: Why the heck isn't this just an int array?!
+                for(int i : data) pArray.appendTag(new NBTTagInt(i));
+                pJson.setTag("data", pArray);
+                progArray.appendTag(pJson);
+            });
+        }
+		
+		nbt.setTag("completeUsers", jArray);
 		nbt.setTag("userProgress", progArray);
 		
 		return nbt;

@@ -92,7 +92,7 @@ public class ItemLootChest extends Item
     	        return stack;
             }
             
-            String loottable = (stack.getTagCompound() != null && stack.getTagCompound().hasKey("loottable", 8)) ? stack.getTagCompound().getString("loottable") : "minecraft:chests/simple_dungeon";
+            String loottable = (stack.getTagCompound() != null && stack.getTagCompound().hasKey("loottable", 8)) ? stack.getTagCompound().getString("loottable") : "dungeonChest";
             
 	    	List<BigItemStack> loot = new ArrayList<>();
 	    	for(int n = 1 + player.getRNG().nextInt(7); n > 0; n--)
@@ -215,7 +215,7 @@ public class ItemLootChest extends Item
         // VANILLA LOOT TABLE
         tag = new NBTTagCompound();
         tag.setBoolean("hideLootInfo", true);
-        tag.setString("loottable", "minecraft:chests/simple_dungeon");
+        tag.setString("loottable", "dungeonChest");
         ItemStack lootStack = new ItemStack(this, 1, 103);
         lootStack.setTagCompound(tag);
         subItems.add(lootStack);
