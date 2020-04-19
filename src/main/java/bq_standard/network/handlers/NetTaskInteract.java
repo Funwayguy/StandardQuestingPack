@@ -13,6 +13,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.List;
@@ -48,7 +49,7 @@ public class NetTaskInteract
 		{
 		    for(DBEntry<ITask> task : entry.getValue().getTasks().getEntries())
             {
-                if(task.getValue() instanceof TaskInteractItem) ((TaskInteractItem)task.getValue()).onInteract(pInfo, entry, null, null, -1, sender.serverPosX, sender.serverPosY, sender.serverPosZ, isHit);
+                if(task.getValue() instanceof TaskInteractItem) ((TaskInteractItem)task.getValue()).onInteract(pInfo, entry, null, null, -1, MathHelper.floor_double(sender.posX), MathHelper.floor_double(sender.posY), MathHelper.floor_double(sender.posZ), isHit);
             }
 		}
     }

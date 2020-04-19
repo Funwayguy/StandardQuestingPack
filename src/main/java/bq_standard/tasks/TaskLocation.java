@@ -8,6 +8,7 @@ import betterquesting.api2.utils.ParticipantInfo;
 import bq_standard.client.gui.tasks.PanelTaskLocation;
 import bq_standard.core.BQ_Standard;
 import bq_standard.tasks.factory.FactoryTaskLocation;
+import codechicken.lib.math.MathHelper;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -101,10 +102,10 @@ public class TaskLocation implements ITaskTickable
 		
 		if(playerMP.dimension == dim && (range <= 0 || getDistance(playerMP) <= range))
 		{
-			if(biome >= 0 && biome != playerMP.getServerForPlayer().getBiomeGenForCoords(playerMP.serverPosX, playerMP.serverPosZ).biomeID)
+			if(biome >= 0 && biome != playerMP.getServerForPlayer().getBiomeGenForCoords(MathHelper.floor_double(playerMP.posX), MathHelper.floor_double(playerMP.posZ)).biomeID)
             {
                 if(!invert) return;
-            } else if(!StringUtils.isNullOrEmpty(structure) && playerMP.getServerForPlayer().getChunkProvider().func_147416_a(playerMP.getServerForPlayer(), structure, playerMP.serverPosX, playerMP.serverPosY, playerMP.serverPosZ) == null)
+            } else if(!StringUtils.isNullOrEmpty(structure) && playerMP.getServerForPlayer().getChunkProvider().func_147416_a(playerMP.getServerForPlayer(), structure, MathHelper.floor_double(playerMP.posX), MathHelper.floor_double(playerMP.posY), MathHelper.floor_double(playerMP.posZ)) == null)
             {
                 if(!invert) return;
             } else if(visible && range > 0) // Do not do ray casting with infinite range!
