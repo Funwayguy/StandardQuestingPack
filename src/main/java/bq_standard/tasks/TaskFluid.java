@@ -394,7 +394,7 @@ public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask
 	}
 
 	@Override
-	public boolean canAcceptFluid(UUID owner, IQuest quest, FluidStack fluid)
+	public boolean canAcceptFluid(UUID owner, DBEntry<IQuest> quest, FluidStack fluid)
 	{
 		if(owner == null || fluid == null || fluid.getFluid() == null || !consume || isComplete(owner) || requiredFluids.size() <= 0)
 		{
@@ -414,7 +414,7 @@ public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask
 	}
 
 	@Override
-	public boolean canAcceptItem(UUID owner, IQuest quest, ItemStack item)
+	public boolean canAcceptItem(UUID owner, DBEntry<IQuest> quest, ItemStack item)
 	{
 		if(owner == null || item == null || !consume || isComplete(owner) || requiredFluids.size() <= 0)
 		{
@@ -433,7 +433,7 @@ public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask
 	}
 
 	@Override
-	public FluidStack submitFluid(UUID owner, IQuest quest, FluidStack fluid)
+	public FluidStack submitFluid(UUID owner, DBEntry<IQuest> quest, FluidStack fluid)
 	{
 		if(owner == null || fluid == null || fluid.amount <= 0 || !consume || isComplete(owner) || requiredFluids.size() <= 0)
 		{
@@ -473,7 +473,7 @@ public class TaskFluid implements ITaskInventory, IFluidTask, IItemTask
 	}
 
 	@Override
-	public ItemStack submitItem(UUID owner, IQuest quest, ItemStack input)
+	public ItemStack submitItem(UUID owner, DBEntry<IQuest> quest, ItemStack input)
 	{
 		if(owner == null || input == null || !consume || isComplete(owner)) return input;
 		

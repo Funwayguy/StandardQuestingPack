@@ -341,7 +341,7 @@ public class TaskRetrieval implements ITaskInventory, IItemTask
 	}
 	
 	@Override
-	public boolean canAcceptItem(UUID owner, IQuest quest, ItemStack stack)
+	public boolean canAcceptItem(UUID owner, DBEntry<IQuest> quest, ItemStack stack)
 	{
 		if(owner == null || stack == null || stack.stackSize <= 0 || !consume || isComplete(owner) || requiredItems.size() <= 0)
 		{
@@ -366,7 +366,7 @@ public class TaskRetrieval implements ITaskInventory, IItemTask
 	}
 	
 	@Override
-	public ItemStack submitItem(UUID owner, IQuest quest, ItemStack input)
+	public ItemStack submitItem(UUID owner, DBEntry<IQuest> quest, ItemStack input)
 	{
 		if(owner == null || input == null || !consume || isComplete(owner)) return input;
 		
