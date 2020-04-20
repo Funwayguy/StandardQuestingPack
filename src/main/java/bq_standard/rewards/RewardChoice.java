@@ -22,9 +22,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.UUID;
+import java.util.*;
 
 public class RewardChoice implements IReward
 {
@@ -32,8 +30,8 @@ public class RewardChoice implements IReward
 	 * The selected reward index to be claimed.<br>
 	 * Should only ever be used client side. NEVER onHit server
 	 */
-	public final ArrayList<BigItemStack> choices = new ArrayList<>();
-	private final HashMap<UUID,Integer> selected = new HashMap<>();
+	public final List<BigItemStack> choices = new ArrayList<>();
+	private final TreeMap<UUID,Integer> selected = new TreeMap<>();
 	
 	@Override
 	public ResourceLocation getFactoryID()
@@ -65,10 +63,7 @@ public class RewardChoice implements IReward
 	@Override
 	public boolean canClaim(EntityPlayer player, DBEntry<IQuest> quest)
 	{
-		if(!selected.containsKey(QuestingAPI.getQuestingUUID(player)))
-		{
-			return false;
-		}
+		if(!selected.containsKey(QuestingAPI.getQuestingUUID(player))) return false;
 		
 		int tmp = selected.get(QuestingAPI.getQuestingUUID(player));
 		return choices.size() <= 0 || (tmp >= 0 && tmp < choices.size());
@@ -120,10 +115,10 @@ public class RewardChoice implements IReward
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json)
+	public void readFromNBT(NBTTagCompound nbt)
 	{
 		choices.clear();
-		NBTTagList cList = json.getTagList("choices", 10);
+		NBTTagList cList = nbt.getTagList("choices", 10);
 		for(int i = 0; i < cList.tagCount(); i++)
 		{
 			choices.add(JsonHelper.JsonToItemStack(cList.getCompoundTagAt(i)));
@@ -131,15 +126,15 @@ public class RewardChoice implements IReward
 	}
 
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json)
+	public NBTTagCompound writeToNBT(NBTTagCompound nbt)
 	{
 		NBTTagList rJson = new NBTTagList();
 		for(BigItemStack stack : choices)
 		{
 			rJson.appendTag(JsonHelper.ItemStackToJson(stack, new NBTTagCompound()));
 		}
-		json.setTag("choices", rJson);
-		return json;
+		nbt.setTag("choices", rJson);
+		return nbt;
 	}
 
 	@Override

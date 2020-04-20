@@ -228,7 +228,7 @@ public class TaskXP implements ITaskTickable
 		return null;
 	}
 	
-	public void setUserProgress(UUID uuid, long progress)
+	private void setUserProgress(UUID uuid, long progress)
 	{
 		userProgress.put(uuid, progress);
 	}

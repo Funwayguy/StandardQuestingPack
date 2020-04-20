@@ -37,7 +37,7 @@ import java.util.*;
 public class TaskInteractItem implements ITask
 {
 	private final Set<UUID> completeUsers = new TreeSet<>();
-	private final HashMap<UUID, Integer> userProgress = new HashMap<>();
+	private final TreeMap<UUID, Integer> userProgress = new TreeMap<>();
 	
     public BigItemStack targetItem = new BigItemStack(Items.AIR);
     public final NbtBlockType targetBlock = new NbtBlockType(Blocks.AIR);

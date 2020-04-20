@@ -33,7 +33,7 @@ public class TaskCrafting implements ITask
 {
 	private final Set<UUID> completeUsers = new TreeSet<>();
 	public final NonNullList<BigItemStack> requiredItems = NonNullList.create();
-	public final HashMap<UUID, int[]> userProgress = new HashMap<>();
+	public final TreeMap<UUID, int[]> userProgress = new TreeMap<>();
 	public boolean partialMatch = true;
 	public boolean ignoreNBT = false;
 	public boolean allowAnvil = false;

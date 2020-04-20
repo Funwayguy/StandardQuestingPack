@@ -116,32 +116,32 @@ public class TaskScoreboard implements ITaskTickable
     }
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json)
+	public NBTTagCompound writeToNBT(NBTTagCompound nbt)
 	{
-		json.setString("scoreName", scoreName);
-		json.setString("scoreDisp", scoreDisp);
-		json.setString("type", type);
-		json.setInteger("target", target);
-		json.setFloat("unitConversion", conversion);
-		json.setString("unitSuffix", suffix);
-		json.setString("operation", operation.name());
+		nbt.setString("scoreName", scoreName);
+		nbt.setString("scoreDisp", scoreDisp);
+		nbt.setString("type", type);
+		nbt.setInteger("target", target);
+		nbt.setFloat("unitConversion", conversion);
+		nbt.setString("unitSuffix", suffix);
+		nbt.setString("operation", operation.name());
 		
-		return json;
+		return nbt;
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json)
+	public void readFromNBT(NBTTagCompound nbt)
 	{
-		scoreName = json.getString("scoreName");
+		scoreName = nbt.getString("scoreName");
 		scoreName = scoreName.replaceAll(" ", "_");
-		scoreDisp = json.getString("scoreDisp");
-		type = json.hasKey("type", 8) ? json.getString("type") : "dummy";
-		target = json.getInteger("target");
-		conversion = json.getFloat("unitConversion");
-		suffix = json.getString("unitSuffix");
+		scoreDisp = nbt.getString("scoreDisp");
+		type = nbt.hasKey("type", 8) ? nbt.getString("type") : "dummy";
+		target = nbt.getInteger("target");
+		conversion = nbt.getFloat("unitConversion");
+		suffix = nbt.getString("unitSuffix");
 		try
         {
-            operation = ScoreOperation.valueOf(json.hasKey("operation", 8) ? json.getString("operation") : "MORE_OR_EQUAL");
+            operation = ScoreOperation.valueOf(nbt.hasKey("operation", 8) ? nbt.getString("operation") : "MORE_OR_EQUAL");
         } catch(Exception e)
         {
             operation = ScoreOperation.MORE_OR_EQUAL;

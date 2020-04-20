@@ -36,7 +36,7 @@ import java.util.*;
 public class TaskBlockBreak implements ITask
 {
 	private final Set<UUID> completeUsers = new TreeSet<>();
-	private final HashMap<UUID, int[]> userProgress = new HashMap<>();
+	private final TreeMap<UUID, int[]> userProgress = new TreeMap<>();
 	public final List<NbtBlockType> blockTypes = new ArrayList<>();
 	
 	public TaskBlockBreak()

@@ -6,16 +6,16 @@ import net.minecraft.nbt.NBTTagList;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.UUID;
 
 public class ScoreboardBQ implements INBTPartial<NBTTagList, UUID>
 {
     public static final ScoreboardBQ INSTANCE = new ScoreboardBQ();
     
-	private final HashMap<String, ScoreBQ> objectives = new HashMap<>();
+	private final TreeMap<String, ScoreBQ> objectives = new TreeMap<>();
 	
 	public synchronized int getScore(@Nonnull UUID uuid, @Nonnull String scoreName)
 	{

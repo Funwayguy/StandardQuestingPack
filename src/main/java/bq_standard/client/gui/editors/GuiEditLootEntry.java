@@ -2,7 +2,6 @@ package bq_standard.client.gui.editors;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.client.gui.misc.IVolatileScreen;
 import betterquesting.api2.client.gui.GuiScreenCanvas;
 import betterquesting.api2.client.gui.controls.PanelButton;
 import betterquesting.api2.client.gui.controls.PanelButtonStorage;
@@ -31,7 +30,7 @@ import org.lwjgl.util.vector.Vector4f;
 import java.text.DecimalFormat;
 import java.util.List;
 
-public class GuiEditLootEntry extends GuiScreenCanvas implements IVolatileScreen
+public class GuiEditLootEntry extends GuiScreenCanvas
 {
     private LootGroup lootGroup;
     private final int groupID;
@@ -51,6 +50,7 @@ public class GuiEditLootEntry extends GuiScreenCanvas implements IVolatileScreen
         super(parent);
         this.lootGroup = group;
         this.groupID = LootRegistry.INSTANCE.getID(group);
+        this.setVolatile(true);
     }
     
     @Override

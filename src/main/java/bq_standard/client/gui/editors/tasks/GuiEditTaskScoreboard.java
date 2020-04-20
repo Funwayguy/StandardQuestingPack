@@ -2,7 +2,6 @@ package bq_standard.client.gui.editors.tasks;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.client.gui.misc.IVolatileScreen;
 import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api2.client.gui.GuiScreenCanvas;
@@ -30,7 +29,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Keyboard;
 
-public class GuiEditTaskScoreboard extends GuiScreenCanvas implements IVolatileScreen
+public class GuiEditTaskScoreboard extends GuiScreenCanvas
 {
     private final DBEntry<IQuest> quest;
     private final TaskScoreboard task;
@@ -40,6 +39,7 @@ public class GuiEditTaskScoreboard extends GuiScreenCanvas implements IVolatileS
         super(parent);
         this.quest = quest;
         this.task = task;
+        this.setVolatile(true);
     }
     
     @Override

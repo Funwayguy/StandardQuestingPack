@@ -60,10 +60,7 @@ public class PanelRewardChoice extends CanvasEmpty
             cvList.addPanel(new PanelTextBox(new GuiRectangle(22, i * 18 + 4, listWidth - 22, 14, 0), stack.stackSize + " " + stack.getBaseStack().getDisplayName()).setColor(PresetColor.TEXT_MAIN.getColor()));
             
             final int sID = i;
-            is.setCallback(value -> {
-                //slot.setStoredValue(value); // The server should set this when the change is confirmed
-                NetRewardChoice.requestChoice(qID, rID, sID);
-            });
+            is.setCallback(value -> NetRewardChoice.requestChoice(qID, rID, sID));
         }
     }
 }

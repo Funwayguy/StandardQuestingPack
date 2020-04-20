@@ -32,7 +32,7 @@ import java.util.*;
 public class TaskHunt implements ITask
 {
 	private final Set<UUID> completeUsers = new TreeSet<>();
-	private final HashMap<UUID, Integer> userProgress = new HashMap<>();
+	private final TreeMap<UUID, Integer> userProgress = new TreeMap<>();
 	public String idName = "minecraft:zombie";
 	public String damageType = "";
 	public int required = 1;
@@ -117,27 +117,27 @@ public class TaskHunt implements ITask
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound json)
+	public NBTTagCompound writeToNBT(NBTTagCompound nbt)
 	{
-		json.setString("target", idName);
-		json.setInteger("required", required);
-		json.setBoolean("subtypes", subtypes);
-		json.setBoolean("ignoreNBT", ignoreNBT);
-		json.setTag("targetNBT", targetTags);
-		json.setString("damageType", damageType);
+		nbt.setString("target", idName);
+		nbt.setInteger("required", required);
+		nbt.setBoolean("subtypes", subtypes);
+		nbt.setBoolean("ignoreNBT", ignoreNBT);
+		nbt.setTag("targetNBT", targetTags);
+		nbt.setString("damageType", damageType);
 		
-		return json;
+		return nbt;
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound json)
+	public void readFromNBT(NBTTagCompound nbt)
 	{
-		idName = json.getString("target");
-		required = json.getInteger("required");
-		subtypes = json.getBoolean("subtypes");
-		ignoreNBT = json.getBoolean("ignoreNBT");
-		targetTags = json.getCompoundTag("targetNBT");
-		damageType = json.getString("damageType");
+		idName = nbt.getString("target");
+		required = nbt.getInteger("required");
+		subtypes = nbt.getBoolean("subtypes");
+		ignoreNBT = nbt.getBoolean("ignoreNBT");
+		targetTags = nbt.getCompoundTag("targetNBT");
+		damageType = nbt.getString("damageType");
 	}
 	
 	@Override
@@ -213,16 +213,6 @@ public class TaskHunt implements ITask
 		
 		return nbt;
 	}
-	
-	/**
-	 * Returns a new editor screen for this Reward type to edit the given data
-	 */
-	@Override
-	@SideOnly(Side.CLIENT)
-	public GuiScreen getTaskEditor(GuiScreen parent, DBEntry<IQuest> quest)
-	{
-	    return new GuiEditTaskHunt(parent, quest, this);
-	}
 
 	@Override
 	public void resetUser(@Nullable UUID uuid)
@@ -236,6 +226,16 @@ public class TaskHunt implements ITask
             completeUsers.remove(uuid);
             userProgress.remove(uuid);
         }
+	}
+	
+	/**
+	 * Returns a new editor screen for this Reward type to edit the given data
+	 */
+	@Override
+	@SideOnly(Side.CLIENT)
+	public GuiScreen getTaskEditor(GuiScreen parent, DBEntry<IQuest> quest)
+	{
+	    return new GuiEditTaskHunt(parent, quest, this);
 	}
  
 	@Override

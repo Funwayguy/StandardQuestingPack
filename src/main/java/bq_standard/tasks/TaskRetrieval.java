@@ -37,7 +37,7 @@ public class TaskRetrieval implements ITaskInventory, IItemTask
 {
 	private final Set<UUID> completeUsers = new TreeSet<>();
 	public final NonNullList<BigItemStack> requiredItems = NonNullList.create();
-	private final HashMap<UUID, int[]> userProgress = new HashMap<>();
+	private final TreeMap<UUID, int[]> userProgress = new TreeMap<>();
 	public boolean partialMatch = true;
 	public boolean ignoreNBT = false;
 	public boolean consume = true;
@@ -224,16 +224,16 @@ public class TaskRetrieval implements ITaskInventory, IItemTask
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound json)
+	public void readFromNBT(NBTTagCompound nbt)
 	{
-		partialMatch = json.getBoolean("partialMatch");
-		ignoreNBT = json.getBoolean("ignoreNBT");
-		consume = json.getBoolean("consume");
-		groupDetect = json.getBoolean("groupDetect");
-		autoConsume = json.getBoolean("autoConsume");
+		partialMatch = nbt.getBoolean("partialMatch");
+		ignoreNBT = nbt.getBoolean("ignoreNBT");
+		consume = nbt.getBoolean("consume");
+		groupDetect = nbt.getBoolean("groupDetect");
+		autoConsume = nbt.getBoolean("autoConsume");
 		
 		requiredItems.clear();
-		NBTTagList iList = json.getTagList("requiredItems", 10);
+		NBTTagList iList = nbt.getTagList("requiredItems", 10);
 		for(int i = 0; i < iList.tagCount(); i++)
 		{
 			requiredItems.add(JsonHelper.JsonToItemStack(iList.getCompoundTagAt(i)));
@@ -437,7 +437,7 @@ public class TaskRetrieval implements ITaskInventory, IItemTask
 		return null;
 	}
  
-	public void setUserProgress(UUID uuid, int[] progress)
+	private void setUserProgress(UUID uuid, int[] progress)
 	{
 		userProgress.put(uuid, progress);
 	}
