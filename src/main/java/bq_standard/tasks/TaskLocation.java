@@ -168,7 +168,7 @@ public class TaskLocation implements ITaskTickable
 		y = nbt.getInteger("posY");
 		z = nbt.getInteger("posZ");
 		dim = nbt.getInteger("dimension");
-		biome = nbt.getInteger("biome");
+		biome = nbt.hasKey("biome", 99) ? nbt.getInteger("biome") : -1;
 		structure = nbt.getString("structure");
 		range = nbt.getInteger("range");
 		visible = nbt.getBoolean("visible");
